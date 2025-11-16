@@ -1,15 +1,25 @@
+import { useEffect } from 'react';
 import { useUIStore } from '@/stores/uiStore';
+import { useGraphStore } from '@/stores/graphStore';
 import { Minimize2, Maximize2 } from 'lucide-react';
 
 export const ControlsLegend = () => {
   const { controlsLegendExpanded, setControlsLegendExpanded } = useUIStore();
+  const { selectedNode } = useGraphStore();
+
+  // Auto-retract when a node is selected
+  useEffect(() => {
+    if (selectedNode && controlsLegendExpanded) {
+      setControlsLegendExpanded(false);
+    }
+  }, [selectedNode]);
 
   // Collapsed state - just a button
   if (!controlsLegendExpanded) {
     return (
       <button
         onClick={() => setControlsLegendExpanded(true)}
-        className="bg-amber-600 hover:bg-amber-700 text-white p-3 rounded-xl shadow-lg border border-amber-700 transition-all hover:shadow-xl group"
+        className="bg-amber-600 hover:bg-amber-700 text-white p-3 rounded-xl shadow-lg border border-amber-700 transition-all hover:shadow-xl group animate-slide-up"
         title="Show controls"
       >
         <Maximize2 className="w-5 h-5" />
@@ -19,7 +29,7 @@ export const ControlsLegend = () => {
 
   // Expanded state - full panel
   return (
-    <div className="bg-surface/95 backdrop-blur-md rounded-xl shadow-lg border border-border-light p-4 text-xs max-w-xs">
+    <div className="bg-surface/95 backdrop-blur-md rounded-xl shadow-lg border border-border-light p-4 text-xs max-w-xs animate-slide-up">
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-bold text-text-primary text-sm tracking-tight">Controls</h4>
         <button

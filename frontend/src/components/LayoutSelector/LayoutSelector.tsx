@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
 import { X, Minimize2, Maximize2 } from 'lucide-react';
+import { ExportDiagramButton } from '../ExportDiagram/ExportDiagramButton';
 
 export const LayoutSelector = () => {
   const {
@@ -40,7 +41,7 @@ export const LayoutSelector = () => {
     return (
       <button
         onClick={() => setLayoutSelectorExpanded(true)}
-        className="fixed top-20 right-4 bg-amber-600 hover:bg-amber-700 text-white p-3 rounded-xl shadow-lg border border-amber-700 transition-all hover:shadow-xl group z-10"
+        className="fixed top-20 right-4 bg-amber-600 hover:bg-amber-700 text-white p-3 rounded-xl shadow-lg border border-amber-700 transition-all hover:shadow-xl group z-10 animate-slide-down"
         title="Expand controls"
       >
         <Maximize2 className="w-5 h-5" />
@@ -50,7 +51,7 @@ export const LayoutSelector = () => {
 
   // Expanded state - full panel
   return (
-    <div className="fixed top-20 right-4 bg-surface/95 backdrop-blur-md rounded-xl shadow-lg border border-border-light p-5 space-y-5 max-w-sm z-10">
+    <div className="fixed top-20 right-4 bg-surface/95 backdrop-blur-md rounded-xl shadow-lg border border-border-light p-5 space-y-5 max-w-sm z-10 animate-slide-down">
       {/* Layout Selector */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
@@ -136,6 +137,11 @@ export const LayoutSelector = () => {
           </p>
         </div>
       )}
+
+      {/* Export Diagram */}
+      <div>
+        <ExportDiagramButton />
+      </div>
     </div>
   );
 };

@@ -55,7 +55,7 @@ export const Scene = () => {
         onClick={() => setSelectedNode(null)}
       >
         <planeGeometry args={[10000, 10000]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} depthTest={false} />
       </mesh>
 
       {/* Render cluster bounding boxes first (behind everything) */}

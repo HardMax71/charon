@@ -7,7 +7,11 @@ import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { applyCircularLayout, applyForceDirectedLayout, resetToOriginalLayout } from '@/utils/layoutAlgorithms';
 
-export const Graph3D = () => {
+interface Graph3DProps {
+  hideLayoutSelector?: boolean;
+}
+
+export const Graph3D = ({ hideLayoutSelector = false }: Graph3DProps) => {
   const { graph, setGraph } = useGraphStore();
   const { currentLayout } = useUIStore();
   const originalNodesRef = useRef<any[]>([]);
@@ -46,9 +50,7 @@ export const Graph3D = () => {
       <div className="absolute top-4 left-4 z-10">
         <NodeMetricsModal />
       </div>
-      <div className="absolute top-4 right-4 z-10">
-        <LayoutSelector />
-      </div>
+      {!hideLayoutSelector && <LayoutSelector />}
       <div className="absolute bottom-4 left-4 z-10">
         <ControlsLegend />
       </div>

@@ -1,7 +1,8 @@
 """GitHub repository fetching service."""
 
 import aiohttp
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from app.core.models import FileInput
 from app.core.config import settings
 
@@ -46,6 +47,72 @@ class GitHubService:
                     files.append(FileInput(path=file_info["path"], content=content))
 
         return files
+
+    async def fetch_commit_history(
+        self,
+        url: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        max_commits: int = 50
+    ) -> List[dict]:
+        """
+        Fetch commit history from a GitHub repository.
+
+        Args:
+            url: GitHub repository URL
+            start_date: Optional start date (ISO format)
+            end_date: Optional end date (ISO format)
+            max_commits: Maximum number of commits to fetch
+
+        Returns:
+            List of commit dictionaries
+        """
+        owner, repo = self._parse_github_url(url)
+
+        # Build API URL with parameters
+        api_url = f"{self.api_base}/repos/{owner}/{repo}/commits"
+        params = {"per_page": min(max_commits, 100)}
+
+        if start_date:
+            params["since"] = start_date
+        if end_date:
+            params["until"] = end_date
+
+        commits = []
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url, params=params) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    raise Exception(
+                        f"Failed to fetch commits (status {response.status}): {error_text}"
+                    )
+
+                data = await response.json()
+
+                for commit_data in data[:max_commits]:
+                    commits.append({
+                        "sha": commit_data["sha"],
+                        "message": commit_data["commit"]["message"].split("\n")[0],  # First line only
+                        "author": commit_data["commit"]["author"]["name"],
+                        "date": commit_data["commit"]["author"]["date"],
+                    })
+
+        return commits
+
+    async def fetch_repository_at_commit(
+        self, url: str, commit_sha: str
+    ) -> List[FileInput]:
+        """
+        Fetch repository files at a specific commit.
+
+        Args:
+            url: GitHub repository URL
+            commit_sha: Commit SHA
+
+        Returns:
+            List of FileInput objects
+        """
+        return await self.fetch_repository(url, ref=commit_sha)
 
     def _parse_github_url(self, url: str) -> tuple[str, str]:
         """

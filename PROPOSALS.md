@@ -94,7 +94,7 @@ Integrate with complexity analysis tools (radon, mccabe) to show cyclomatic comp
 - Hot zones: high coupling + high complexity = red alerts
 - Prioritize refactoring by combining metrics
 
-## 8. Export to Architecture Diagrams
+## 8. Export to Architecture Diagrams - DONE
 
 Generate C4 model diagrams, UML package diagrams, or PlantUML from the dependency graph.
 
@@ -150,7 +150,7 @@ Auto-generate architectural documentation from the graph, including:
 
 Export to Markdown, PDF, or HTML.
 
-## 14. Temporal Analysis
+## 14. Temporal Analysis - DONE
 
 Analyze how dependencies evolved over git history. Show time-lapse of architectural changes.
 

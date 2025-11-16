@@ -88,10 +88,10 @@ export const Node = ({ node }: NodeProps) => {
       opacity = 1.0;
       emissiveIntensity = isSelected ? 0.5 : 0.3;
     } else {
-      // Unaffected nodes: fade out
+      // Unaffected nodes: slight fade (much less aggressive)
       isDimmed = true;
-      opacity = 0.15;
-      emissiveIntensity = 0.0;
+      opacity = 0.7;
+      emissiveIntensity = 0.1;
     }
   } else if (selectedModule) {
     // Module filter mode (only if no impact analysis)
@@ -247,8 +247,9 @@ export const Node = ({ node }: NodeProps) => {
         emissive={isDimmed ? '#000000' : displayColor}
         emissiveIntensity={emissiveIntensity}
         opacity={opacity}
-        transparent={true}
-        depthWrite={!isDimmed}
+        transparent={opacity < 1.0}
+        depthWrite={opacity >= 1.0}
+        depthTest={true}
       />
 
       {isSelected && (
