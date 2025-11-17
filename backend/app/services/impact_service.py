@@ -1,7 +1,7 @@
-"""Impact analysis service for calculating transitive dependencies."""
-
-from typing import Dict, List, Set, Tuple
 from collections import deque
+from typing import Dict, List
+
+from app.core.exceptions import NotFoundException
 
 
 class ImpactAnalysisService:
@@ -33,7 +33,7 @@ class ImpactAnalysisService:
                 - metrics: impact statistics
         """
         if node_id not in self.nodes:
-            raise ValueError(f"Node {node_id} not found in graph")
+            raise NotFoundException(f"Node '{node_id}' not found in graph")
 
         # BFS to find all transitive dependents
         affected_nodes: Dict[str, int] = {node_id: 0}  # node_id -> distance
@@ -119,7 +119,7 @@ class ImpactAnalysisService:
         elif distance == 3:
             return "2-Hop Dependents"
         else:
-            return f"{distance-1}-Hop Dependents"
+            return f"{distance - 1}-Hop Dependents"
 
     def _get_impact_color(self, distance: int) -> str:
         """Get color for impact level visualization."""

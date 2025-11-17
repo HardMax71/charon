@@ -1,5 +1,3 @@
-"""Metrics calculation service."""
-
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Set

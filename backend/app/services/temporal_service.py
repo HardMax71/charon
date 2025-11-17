@@ -1,5 +1,3 @@
-"""Temporal analysis service for git history dependency tracking."""
-
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timedelta
 import hashlib

@@ -1,5 +1,3 @@
-"""Graph construction service."""
-
 import networkx as nx
 from typing import Dict, Set, List
 

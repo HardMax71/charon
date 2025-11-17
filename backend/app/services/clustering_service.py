@@ -1,5 +1,3 @@
-"""Community detection and clustering service."""
-
 import networkx as nx
 from typing import Dict, List, Set
 from collections import defaultdict

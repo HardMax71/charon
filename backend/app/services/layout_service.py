@@ -1,5 +1,3 @@
-"""Layout algorithms for 3D graph visualization."""
-
 import math
 import networkx as nx
 import numpy as np

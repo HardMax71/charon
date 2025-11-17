@@ -1,12 +1,11 @@
-"""Analysis endpoint."""
-
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 
 from app.core.models import (
     AnalyzeRequest, Node, Edge, NodeMetrics, Position3D,
-    ClusterMetrics, PackageSuggestion, RefactoringSuggestion, RefactoringSummary, HotZoneFile
+    ClusterMetrics, PackageSuggestion, RefactoringSuggestion, RefactoringSummary, HotZoneFile,
+    ImpactAnalysisRequest, ImpactAnalysisResponse
 )
 from app.services.analyzer_service import analyze_files
 from app.services.graph_service import build_graph
@@ -201,8 +200,8 @@ async def analyze_code(request: AnalyzeRequest):
     return EventSourceResponse(generate())
 
 
-@router.post("/impact-analysis")
-async def analyze_impact(request: dict):
+@router.post("/impact-analysis", response_model=ImpactAnalysisResponse)
+async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisResponse:
     """
     Analyze the impact of changes to a specific node.
 
@@ -210,32 +209,17 @@ async def analyze_impact(request: dict):
     if this node is modified.
 
     Args:
-        request: dict with:
-            - node_id: ID of the node to analyze
-            - graph: Current graph data (nodes and edges)
-            - max_depth: Optional max depth for transitive search (default: 10)
+        request: Impact analysis request with node_id, graph, and optional max_depth
 
     Returns:
         Impact analysis with affected nodes, metrics, and visualization data
     """
-    try:
-        node_id = request.get("node_id")
-        graph_data = request.get("graph")
-        max_depth = request.get("max_depth", 10)
+    # Convert Pydantic graph model to dict for ImpactAnalysisService
+    graph_data = request.graph.model_dump()
 
-        if not node_id:
-            raise HTTPException(status_code=400, detail="node_id is required")
+    # Perform impact analysis
+    impact_service = ImpactAnalysisService(graph_data)
+    result = impact_service.calculate_impact(request.node_id, request.max_depth)
 
-        if not graph_data:
-            raise HTTPException(status_code=400, detail="graph data is required")
-
-        # Perform impact analysis
-        impact_service = ImpactAnalysisService(graph_data)
-        result = impact_service.calculate_impact(node_id, max_depth)
-
-        return result
-
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Impact analysis failed: {str(e)}")
+    # Return as Pydantic model (FastAPI will validate and serialize)
+    return ImpactAnalysisResponse(**result)

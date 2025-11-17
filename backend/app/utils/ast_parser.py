@@ -1,5 +1,3 @@
-"""AST parsing utilities for extracting imports from Python files."""
-
 import ast
 from pathlib import Path
 from typing import NamedTuple

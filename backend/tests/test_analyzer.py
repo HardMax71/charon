@@ -1,5 +1,3 @@
-"""Tests for analyzer service."""
-
 import pytest
 from app.services.analyzer_service import analyze_files
 from app.core.models import FileInput

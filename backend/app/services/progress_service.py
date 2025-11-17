@@ -1,5 +1,3 @@
-"""Progress tracking for SSE updates."""
-
 from typing import AsyncIterator
 import asyncio
 import json

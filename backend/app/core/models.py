@@ -1,5 +1,3 @@
-"""Core data models for dependency graph."""
-
 from typing import Literal
 from pydantic import BaseModel, Field
 
@@ -184,6 +182,32 @@ class ExportRequest(BaseModel):
     project_name: str
 
 
+class ExportDiagramRequest(BaseModel):
+    """Request model for diagram export."""
+
+    graph_data: DependencyGraph
+    format: Literal["plantuml", "c4", "mermaid", "uml", "drawio"] = "plantuml"
+    system_name: str = "Software System"
+
+
+class ExportDocumentationRequest(BaseModel):
+    """Request model for documentation export."""
+
+    graph: DependencyGraph
+    global_metrics: dict
+    format: Literal["markdown", "html", "pdf"]
+    project_name: str = "Project"
+
+
+class TemporalAnalysisRequest(BaseModel):
+    """Request model for temporal analysis."""
+
+    repository_url: str
+    start_date: str | None = None
+    end_date: str | None = None
+    sample_strategy: Literal["all", "daily", "weekly", "monthly"] = "all"
+
+
 class DiffRequest(BaseModel):
     """Request to compare two versions."""
 
@@ -201,3 +225,58 @@ class DiffResult(BaseModel):
     added_edges: list[dict]
     removed_edges: list[dict]
     changed_edges: list[dict]
+
+
+class ImpactAnalysisRequest(BaseModel):
+    """Request to analyze impact of changes to a node."""
+
+    node_id: str = Field(description="ID of the node to analyze")
+    graph: DependencyGraph = Field(description="Current dependency graph")
+    max_depth: int = Field(default=10, ge=1, le=50, description="Maximum depth for transitive search")
+
+
+class SelectedNodeInfo(BaseModel):
+    """Information about the selected node."""
+
+    id: str
+    label: str
+    module: str
+
+
+class AffectedNodeDetail(BaseModel):
+    """Details about an affected node."""
+
+    id: str
+    label: str
+    module: str
+    type: Literal["internal", "third_party"]
+    distance: int
+    color: str
+
+
+class DistanceBreakdown(BaseModel):
+    """Breakdown of impact by distance."""
+
+    count: int
+    percentage: float
+    label: str
+
+
+class ImpactMetrics(BaseModel):
+    """Impact analysis metrics."""
+
+    total_nodes: int
+    total_affected: int
+    impact_percentage: float
+    max_depth_reached: int
+    distance_breakdown: dict[int, DistanceBreakdown]
+
+
+class ImpactAnalysisResponse(BaseModel):
+    """Response from impact analysis."""
+
+    selected_node: SelectedNodeInfo
+    affected_nodes: dict[str, int] = Field(description="Mapping of node_id to distance")
+    impact_levels: dict[str, list[str]] = Field(description="Mapping of distance to list of node_ids")
+    affected_node_details: list[AffectedNodeDetail]
+    metrics: ImpactMetrics

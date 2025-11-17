@@ -1,5 +1,3 @@
-"""GitHub repository fetching service."""
-
 import aiohttp
 from typing import List, Optional
 from datetime import datetime

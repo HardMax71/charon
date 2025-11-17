@@ -1,5 +1,3 @@
-"""Documentation generation service."""
-
 from datetime import datetime
 from typing import Dict, List, Any
 import networkx as nx

@@ -1,5 +1,3 @@
-"""Diagram export service for architecture visualization."""
-
 import networkx as nx
 from typing import Dict, List
 

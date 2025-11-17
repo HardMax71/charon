@@ -1,5 +1,3 @@
-"""Circular dependency detection utilities."""
-
 import networkx as nx
 from typing import List
 

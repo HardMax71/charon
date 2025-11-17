@@ -1,5 +1,3 @@
-"""Code complexity analysis service using radon."""
-
 from typing import Dict, List, Optional
 from radon.complexity import cc_visit, cc_rank
 from radon.metrics import mi_visit, mi_rank

@@ -1,5 +1,3 @@
-"""Color generation utilities for graph visualization."""
-
 import colorsys
 import hashlib
 

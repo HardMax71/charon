@@ -1,10 +1,3 @@
-"""
-Refactoring Analysis Service
-
-Analyzes dependency graph and code metrics to detect anti-patterns
-and suggest concrete refactoring opportunities based on SOLID principles.
-"""
-
 import networkx as nx
 from typing import Dict, List, Any
 from collections import defaultdict

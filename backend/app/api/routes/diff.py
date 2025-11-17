@@ -1,5 +1,3 @@
-"""Diff endpoint for comparing versions."""
-
 from fastapi import APIRouter
 from sse_starlette.sse import EventSourceResponse
 
