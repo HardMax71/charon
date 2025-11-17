@@ -3,6 +3,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
 import { X, Minimize2, Maximize2 } from 'lucide-react';
 import { ExportDiagramButton } from '../ExportDiagram/ExportDiagramButton';
+import { ExportDocumentationButton } from '../ExportDocumentation/ExportDocumentationButton';
 
 export const LayoutSelector = () => {
   const {
@@ -141,6 +142,11 @@ export const LayoutSelector = () => {
       {/* Export Diagram */}
       <div>
         <ExportDiagramButton />
+      </div>
+
+      {/* Export Documentation */}
+      <div>
+        <ExportDocumentationButton />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { QuadraticBezierLine } from '@react-three/drei';
-import { Vector3, Euler } from 'three';
+import { Vector3, Euler, Quaternion } from 'three';
 import { Edge as EdgeType, Node } from '@/types/graph';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -54,11 +54,14 @@ export const Edge = ({ edge, nodes }: EdgeProps) => {
     const arrowPosition = new Vector3().copy(end).sub(direction.multiplyScalar(3)); // 3 units before target
 
     // Calculate arrow rotation to point toward target
+    // Cones in three.js point along +Y axis by default, so we need to rotate from Y to our direction
     const arrowRotation = new Euler();
     const up = new Vector3(0, 1, 0);
-    const axis = new Vector3().crossVectors(up, direction).normalize();
-    const angle = Math.acos(up.dot(direction));
-    arrowRotation.setFromVector3(new Vector3(axis.x * angle, axis.y * angle, axis.z * angle));
+
+    // Calculate the quaternion rotation from up (Y axis) to our direction vector
+    const quaternion = new Quaternion();
+    quaternion.setFromUnitVectors(up, direction);
+    arrowRotation.setFromQuaternion(quaternion);
 
     // Determine edge color, opacity, and width based on selected module
     let edgeColor = '#64748b'; // Default gray
@@ -124,7 +127,7 @@ export const Edge = ({ edge, nodes }: EdgeProps) => {
 
       {/* Arrow cone at the end */}
       <mesh position={arrowPosition} rotation={arrowRotation}>
-        <coneGeometry args={[arrowSize.radius, arrowSize.height, 8]} />
+        <coneGeometry args={[arrowSize.radius, arrowSize.height, 32]} />
         <meshStandardMaterial
           color={edgeColor}
           transparent={edgeOpacity < 1}

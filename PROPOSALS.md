@@ -140,7 +140,7 @@ Overlay runtime performance data (from cProfile, py-spy, etc.) onto the dependen
 
 **Use case**: "This module is a performance bottleneck AND highly coupled. Priority 1 for optimization."
 
-## 13. Documentation Generation
+## 13. Documentation Generation - DONE
 
 Auto-generate architectural documentation from the graph, including:
 - Module dependency tables

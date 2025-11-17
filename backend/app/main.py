@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.routes import analyze, export, diff, layout, diagram, temporal
+from app.api.routes import analyze, export, diff, layout, diagram, temporal, documentation
 
 app = FastAPI(
     title=settings.app_name,
@@ -28,6 +28,7 @@ app.include_router(diff.router, prefix=settings.api_prefix, tags=["diff"])
 app.include_router(layout.router, prefix=settings.api_prefix, tags=["layout"])
 app.include_router(diagram.router, prefix=settings.api_prefix, tags=["diagram"])
 app.include_router(temporal.router, prefix=settings.api_prefix, tags=["temporal"])
+app.include_router(documentation.router, prefix=settings.api_prefix, tags=["documentation"])
 
 
 @app.get("/")
