@@ -14,126 +14,84 @@ export const Edge = ({ edge, nodes }: EdgeProps) => {
   const { setSelectedEdge } = useGraphStore();
   const { setShowDependencyModal, selectedModule } = useUIStore();
 
-  const { start, end, midPoint, arrowPosition, arrowRotation, edgeColor, edgeOpacity, lineWidth, arrowSize } = useMemo(() => {
+  // 1. Calculate data (returns null if invalid)
+  const edgeData = useMemo(() => {
     const sourceNode = nodes.find((n) => n.id === edge.source);
     const targetNode = nodes.find((n) => n.id === edge.target);
 
-    if (!sourceNode || !targetNode) {
-      return {
-        start: new Vector3(0, 0, 0),
-        end: new Vector3(0, 0, 0),
-        midPoint: new Vector3(0, 0, 0),
-        arrowPosition: new Vector3(0, 0, 0),
-        arrowRotation: new Euler(0, 0, 0),
-        edgeColor: '#64748b',
-        edgeOpacity: 1,
-        lineWidth: edge.thickness,
-        arrowSize: { radius: 1, height: 3 },
-      };
-    }
+    if (!sourceNode || !targetNode) return null;
 
-    const start = new Vector3(
-      sourceNode.position.x,
-      sourceNode.position.y,
-      sourceNode.position.z
-    );
-    const end = new Vector3(
-      targetNode.position.x,
-      targetNode.position.y,
-      targetNode.position.z
-    );
+    const start = new Vector3(sourceNode.position.x, sourceNode.position.y, sourceNode.position.z);
+    const end = new Vector3(targetNode.position.x, targetNode.position.y, targetNode.position.z);
 
-    // Calculate mid-point with slight curve
+    // Gentle Arc
     const midPoint = new Vector3()
       .addVectors(start, end)
       .multiplyScalar(0.5)
-      .add(new Vector3(0, 5, 0)); // Slight upward curve
+      .add(new Vector3(0, start.distanceTo(end) * 0.15, 0)); // Proportional height
 
-    // Calculate arrow position (near the target node)
+    // Arrow logic
     const direction = new Vector3().subVectors(end, midPoint).normalize();
-    const arrowPosition = new Vector3().copy(end).sub(direction.multiplyScalar(3)); // 3 units before target
+    const arrowPosition = new Vector3().copy(end).sub(direction.multiplyScalar(4)); // Moved further back from larger nodes
+    const arrowRotation = new Euler().setFromQuaternion(new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction));
 
-    // Calculate arrow rotation to point toward target
-    // Cones in three.js point along +Y axis by default, so we need to rotate from Y to our direction
-    const arrowRotation = new Euler();
-    const up = new Vector3(0, 1, 0);
+    // Style Logic
+    // Default: Much darker and thicker for visibility against white
+    let color = '#64748b'; // Slate-500
+    let opacity = 0.6;     // Higher default opacity
+    let width = 1.2;       // Thicker default line
 
-    // Calculate the quaternion rotation from up (Y axis) to our direction vector
-    const quaternion = new Quaternion();
-    quaternion.setFromUnitVectors(up, direction);
-    arrowRotation.setFromQuaternion(quaternion);
-
-    // Determine edge color, opacity, and width based on selected module
-    let edgeColor = '#64748b'; // Default gray
-    let edgeOpacity = 1;
-    let lineWidth = edge.thickness;
-    let arrowSize = { radius: 1, height: 3 };
-
+    // Module Filter Focus
     if (selectedModule) {
-      // Check if either source or target is in the selected module (hierarchical matching)
-      const sourceInModule = sourceNode.module === selectedModule ||
-        (sourceNode.module && sourceNode.module.startsWith(selectedModule + '.'));
-      const targetInModule = targetNode.module === selectedModule ||
-        (targetNode.module && targetNode.module.startsWith(selectedModule + '.'));
+      const sIn = sourceNode.module === selectedModule || (sourceNode.module && sourceNode.module.startsWith(selectedModule + '.'));
+      const tIn = targetNode.module === selectedModule || (targetNode.module && targetNode.module.startsWith(selectedModule + '.'));
 
-      if (sourceInModule || targetInModule) {
-        // Color the edge with the node color (prefer source node color)
-        const nodeColor = sourceInModule ? sourceNode.color : targetNode.color;
-        // Only use node color if it's defined and not white
-        if (nodeColor && nodeColor !== '#ffffff' && nodeColor !== '#fff' && nodeColor.toLowerCase() !== 'white') {
-          edgeColor = nodeColor;
-        }
-        edgeOpacity = 1;
-        // Make lines bolder and arrows bigger for selected module edges
-        lineWidth = edge.thickness * 2;
-        arrowSize = { radius: 1.5, height: 4 };
+      if (sIn || tIn) {
+        color = '#0d9488'; // Teal-600 (Active)
+        opacity = 0.9;
+        width = 2.5;
       } else {
-        // Dim edges not connected to selected module
-        edgeOpacity = 0.3;
+        opacity = 0.05; // Fade others
       }
     }
 
-    return { start, end, midPoint, arrowPosition, arrowRotation, edgeColor, edgeOpacity, lineWidth, arrowSize };
+    return { start, end, midPoint, arrowPosition, arrowRotation, edgeColor: color, edgeOpacity: opacity, lineWidth: width };
   }, [edge, nodes, selectedModule]);
 
-  const handleClick = () => {
-    setSelectedEdge(edge);
-    setShowDependencyModal(true);
-  };
+  // 2. Safe check before rendering
+  if (!edgeData) return null;
+
+  const { start, end, midPoint, arrowPosition, arrowRotation, edgeColor, edgeOpacity, lineWidth } = edgeData;
 
   return (
-    <group onClick={handleClick}>
-      {/* Visible edge line */}
+    <group onClick={(e) => { e.stopPropagation(); setSelectedEdge(edge); setShowDependencyModal(true); }}>
+      {/* Visual Line */}
       <QuadraticBezierLine
         start={start}
         end={end}
         mid={midPoint}
         color={edgeColor}
         lineWidth={lineWidth}
-        transparent={edgeOpacity < 1}
+        transparent
         opacity={edgeOpacity}
       />
 
-      {/* Invisible thick hitbox for easier clicking */}
+      {/* Hitbox Line (Invisible, thicker for clicking) */}
       <QuadraticBezierLine
         start={start}
         end={end}
         mid={midPoint}
-        color={edgeColor}
-        lineWidth={Math.max(lineWidth * 3, 5)}
-        transparent
-        opacity={0}
+        lineWidth={4}
+        visible={false}
       />
 
-      {/* Arrow cone at the end */}
-      <mesh position={arrowPosition} rotation={arrowRotation}>
-        <coneGeometry args={[arrowSize.radius, arrowSize.height, 32]} />
-        <meshStandardMaterial
-          color={edgeColor}
-          transparent={edgeOpacity < 1}
-          opacity={edgeOpacity}
-        />
-      </mesh>
+      {/* Arrow Head */}
+      {edgeOpacity > 0.1 && (
+        <mesh position={arrowPosition} rotation={arrowRotation}>
+          <coneGeometry args={[0.8, 2, 16]} />
+          <meshBasicMaterial color={edgeColor} transparent opacity={edgeOpacity} />
+        </mesh>
+      )}
     </group>
   );
 };

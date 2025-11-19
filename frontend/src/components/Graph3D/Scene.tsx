@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import { Node } from './Node';
 import { Edge } from './Edge';
 import { ClusterBoundingBoxes } from './ClusterBoundingBoxes';
@@ -12,18 +12,14 @@ export const Scene = () => {
   const { graph, selectedNode, setSelectedNode, setImpactAnalysis } = useGraphStore();
   const { isDraggingNode } = useUIStore();
 
-  // Trigger impact analysis when a node is selected
+  // Trigger impact analysis
   useEffect(() => {
     if (!selectedNode || !graph) {
       setImpactAnalysis(null);
       return;
     }
-
-    // Call impact analysis API
     analyzeImpact(selectedNode.id, graph)
-      .then((impactData) => {
-        setImpactAnalysis(impactData);
-      })
+      .then(setImpactAnalysis)
       .catch((error) => {
         console.error('Impact analysis failed:', error);
         setImpactAnalysis(null);
@@ -32,44 +28,61 @@ export const Scene = () => {
 
   if (!graph) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
-        <p>No graph data loaded</p>
+      <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 font-mono text-sm">
+        NO DATA STREAM
       </div>
     );
   }
 
   return (
-    <Canvas className="w-full h-full">
-      <PerspectiveCamera makeDefault position={[100, 100, 100]} near={0.1} far={10000} />
-      <OrbitControls enabled={!isDraggingNode} enableDamping dampingFactor={0.05} />
+    <Canvas className="w-full h-full" shadows dpr={[1, 2]}>
+      {/* 1. THE LABORATORY ENVIRONMENT */}
+      <color attach="background" args={['#f8fafc']} /> {/* Slate-50 */}
+      <fog attach="fog" args={['#f8fafc', 50, 400]} />
 
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <pointLight position={[-10, -10, -5]} intensity={0.5} />
+      <PerspectiveCamera makeDefault position={[80, 60, 80]} near={0.1} far={10000} />
+      <OrbitControls
+        enabled={!isDraggingNode}
+        enableDamping
+        dampingFactor={0.05}
+        maxPolarAngle={Math.PI / 1.8} // Prevent going below ground too much
+      />
 
-      {/* Background plane for click-to-deselect */}
+      {/* Lighting Setup for "Matte/Ceramic" look */}
+      <ambientLight intensity={0.7} color="#ffffff" />
+      <directionalLight
+        position={[50, 80, 30]}
+        intensity={1.2}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+      />
+      <pointLight position={[-20, 20, -20]} intensity={0.5} color="#0d9488" /> {/* Teal fill */}
+
+      {/* Soft Reflection Environment */}
+      <Environment preset="city" />
+
+      {/* Ground Plane for raycasting deselection */}
       <mesh
         position={[0, -50, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
-        onClick={() => setSelectedNode(null)}
+        onClick={(e) => { e.stopPropagation(); setSelectedNode(null); }}
       >
         <planeGeometry args={[10000, 10000]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} depthTest={false} />
+        <meshBasicMaterial visible={false} />
       </mesh>
 
-      {/* Render cluster bounding boxes first (behind everything) */}
-      <ClusterBoundingBoxes />
+      {/* --- GRAPH ELEMENTS --- */}
+      <group position={[0, 0, 0]}>
+        <ClusterBoundingBoxes />
 
-      {/* Render edges */}
-      {graph.edges.map((edge) => (
-        <Edge key={edge.id} edge={edge} nodes={graph.nodes} />
-      ))}
+        {graph.edges.map((edge) => (
+          <Edge key={edge.id} edge={edge} nodes={graph.nodes} />
+        ))}
 
-      {/* Render nodes */}
-      {graph.nodes.map((node) => (
-        <Node key={node.id} node={node} />
-      ))}
+        {graph.nodes.map((node) => (
+          <Node key={node.id} node={node} />
+        ))}
+      </group>
     </Canvas>
   );
 };

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Header } from './components/Header/Header';
+import { Header } from './components/Layout/Header.tsx';
+import { Footer } from './components/Layout/Footer.tsx';
 import { HomePage } from './pages/HomePage';
 import { ResultsPage } from './pages/ResultsPage';
 import { TemporalAnalysisPage } from './pages/TemporalAnalysisPage';
@@ -27,6 +28,8 @@ function App() {
         <DependencyModal />
         <ClusterModal />
         <ImpactAnalysisModal />
+
+          <Footer />
       </div>
     </BrowserRouter>
   );

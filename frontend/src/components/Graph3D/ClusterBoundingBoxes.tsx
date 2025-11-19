@@ -3,113 +3,62 @@ import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import * as THREE from 'three';
 
-// Cluster colors for visualization
-const CLUSTER_COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#d97706', // deep amber
-  '#ef4444', // red
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#ec4899', // pink
-  '#14b8a6', // teal
-  '#eab308', // golden yellow
-];
+const CLUSTER_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export const ClusterBoundingBoxes = () => {
   const { graph, globalMetrics } = useGraphStore();
   const { showClusters } = useUIStore();
 
-  const clusterBoxes = useMemo(() => {
-    if (!graph || !globalMetrics?.clusters || !showClusters) {
-      return [];
-    }
+  const boxes = useMemo(() => {
+    if (!graph || !globalMetrics?.clusters || !showClusters) return [];
 
-    const boxes: Array<{
-      clusterId: number;
-      color: string;
-      min: THREE.Vector3;
-      max: THREE.Vector3;
-      center: THREE.Vector3;
-      size: THREE.Vector3;
-    }> = [];
+    return globalMetrics.clusters.map((cluster) => {
+      const nodes = graph.nodes.filter(n => n.cluster_id === cluster.cluster_id);
+      if (!nodes.length) return null;
 
-    globalMetrics.clusters.forEach((cluster) => {
-      // Get all nodes in this cluster
-      const clusterNodes = graph.nodes.filter(node =>
-        node.cluster_id === cluster.cluster_id
-      );
-
-      if (clusterNodes.length === 0) return;
-
-      // Compute bounding box for this cluster
       const box = new THREE.Box3();
-      clusterNodes.forEach(node => {
-        box.expandByPoint(new THREE.Vector3(
-          node.position.x,
-          node.position.y,
-          node.position.z
-        ));
-      });
+      nodes.forEach(n => box.expandByPoint(new THREE.Vector3(n.position.x, n.position.y, n.position.z)));
 
-      // Add padding around the cluster
-      const padding = 3;
-      box.min.sub(new THREE.Vector3(padding, padding, padding));
-      box.max.add(new THREE.Vector3(padding, padding, padding));
+      // Add padding
+      box.min.subScalar(4);
+      box.max.addScalar(4);
 
       const center = new THREE.Vector3();
-      box.getCenter(center);
-
       const size = new THREE.Vector3();
+      box.getCenter(center);
       box.getSize(size);
 
-      boxes.push({
-        clusterId: cluster.cluster_id,
+      return {
+        id: cluster.cluster_id,
         color: CLUSTER_COLORS[cluster.cluster_id % CLUSTER_COLORS.length],
-        min: box.min,
-        max: box.max,
-        center,
-        size,
-      });
-    });
-
-    return boxes;
+        pos: [center.x, center.y, center.z] as [number, number, number],
+        args: [size.x, size.y, size.z] as [number, number, number]
+      };
+    }).filter(Boolean) as any[];
   }, [graph, globalMetrics, showClusters]);
 
-  if (!showClusters || clusterBoxes.length === 0) {
-    return null;
-  }
+  if (!showClusters) return null;
 
   return (
     <group>
-      {clusterBoxes.map((box) => (
-        <group key={box.clusterId}>
-          {/* Wireframe edges (rendered first) */}
-          <lineSegments position={[box.center.x, box.center.y, box.center.z]}>
-            <edgesGeometry attach="geometry" args={[new THREE.BoxGeometry(box.size.x, box.size.y, box.size.z)]} />
-            <lineBasicMaterial
-              attach="material"
-              color={box.color}
-              linewidth={2}
-              transparent
-              opacity={0.6}
-              depthTest={true}
-              depthWrite={false}
-            />
+      {boxes.map((box) => (
+        <group key={box.id} position={box.pos}>
+          {/* 1. Sharp Wireframe Cage */}
+          <lineSegments>
+            <edgesGeometry args={[new THREE.BoxGeometry(...box.args)]} />
+            <lineBasicMaterial color={box.color} transparent opacity={0.6} />
           </lineSegments>
 
-          {/* Semi-transparent box (rendered behind, no depth write to avoid z-fighting) */}
-          <mesh position={[box.center.x, box.center.y, box.center.z]} renderOrder={-1}>
-            <boxGeometry args={[box.size.x, box.size.y, box.size.z]} />
-            <meshBasicMaterial
-              color={box.color}
-              transparent
-              opacity={0.08}
-              side={THREE.BackSide}
-              depthTest={true}
-              depthWrite={false}
-            />
+          {/* 2. Subtle Fill (Forcefield effect) */}
+          <mesh>
+            <boxGeometry args={box.args} />
+            <meshBasicMaterial color={box.color} transparent opacity={0.03} depthWrite={false} side={THREE.DoubleSide} />
+          </mesh>
+
+          {/* 3. Cluster Label */}
+          <mesh position={[0, box.args[1]/2 + 1, 0]}>
+            <planeGeometry args={[8, 2]} />
+            <meshBasicMaterial color={box.color} transparent opacity={0.8} />
           </mesh>
         </group>
       ))}

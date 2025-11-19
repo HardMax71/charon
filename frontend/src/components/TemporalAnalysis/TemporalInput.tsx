@@ -1,5 +1,14 @@
-import { useState } from 'react';
-import { Calendar, GitBranch, Loader2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Calendar,
+  GitBranch,
+  Loader2,
+  Activity,
+  Terminal,
+  ChevronRight,
+  Layers,
+  Clock
+} from 'lucide-react';
 
 interface TemporalInputProps {
   onAnalysisComplete: (data: any) => void;
@@ -19,61 +28,59 @@ export const TemporalInput = ({
   const [error, setError] = useState('');
   const [progressMessage, setProgressMessage] = useState('');
   const [progress, setProgress] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setProgressMessage('');
+    setProgressMessage('Initializing system...');
     setProgress(0);
 
     if (!repoUrl) {
-      setError('Please enter a GitHub repository URL');
+      setError('Target repository is undefined.');
       return;
     }
 
     setIsAnalyzing(true);
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch('/api/temporal-analysis', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
         body: JSON.stringify({
           repository_url: repoUrl,
           start_date: startDate || null,
           end_date: endDate || null,
           sample_strategy: sampleStrategy,
         }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Server error (${response.status}): ${errorText}`);
+        throw new Error(`System Error (${response.status}): ${errorText}`);
       }
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error('Failed to read response');
-      }
+      if (!reader) throw new Error('Stream connection failed');
 
       let buffer = '';
-
       const processLine = (line: string) => {
-        if (!line) return;
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith(':')) return;
-        if (!trimmed.startsWith('data:')) return;
-
-        const payload = trimmed.replace(/^(?:data:\s*)+/, '');
+        if (!line || !line.startsWith('data:')) return;
+        const payload = line.replace(/^(?:data:\s*)+/, '');
         if (!payload) return;
 
         try {
           const data = JSON.parse(payload);
-
           if (data.type === 'result') {
             onAnalysisComplete(data.data);
             setIsAnalyzing(false);
@@ -82,179 +89,222 @@ export const TemporalInput = ({
             setIsAnalyzing(false);
           } else if (data.type === 'progress') {
             setProgressMessage(data.message);
-            if (data.step && data.total) {
-              setProgress((data.step / data.total) * 100);
-            }
+            if (data.step && data.total) setProgress((data.step / data.total) * 100);
           }
-        } catch (e) {
-          console.error('Failed to parse SSE event:', e);
-        }
+        } catch (e) { console.error('Parse error:', e); }
       };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
-        buffer = buffer.replace(/\r\n/g, '\n');
-
-        let idx: number;
+        let idx;
         while ((idx = buffer.indexOf('\n')) !== -1) {
-          const line = buffer.slice(0, idx);
+          processLine(buffer.slice(0, idx));
           buffer = buffer.slice(idx + 1);
-          processLine(line);
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to analyze repository. Please try again.');
-      setIsAnalyzing(false);
+      if (err.name !== 'AbortError') {
+        setError(err.message || 'Analysis sequence failed.');
+        setIsAnalyzing(false);
+      }
     }
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-8">
-      <div className="w-full max-w-2xl">
-        <div className="bg-surface rounded-2xl shadow-xl border border-border-light p-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl mb-4">
-              <GitBranch className="w-8 h-8 text-amber-600" />
+    <div className="h-full w-full flex items-center justify-center p-6 relative overflow-hidden bg-white text-slate-900 font-sans selection:bg-teal-100 selection:text-teal-900">
+
+      {/* Technical Grid Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-30"
+           style={{ backgroundImage: 'radial-gradient(#94a3b8 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }}
+      />
+
+      <div className="w-full max-w-3xl relative z-10">
+
+        {/* --- THE BLUEPRINT CARD --- */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-500">
+
+          {/* Header Strip */}
+          <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between relative">
+             {/* Scanline Effect on Header */}
+            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[size:100%_4px] pointer-events-none" />
+
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center shadow-sm">
+                <Activity className="w-4 h-4 text-teal-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-black text-slate-900 tracking-widest uppercase leading-none">
+                  Temporal Analysis
+                </h2>
+                <p className="text-[10px] font-mono text-slate-400 mt-1">
+                  MODULE ID: TMP-09X
+                </p>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-text-primary mb-2">
-              Start Temporal Analysis
-            </h2>
-            <p className="text-text-secondary">
-              Analyze how dependencies evolved over your repository's git history
-            </p>
+
+            {/* Status Badge */}
+            <div className={`flex items-center gap-2 px-3 py-1 rounded border ${isAnalyzing ? 'bg-teal-50 border-teal-100' : 'bg-white border-slate-200'}`}>
+               <div className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? 'bg-teal-500 animate-pulse' : 'bg-slate-300'}`} />
+               <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${isAnalyzing ? 'text-teal-700' : 'text-slate-500'}`}>
+                 {isAnalyzing ? 'Running' : 'Standby'}
+               </span>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Repository URL */}
-            <div>
-              <label className="block text-sm font-bold text-text-primary mb-2">
-                GitHub Repository URL
-              </label>
-              <input
-                type="text"
-                value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
-                placeholder="https://github.com/owner/repository"
-                className="w-full px-4 py-3 border border-border-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all bg-surface text-text-primary font-mono text-sm"
-                disabled={isAnalyzing}
-              />
-            </div>
+          <div className="p-8 md:p-10">
+            <form onSubmit={handleSubmit} className="space-y-8">
 
-            {/* Date Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-text-primary mb-2">
-                  Start Date (Optional)
+              {/* 1. REPOSITORY INPUT */}
+              <div className="space-y-2">
+                <label className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <span className="flex items-center gap-2"><Terminal className="w-3 h-3" /> Target Source</span>
+                  <span className="text-teal-600/80 font-mono">REQUIRED</span>
                 </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors">
+                    <GitBranch className="w-5 h-5" />
+                  </div>
                   <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-border-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all bg-surface text-text-primary"
+                    type="text"
+                    value={repoUrl}
+                    onChange={(e) => setRepoUrl(e.target.value)}
+                    placeholder="github.com/owner/repo"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:bg-white transition-all"
                     disabled={isAnalyzing}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-text-primary mb-2">
-                  End Date (Optional)
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-border-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all bg-surface text-text-primary"
-                    disabled={isAnalyzing}
-                  />
+              {/* 2. CONFIGURATION GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+                {/* Dates (Span 7) */}
+                <div className="md:col-span-7 space-y-2">
+                   <label className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <Calendar className="w-3 h-3" /> Scan Interval
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 pointer-events-none">FROM</span>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full pl-12 pr-3 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none transition-all"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 pointer-events-none">TO</span>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none transition-all"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Strategy (Span 5) */}
+                <div className="md:col-span-5 space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <Layers className="w-3 h-3" /> Granularity
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={sampleStrategy}
+                      onChange={(e) => setSampleStrategy(e.target.value as any)}
+                      className="w-full pl-3 pr-10 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none appearance-none uppercase transition-all"
+                      disabled={isAnalyzing}
+                    >
+                      <option value="all">Full History (Slow)</option>
+                      <option value="daily">Daily Snapshot</option>
+                      <option value="weekly">Weekly (Recommended)</option>
+                      <option value="monthly">Monthly Overview</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <Clock className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Sample Strategy */}
-            <div>
-              <label className="block text-sm font-bold text-text-primary mb-2">
-                Sampling Strategy
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {(['all', 'daily', 'weekly', 'monthly'] as const).map((strategy) => (
+              {/* 3. EXECUTION & STATUS */}
+              <div className="border-t border-slate-100 pt-6 mt-2">
+
+                {isAnalyzing ? (
+                  /* PROGRESS STATE */
+                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-500 flex items-center gap-2">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        PROCESSING...
+                      </span>
+                      <span className="font-bold text-teal-600">{Math.round(progress)}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-teal-600 transition-all duration-300 ease-out relative"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] font-mono text-slate-400 truncate">
+                      Log: {progressMessage || "Initializing..."}
+                    </p>
+                  </div>
+                ) : (
+                  /* ERROR STATE */
+                  error ? (
+                    <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-lg flex items-center justify-between animate-in slide-in-from-top-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-8 bg-rose-500 rounded-full" />
+                        <div>
+                          <h4 className="text-xs font-bold text-rose-700 uppercase tracking-wider">Critical Error</h4>
+                          <p className="text-xs text-rose-600 font-medium mt-0.5">{error}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setError('')}
+                        className="px-3 py-1 bg-white border border-rose-200 text-rose-600 text-[10px] font-bold rounded hover:bg-rose-50 transition-colors"
+                      >
+                        RESET
+                      </button>
+                    </div>
+                  ) : null
+                )}
+
+                {/* ACTION BUTTON */}
+                {!isAnalyzing && (
                   <button
-                    key={strategy}
-                    type="button"
-                    onClick={() => setSampleStrategy(strategy)}
-                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                      sampleStrategy === strategy
-                        ? 'bg-amber-600 text-white shadow-md'
-                        : 'bg-background text-text-secondary hover:bg-border-light hover:text-text-primary'
-                    }`}
-                    disabled={isAnalyzing}
+                    type="submit"
+                    disabled={!repoUrl}
+                    className={`
+                      w-full group relative overflow-hidden rounded-lg p-4 transition-all
+                      ${!repoUrl ? 'bg-slate-100 cursor-not-allowed opacity-70' : 'bg-slate-900 hover:bg-teal-600 shadow-lg hover:shadow-teal-500/20'}
+                    `}
                   >
-                    {strategy.charAt(0).toUpperCase() + strategy.slice(1)}
+                    <div className="relative z-10 flex items-center justify-center gap-2 text-sm font-bold text-white uppercase tracking-widest">
+                      <span>Execute Analysis</span>
+                      <ChevronRight className={`w-4 h-4 transition-transform ${repoUrl ? 'group-hover:translate-x-1' : ''}`} />
+                    </div>
                   </button>
-                ))}
+                )}
               </div>
-              <p className="text-xs text-text-tertiary mt-2">
-                {sampleStrategy === 'all' && 'Analyze every commit (may be slow for large repositories)'}
-                {sampleStrategy === 'daily' && 'Sample one commit per day'}
-                {sampleStrategy === 'weekly' && 'Sample one commit per week (recommended)'}
-                {sampleStrategy === 'monthly' && 'Sample one commit per month'}
-              </p>
-            </div>
+            </form>
+          </div>
 
-            {/* Progress Indicator */}
-            {isAnalyzing && progressMessage && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-secondary">{progressMessage}</span>
-                  <span className="font-mono font-bold text-amber-600">{Math.round(progress)}%</span>
-                </div>
-                <div className="h-2 bg-border-light rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-500 to-amber-600 transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="p-4 bg-error-bg border border-error/20 rounded-lg">
-                <p className="text-sm text-error font-medium">{error}</p>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isAnalyzing || !repoUrl}
-              className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:bg-border-light disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing Repository...
-                </>
-              ) : (
-                <>
-                  <GitBranch className="w-5 h-5" />
-                  Start Analysis
-                </>
-              )}
-            </button>
-          </form>
         </div>
 
-        <p className="text-center text-sm text-text-tertiary mt-6">
-          Note: Analysis may take several minutes depending on repository size and commit count.
-        </p>
+        {/* Footer Metadata */}
+        <div className="mt-6 flex justify-between text-[10px] font-mono text-slate-400 uppercase tracking-widest px-4">
+          <span>Secure Connection</span>
+          <span>v2.4.0-stable</span>
+        </div>
+
       </div>
     </div>
   );
