@@ -280,3 +280,42 @@ class ImpactAnalysisResponse(BaseModel):
     impact_levels: dict[str, list[str]] = Field(description="Mapping of distance to list of node_ids")
     affected_node_details: list[AffectedNodeDetail]
     metrics: ImpactMetrics
+
+
+class HealthScoreComponent(BaseModel):
+    """Individual health score component."""
+
+    score: float = Field(ge=0, le=100, description="Score from 0-100")
+    grade: Literal["A", "B", "C", "D", "F"]
+    details: dict
+
+
+class HealthScoreComponents(BaseModel):
+    """All health score components."""
+
+    circular_dependencies: HealthScoreComponent
+    coupling_health: HealthScoreComponent
+    complexity_health: HealthScoreComponent
+    architecture_health: HealthScoreComponent
+    stability_distribution: HealthScoreComponent
+
+
+class HealthScoreWeights(BaseModel):
+    """Weights for health score components."""
+
+    circular: float = Field(default=0.20, description="Circular dependencies weight")
+    coupling: float = Field(default=0.20, description="Coupling health weight")
+    complexity: float = Field(default=0.30, description="Complexity health weight")
+    architecture: float = Field(default=0.20, description="Architecture health weight")
+    stability: float = Field(default=0.10, description="Stability distribution weight")
+
+
+class HealthScoreResponse(BaseModel):
+    """Complete health score response."""
+
+    overall_score: float = Field(ge=0, le=100, description="Overall health score from 0-100")
+    overall_grade: Literal["A", "B", "C", "D", "F"]
+    components: HealthScoreComponents
+    weights: HealthScoreWeights
+    summary: str
+    recommendations: list[str]

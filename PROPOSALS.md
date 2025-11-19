@@ -105,7 +105,7 @@ Generate C4 model diagrams, UML package diagrams, or PlantUML from the dependenc
 - Mermaid diagrams
 - Draw.io XML
 
-## 9. Dependency Health Score
+## 9. Dependency Health Score - DONE
 
 Calculate a single health score for the project based on:
 - Circular dependency count

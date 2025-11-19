@@ -99,6 +99,37 @@ export interface ImpactAnalysis {
   };
 }
 
+export interface HealthScoreComponent {
+  score: number;
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  details: Record<string, any>;
+}
+
+export interface HealthScoreComponents {
+  circular_dependencies: HealthScoreComponent;
+  coupling_health: HealthScoreComponent;
+  complexity_health: HealthScoreComponent;
+  architecture_health: HealthScoreComponent;
+  stability_distribution: HealthScoreComponent;
+}
+
+export interface HealthScoreWeights {
+  circular: number;
+  coupling: number;
+  complexity: number;
+  architecture: number;
+  stability: number;
+}
+
+export interface HealthScore {
+  overall_score: number;
+  overall_grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  components: HealthScoreComponents;
+  weights: HealthScoreWeights;
+  summary: string;
+  recommendations: string[];
+}
+
 export interface AnalysisResult {
   graph: {
     nodes: any[];

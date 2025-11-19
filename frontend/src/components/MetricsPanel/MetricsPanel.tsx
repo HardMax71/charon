@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { GlobalMetrics } from './GlobalMetrics';
+import { HealthScore } from './HealthScore';
 import { RefactoringSuggestions } from '../RefactoringSuggestions/RefactoringSuggestions';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { GripHorizontal } from 'lucide-react';
 
-type TabType = 'global' | 'refactoring';
+type TabType = 'global' | 'health' | 'refactoring';
 
 const MIN_HEIGHT = 200;
 const MAX_HEIGHT = 800;
@@ -91,6 +92,16 @@ export const MetricsPanel = () => {
           Global Metrics
         </button>
         <button
+          onClick={() => setActiveTab('health')}
+          className={`px-6 py-2.5 text-sm font-bold tracking-tight transition-all ${
+            activeTab === 'health'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Health Score
+        </button>
+        <button
           onClick={() => setActiveTab('refactoring')}
           className={`px-6 py-2.5 text-sm font-bold tracking-tight transition-all flex items-center gap-2 ${
             activeTab === 'refactoring'
@@ -110,6 +121,7 @@ export const MetricsPanel = () => {
       {/* Content - Scrollable */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {activeTab === 'global' && <GlobalMetrics />}
+        {activeTab === 'health' && <HealthScore />}
         {activeTab === 'refactoring' && (
           <div className="p-3 md:p-4">
             <RefactoringSuggestions />

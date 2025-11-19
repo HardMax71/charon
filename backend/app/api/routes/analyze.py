@@ -5,7 +5,7 @@ from sse_starlette.sse import EventSourceResponse
 from app.core.models import (
     AnalyzeRequest, Node, Edge, NodeMetrics, Position3D,
     ClusterMetrics, PackageSuggestion, RefactoringSuggestion, RefactoringSummary, HotZoneFile,
-    ImpactAnalysisRequest, ImpactAnalysisResponse
+    ImpactAnalysisRequest, ImpactAnalysisResponse, HealthScoreResponse, DependencyGraph
 )
 from app.services.analyzer_service import analyze_files
 from app.services.graph_service import build_graph
@@ -13,6 +13,7 @@ from app.services.metrics_service import MetricsCalculator
 from app.services.clustering_service import ClusteringService
 from app.services.refactoring_service import RefactoringService
 from app.services.impact_service import ImpactAnalysisService
+from app.services.health_score_service import HealthScoreService
 from app.services.layout_service import apply_layout
 from app.services.github_service import GitHubService
 from app.services.progress_service import ProgressTracker
@@ -223,3 +224,55 @@ async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisRespon
 
     # Return as Pydantic model (FastAPI will validate and serialize)
     return ImpactAnalysisResponse(**result)
+
+
+@router.post("/health-score", response_model=HealthScoreResponse)
+async def calculate_health_score(graph: DependencyGraph, global_metrics: dict) -> HealthScoreResponse:
+    """
+    Calculate comprehensive health score for the project.
+
+    Analyzes multiple architectural quality factors:
+    - Circular dependencies (20%)
+    - Coupling levels (20%)
+    - Code complexity and maintainability (30%)
+    - Architecture quality / god objects (20%)
+    - Instability distribution (10%)
+
+    Returns a 0-100 score with grade and actionable recommendations.
+
+    Args:
+        graph: Current dependency graph
+        global_metrics: Global project metrics
+
+    Returns:
+        Comprehensive health score with breakdown and recommendations
+    """
+    import networkx as nx
+
+    # Rebuild NetworkX graph from Pydantic model
+    nx_graph = nx.DiGraph()
+
+    # Add nodes
+    for node in graph.nodes:
+        nx_graph.add_node(
+            node.id,
+            type=node.type,
+            module=node.module,
+            label=node.label,
+            metrics=node.metrics.model_dump() if node.metrics else {}
+        )
+
+    # Add edges
+    for edge in graph.edges:
+        nx_graph.add_edge(
+            edge.source,
+            edge.target,
+            imports=edge.imports,
+            weight=edge.weight
+        )
+
+    # Calculate health score
+    health_service = HealthScoreService(nx_graph, global_metrics)
+    result = health_service.calculate_health_score()
+
+    return HealthScoreResponse(**result)

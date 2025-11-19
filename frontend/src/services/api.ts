@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { AnalyzeRequest, SSEEvent } from '@/types/api';
-import { AnalysisResult, ImpactAnalysis } from '@/types/metrics';
+import { AnalysisResult, ImpactAnalysis, HealthScore } from '@/types/metrics';
 import { DependencyGraph } from '@/types/graph';
 
 const API_BASE = '/api';
@@ -136,6 +136,24 @@ export const analyzeImpact = async (
         edges: graph.edges,
       },
       max_depth: maxDepth,
+    }
+  );
+
+  return response.data;
+};
+
+export const calculateHealthScore = async (
+  graph: DependencyGraph,
+  globalMetrics: any
+): Promise<HealthScore> => {
+  const response = await axios.post<HealthScore>(
+    `${API_BASE}/health-score`,
+    {
+      graph: {
+        nodes: graph.nodes,
+        edges: graph.edges,
+      },
+      global_metrics: globalMetrics,
     }
   );
 

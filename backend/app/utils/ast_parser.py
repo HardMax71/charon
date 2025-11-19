@@ -76,11 +76,14 @@ def extract_module_path(filepath: str, project_root: str) -> str:
 
     Example: 'src/package/module.py' -> 'package.module'
     """
-    file_path = Path(filepath)
-    root_path = Path(project_root)
+    # Normalize filepath by stripping leading slashes to handle both absolute and relative paths
+    normalized_filepath = filepath.lstrip('/')
+
+    file_path = Path(normalized_filepath)
+    root_path = Path(project_root) if project_root else Path(".")
 
     try:
-        relative = file_path.relative_to(root_path)
+        relative = file_path.relative_to(root_path) if project_root else file_path
     except ValueError:
         # File is outside project root
         relative = file_path
