@@ -1,4 +1,4 @@
-FROM node:20-alpine as build
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -6,17 +6,11 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy source
+# Copy source (for initial build, but volumes will override in dev)
 COPY . .
 
-# Build
-RUN npm run build
+# Expose Vite dev server port
+EXPOSE 5173
 
-# Production image
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Run dev server with hot reload
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

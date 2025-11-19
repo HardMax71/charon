@@ -4,7 +4,12 @@ import { HealthScore } from './HealthScore';
 import { RefactoringSuggestions } from '../RefactoringSuggestions/RefactoringSuggestions';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
-import { GripHorizontal } from 'lucide-react';
+import {
+  BarChart3,
+  Activity,
+  Lightbulb,
+  GripHorizontal
+} from 'lucide-react';
 
 type TabType = 'global' | 'health' | 'refactoring';
 
@@ -23,12 +28,8 @@ export const MetricsPanel = () => {
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
-
-    // When dragging UP (decreasing clientY), we want to INCREASE height
-    // When dragging DOWN (increasing clientY), we want to DECREASE height
     const deltaY = startYRef.current - e.clientY;
     const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeightRef.current + deltaY));
-
     setMetricsPanelHeight(newHeight);
   }, [isResizing, setMetricsPanelHeight]);
 
@@ -49,7 +50,6 @@ export const MetricsPanel = () => {
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = 'ns-resize';
       document.body.style.userSelect = 'none';
-
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
@@ -61,73 +61,111 @@ export const MetricsPanel = () => {
 
   return (
     <div
-      className="bg-surface border-t border-border-light shadow-lg flex flex-col flex-shrink-0"
+      className="bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col flex-shrink-0 relative z-20"
       style={{ height: `${metricsPanelHeight}px` }}
     >
-      {/* Resize Handle */}
+      {/* --- RESIZE HANDLE --- */}
       <div
         onMouseDown={handleMouseDown}
-        className={`h-2 bg-background hover:bg-primary/20 border-t-2 border-border-medium cursor-ns-resize transition-colors flex items-center justify-center group relative ${
-          isResizing ? 'bg-primary/30 border-primary' : ''
-        }`}
+        className={`
+          h-2 w-full cursor-ns-resize flex items-center justify-center border-b border-slate-100 transition-colors group
+          ${isResizing ? 'bg-teal-50' : 'bg-white hover:bg-slate-50'}
+        `}
         title="Drag to resize panel"
       >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <GripHorizontal className={`w-10 h-4 transition-colors ${
-            isResizing ? 'text-primary' : 'text-text-tertiary group-hover:text-primary'
-          }`} />
+        <GripHorizontal className={`w-8 h-3 transition-colors ${isResizing ? 'text-teal-400' : 'text-slate-200 group-hover:text-slate-400'}`} />
+      </div>
+
+      {/* --- NAVIGATION RAIL --- */}
+      <div className="flex items-center justify-between px-8 bg-white border-b border-slate-200 flex-shrink-0">
+
+        {/* Tabs Container */}
+        <div className="flex gap-8 h-full">
+          <TabButton
+            active={activeTab === 'global'}
+            onClick={() => setActiveTab('global')}
+            icon={BarChart3}
+            label="Global Metrics"
+          />
+          <TabButton
+            active={activeTab === 'health'}
+            onClick={() => setActiveTab('health')}
+            icon={Activity}
+            label="Health Score"
+          />
+          <TabButton
+            active={activeTab === 'refactoring'}
+            onClick={() => setActiveTab('refactoring')}
+            icon={Lightbulb}
+            label="Refactoring"
+            count={refactoringSuggestionsCount}
+          />
+        </div>
+
+        {/* Technical Deco Right */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+            <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(20,184,166,0.5)]" />
+            <span>Live Diagnostics</span>
+          </div>
         </div>
       </div>
 
-      {/* Header with Tabs */}
-      <div className="flex border-b border-border-light bg-background flex-shrink-0">
-        <button
-          onClick={() => setActiveTab('global')}
-          className={`px-6 py-2.5 text-sm font-bold tracking-tight transition-all ${
-            activeTab === 'global'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          Global Metrics
-        </button>
-        <button
-          onClick={() => setActiveTab('health')}
-          className={`px-6 py-2.5 text-sm font-bold tracking-tight transition-all ${
-            activeTab === 'health'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          Health Score
-        </button>
-        <button
-          onClick={() => setActiveTab('refactoring')}
-          className={`px-6 py-2.5 text-sm font-bold tracking-tight transition-all flex items-center gap-2 ${
-            activeTab === 'refactoring'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          Refactoring Suggestions
-          {refactoringSuggestionsCount > 0 && (
-            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold tabular-nums">
-              {refactoringSuggestionsCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {activeTab === 'global' && <GlobalMetrics />}
-        {activeTab === 'health' && <HealthScore />}
-        {activeTab === 'refactoring' && (
-          <div className="p-3 md:p-4">
-            <RefactoringSuggestions />
-          </div>
-        )}
+      {/* --- CONTENT AREA --- */}
+      <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/30">
+        <div className="p-6 max-w-7xl mx-auto">
+          {activeTab === 'global' && <GlobalMetrics />}
+          {activeTab === 'health' && <HealthScore />}
+          {activeTab === 'refactoring' && <RefactoringSuggestions />}
+        </div>
       </div>
     </div>
   );
 };
+
+/* --- SUB-COMPONENT: Clean Nav Tab --- */
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: any;
+  label: string;
+  count?: number;
+}
+
+const TabButton = ({ active, onClick, icon: Icon, label, count }: TabButtonProps) => (
+  <button
+    onClick={onClick}
+    className={`
+      group relative flex items-center gap-2 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-200 select-none
+      ${active 
+        ? 'text-teal-700' 
+        : 'text-slate-400 hover:text-slate-600'
+      }
+    `}
+  >
+    <Icon
+      className={`w-4 h-4 transition-colors ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-slate-500'}`}
+      strokeWidth={active ? 2.5 : 2}
+    />
+
+    <span className="leading-none pt-px">{label}</span>
+
+    {/* Counter Badge - Perfectly Aligned */}
+    {count !== undefined && count > 0 && (
+      <span className={`
+        ml-1 font-mono text-[10px] leading-none flex items-center
+        ${active ? 'text-amber-600 font-black' : 'text-slate-400 group-hover:text-slate-500'}
+      `}>
+        [{count}]
+      </span>
+    )}
+
+    {/* Active Indicator Line */}
+    <div
+      className={`
+        absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300
+        ${active ? 'bg-teal-600 opacity-100' : 'bg-slate-200 opacity-0 group-hover:opacity-50'}
+      `}
+    />
+  </button>
+);

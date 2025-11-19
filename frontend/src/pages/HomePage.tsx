@@ -1,8 +1,9 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Line, Float } from '@react-three/drei';
+import { OrbitControls, Line, Float, Environment, Outlines } from '@react-three/drei';
 import * as THREE from 'three';
 import { InputForm } from '@/components/InputForm/InputForm';
+import { Footer } from '@/components/Layout/Footer';
 import {
   Network,
   AlertCircle,
@@ -15,28 +16,39 @@ import {
 
 // --- 3D PREVIEW COMPONENTS --- //
 
-const ConnectionLine = ({ start, end, color }: { start: [number, number, number], end: [number, number, number], color: string }) => {
+const ConnectionLine = ({ start, end }: { start: [number, number, number], end: [number, number, number] }) => {
   return (
     <Line
       points={[start, end]}
-      color={color}
-      lineWidth={1}
+      color="#64748b" // Slate-500
+      lineWidth={1.5}
       transparent
-      opacity={0.3}
+      opacity={0.4}
     />
   );
 };
 
 const DataNode = ({ position, color, scale = 1 }: { position: [number, number, number], color: string, scale?: number }) => {
   return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <Sphere args={[0.3 * scale, 32, 32]} position={position}>
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} roughness={0.2} />
-      </Sphere>
-      {/* Glow halo */}
-      <mesh position={position} scale={[1.5 * scale, 1.5 * scale, 1.5 * scale]}>
-        <sphereGeometry args={[0.3, 16, 16]} />
-        <meshBasicMaterial color={color} transparent opacity={0.1} depthWrite={false} />
+    <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+      <mesh position={position} scale={scale}>
+        <sphereGeometry args={[0.4, 32, 32]} />
+        <meshStandardMaterial
+          color={color}
+          roughness={0.2}
+          metalness={0.1}
+          emissive={color}
+          emissiveIntensity={0.2}
+        />
+
+        {/* The Signature Black Outline */}
+        <Outlines thickness={0.05} color="#000000" transparent opacity={0.3} />
+
+        {/* Subtle Glow Halo */}
+        <mesh scale={1.2}>
+          <sphereGeometry args={[0.4, 32, 32]} />
+          <meshBasicMaterial color={color} transparent opacity={0.1} depthWrite={false} />
+        </mesh>
       </mesh>
     </Float>
   );
@@ -47,14 +59,15 @@ const RotatingGraph = () => {
 
   // Generate a random static graph structure
   const { nodes, connections } = useMemo(() => {
+    // Colors matching the App Theme
     const nodes = [
-      { pos: [0, 0, 0], color: "#0f172a", scale: 2 }, // Core (Abyss)
-      { pos: [2, 1, 1], color: "#0d9488", scale: 1 }, // Teal
-      { pos: [-2, -1, 1], color: "#d97706", scale: 1 }, // Amber
-      { pos: [1, -2, -1], color: "#be123c", scale: 1 }, // Rose
-      { pos: [-1, 2, -1], color: "#6366f1", scale: 1 }, // Indigo
-      { pos: [0, 3, 0], color: "#0d9488", scale: 0.8 },
-      { pos: [3, 0, -2], color: "#334155", scale: 0.8 },
+      { pos: [0, 0, 0], color: "#0f172a", scale: 1.8 }, // Core (Slate-900)
+      { pos: [2.5, 1.2, 1], color: "#0d9488", scale: 1.2 }, // Teal
+      { pos: [-2.5, -1.2, 1], color: "#f59e0b", scale: 1.2 }, // Amber
+      { pos: [1.2, -2.5, -1], color: "#ef4444", scale: 1.2 }, // Red
+      { pos: [-1.2, 2.5, -1], color: "#3b82f6", scale: 1.2 }, // Blue
+      { pos: [0, 3.5, 0], color: "#10b981", scale: 0.9 }, // Green
+      { pos: [3.5, 0, -2], color: "#64748b", scale: 0.9 }, // Slate
     ] as const;
 
     const connections = [
@@ -65,10 +78,9 @@ const RotatingGraph = () => {
     return { nodes, connections };
   }, []);
 
-  // Fixed: Replaced 'state' with '_' to avoid unused variable error
   useFrame((_, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.15;
+      groupRef.current.rotation.y += delta * 0.1; // Slow, majestic rotation
     }
   });
 
@@ -82,7 +94,6 @@ const RotatingGraph = () => {
           key={i}
           start={nodes[startIdx].pos as [number, number, number]}
           end={nodes[endIdx].pos as [number, number, number]}
-          color="#94a3b8"
         />
       ))}
     </group>
@@ -92,15 +103,30 @@ const RotatingGraph = () => {
 const PreviewScene = () => {
   return (
     <div className="w-full h-full absolute inset-0 bg-slate-50">
+      {/* Grid Background matching main app */}
       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-      <Canvas camera={{ position: [0, 2, 8], fov: 45 }}>
-        <ambientLight intensity={0.8} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#0d9488" />
+
+      <Canvas camera={{ position: [0, 2, 9], fov: 45 }} shadows dpr={[1, 2]}>
+        {/* Laboratory Lighting Setup */}
+        <ambientLight intensity={0.7} color="#ffffff" />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} castShadow />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#0d9488" />
+
+        {/* Soft City Reflection for Matte finish */}
+        <Environment preset="city" />
+
         <RotatingGraph />
-        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={1} />
+
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          autoRotate
+          autoRotateSpeed={0.8}
+          maxPolarAngle={Math.PI / 1.8}
+        />
       </Canvas>
 
+      {/* Overlay Badge */}
       <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-widest text-slate-500 shadow-sm flex items-center gap-2">
         <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
         Live R3F Simulation
