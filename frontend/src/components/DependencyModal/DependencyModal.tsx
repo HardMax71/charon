@@ -11,13 +11,13 @@ export const DependencyModal = () => {
   const handleClose = () => setSelectedEdge(null);
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={handleClose}>
-      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border border-gray-100 transform transition-all" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal-panel max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Dependency Details</h3>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors text-xl leading-none"
+            className="modal-close-button text-xl leading-none"
           >
             ✕
           </button>

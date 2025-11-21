@@ -4,6 +4,7 @@ import { HealthScore } from './HealthScore';
 import { RefactoringSuggestions } from '../RefactoringSuggestions/RefactoringSuggestions';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
+import { TabButton } from '@/components/ui/TabButton';
 import {
   BarChart3,
   Activity,
@@ -69,11 +70,11 @@ export const MetricsPanel = () => {
         onMouseDown={handleMouseDown}
         className={`
           h-2 w-full cursor-ns-resize flex items-center justify-center border-b border-slate-100 transition-colors group
-          ${isResizing ? 'bg-teal-50' : 'bg-white hover:bg-slate-50'}
+          ${isResizing ? 'bg-styx-100' : 'bg-white hover:bg-slate-50'}
         `}
         title="Drag to resize panel"
       >
-        <GripHorizontal className={`w-8 h-3 transition-colors ${isResizing ? 'text-teal-400' : 'text-slate-200 group-hover:text-slate-400'}`} />
+        <GripHorizontal className={`w-8 h-3 transition-colors ${isResizing ? 'text-styx-600' : 'text-slate-200 group-hover:text-slate-400'}`} />
       </div>
 
       {/* --- NAVIGATION RAIL --- */}
@@ -104,8 +105,8 @@ export const MetricsPanel = () => {
 
         {/* Technical Deco Right */}
         <div className="hidden md:flex items-center gap-3">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-            <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse shadow-[0_0_5px_rgba(20,184,166,0.5)]" />
+          <div className="flex items-center gap-2 text-[10px] font-mono text-stone-400 uppercase tracking-widest">
+            <div className="w-1.5 h-1.5 bg-styx-600 rounded-full animate-pulse shadow-[0_0_5px_rgba(20,184,166,0.5)]" />
             <span>Live Diagnostics</span>
           </div>
         </div>
@@ -122,50 +123,3 @@ export const MetricsPanel = () => {
     </div>
   );
 };
-
-/* --- SUB-COMPONENT: Clean Nav Tab --- */
-interface TabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  icon: any;
-  label: string;
-  count?: number;
-}
-
-const TabButton = ({ active, onClick, icon: Icon, label, count }: TabButtonProps) => (
-  <button
-    onClick={onClick}
-    className={`
-      group relative flex items-center gap-2 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-200 select-none
-      ${active 
-        ? 'text-teal-700' 
-        : 'text-slate-400 hover:text-slate-600'
-      }
-    `}
-  >
-    <Icon
-      className={`w-4 h-4 transition-colors ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-slate-500'}`}
-      strokeWidth={active ? 2.5 : 2}
-    />
-
-    <span className="leading-none pt-px">{label}</span>
-
-    {/* Counter Badge - Perfectly Aligned */}
-    {count !== undefined && count > 0 && (
-      <span className={`
-        ml-1 font-mono text-[10px] leading-none flex items-center
-        ${active ? 'text-amber-600 font-black' : 'text-slate-400 group-hover:text-slate-500'}
-      `}>
-        [{count}]
-      </span>
-    )}
-
-    {/* Active Indicator Line */}
-    <div
-      className={`
-        absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300
-        ${active ? 'bg-teal-600 opacity-100' : 'bg-slate-200 opacity-0 group-hover:opacity-50'}
-      `}
-    />
-  </button>
-);

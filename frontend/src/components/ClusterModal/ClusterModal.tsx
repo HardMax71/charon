@@ -18,18 +18,18 @@ export const ClusterModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={handleClose}>
-      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-4xl w-full border border-gray-100 transform transition-all max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-5">
+    <div className="modal-overlay" onClick={handleClose}>
+      <div className="modal-panel max-w-4xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Detected Clusters</h3>
+            <h3 className="modal-title">Detected Clusters</h3>
             <p className="text-sm text-gray-500 mt-1">
               {globalMetrics.clusters.length} communities found via Louvain algorithm
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="modal-close-button"
           >
             <X className="w-6 h-6" />
           </button>

@@ -78,7 +78,7 @@ export const GlobalMetrics = () => {
               value={fmt(globalMetrics.avg_maintainability)}
             />
             <div className="pt-3 border-t border-slate-200">
-               <RowItem label="Avg Instability" value={fmt(instability)} />
+              <RowItem label="Avg Instability" value={fmt(instability)} />
             </div>
           </div>
         </MetricCard>
@@ -179,23 +179,31 @@ export const GlobalMetrics = () => {
 
 /* --- SUB-COMPONENTS --- */
 
-const MetricCard = ({ title, icon: Icon, children, tooltip, alert }: any) => (
+interface MetricCardProps {
+  title: string;
+  icon: any; // LucideIcon
+  children: React.ReactNode;
+  tooltip?: string;
+  alert?: boolean;
+}
+
+const MetricCard = ({ title, icon: Icon, children, tooltip, alert }: MetricCardProps) => (
   <div className={`
     bg-white border rounded-xl p-5 transition-all hover:shadow-md
     ${alert ? 'border-rose-200 shadow-[0_0_0_1px_rgba(225,29,72,0.1)]' : 'border-slate-200 shadow-sm'}
   `}>
     <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2 text-slate-700">
-        <Icon className={`w-4 h-4 ${alert ? 'text-rose-600' : 'text-teal-600'}`} />
+      <div className="flex items-center gap-2 text-stone-700">
+        <Icon className={`w-4 h-4 ${alert ? 'text-blood-700' : 'text-styx-600'}`} />
         <h4 className="text-xs font-extrabold uppercase tracking-widest">{title}</h4>
       </div>
 
       {tooltip && (
         <div className="group relative">
-          <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-teal-600 cursor-help transition-colors" />
-          <div className="absolute right-0 top-6 w-48 p-3 bg-slate-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-slate-700">
+          <HelpCircle className="w-3.5 h-3.5 text-stone-400 hover:text-styx-600 cursor-help transition-colors" />
+          <div className="absolute right-0 top-6 w-48 p-3 bg-styx-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-stone-700">
             {tooltip}
-            <div className="absolute -top-1 right-1 w-2 h-2 bg-slate-900 rotate-45 border-l border-t border-slate-700" />
+            <div className="absolute -top-1 right-1 w-2 h-2 bg-styx-900 rotate-45 border-l border-t border-stone-700" />
           </div>
         </div>
       )}
@@ -204,34 +212,53 @@ const MetricCard = ({ title, icon: Icon, children, tooltip, alert }: any) => (
   </div>
 );
 
-const StatItem = ({ label, value, highlight }: any) => (
+interface StatItemProps {
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+}
+
+const StatItem = ({ label, value, highlight }: StatItemProps) => (
   <div className="text-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-    <div className={`text-xl font-black font-mono leading-none ${highlight ? 'text-teal-700' : 'text-slate-900'}`}>
+    <div className={`text-xl font-black font-mono leading-none ${highlight ? 'text-styx-600' : 'text-styx-900'}`}>
       {value}
     </div>
-    <div className="text-[9px] text-slate-500 uppercase font-bold mt-1.5 tracking-wide">{label}</div>
+    <div className="text-[9px] text-stone-500 uppercase font-bold mt-1.5 tracking-wide">{label}</div>
   </div>
 );
 
-const RowItem = ({ label, value, subValue, highlight }: any) => (
+interface RowItemProps {
+  label: string;
+  value: string | number;
+  subValue?: string;
+  highlight?: boolean;
+}
+
+const RowItem = ({ label, value, subValue, highlight }: RowItemProps) => (
   <div className="flex justify-between items-center text-sm">
     <span className="text-slate-600 font-medium">{label}</span>
     <div className="flex items-baseline gap-1.5">
-      <span className={`font-mono font-bold ${highlight ? 'text-amber-600' : 'text-slate-900'}`}>
+      <span className={`font-mono font-bold ${highlight ? 'text-obol-500' : 'text-styx-900'}`}>
         {value}
       </span>
-      {subValue && <span className="text-[9px] text-slate-400 font-medium">{subValue}</span>}
+      {subValue && <span className="text-[9px] text-stone-400 font-medium">{subValue}</span>}
     </div>
   </div>
 );
 
-const AlertRow = ({ label, count, critical }: any) => (
+interface AlertRowProps {
+  label: string;
+  count: number;
+  critical: boolean;
+}
+
+const AlertRow = ({ label, count, critical }: AlertRowProps) => (
   <div className="flex justify-between items-center text-sm">
     <span className="text-slate-600 font-medium">{label}</span>
     <span className={`
       px-2.5 py-0.5 rounded text-[10px] font-mono font-bold
-      ${critical 
-        ? 'bg-rose-100 text-rose-800 border border-rose-200' 
+      ${critical
+        ? 'bg-rose-100 text-rose-800 border border-rose-200'
         : 'bg-slate-100 text-slate-600 border border-slate-200'
       }
     `}>

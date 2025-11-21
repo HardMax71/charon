@@ -6,15 +6,15 @@ import {
   Heart,
   TrendingUp,
   AlertCircle,
-  CheckCircle2,
-  Loader,
+  Loader2,
   RefreshCw,
   Flame,
   Link as LinkIcon,
   Code,
   Shield,
   BarChart3,
-  HelpCircle
+  HelpCircle,
+  CheckSquare
 } from 'lucide-react';
 
 export const HealthScore = () => {
@@ -28,10 +28,8 @@ export const HealthScore = () => {
       setError('No analysis data available');
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
       const score = await calculateHealthScore(graph, globalMetrics);
       setHealthScore(score);
@@ -52,7 +50,7 @@ export const HealthScore = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-400 space-y-3">
-        <Loader className="w-6 h-6 animate-spin text-teal-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
         <span className="text-xs font-mono uppercase tracking-widest">Calibrating Metrics...</span>
       </div>
     );
@@ -77,22 +75,11 @@ export const HealthScore = () => {
 
   if (!healthScore) return null;
 
-  // --- HELPER FUNCTIONS ---
+  // --- STYLING HELPERS ---
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-teal-600';
-    if (score >= 50) return 'text-amber-500';
-    return 'text-rose-600';
-  };
-
-  const getGradeColor = (grade: string) => {
-    const map: Record<string, string> = {
-      'A': 'bg-teal-50 text-teal-700 border-teal-200',
-      'B': 'bg-blue-50 text-blue-700 border-blue-200',
-      'C': 'bg-amber-50 text-amber-700 border-amber-200',
-      'D': 'bg-orange-50 text-orange-700 border-orange-200',
-      'F': 'bg-rose-50 text-rose-700 border-rose-200',
-    };
-    return map[grade] || map['F'];
+    if (score >= 80) return 'text-styx-600';
+    if (score >= 50) return 'text-obol-500';
+    return 'text-blood-700';
   };
 
   const score = Math.round(healthScore.overall_score);
@@ -110,141 +97,148 @@ export const HealthScore = () => {
     return <Icon className="w-4 h-4" />;
   };
 
+  const getComponentLabel = (key: string) => {
+    const labels: Record<string, string> = {
+      'circular_dependencies': 'Cycles',
+      'coupling_health': 'Coupling',
+      'complexity_health': 'Complexity',
+      'architecture_health': 'Architecture',
+      'stability_distribution': 'Stability',
+    };
+    return labels[key] || key;
+  };
+
   const getComponentDesc = (key: string) => {
     const descs: Record<string, string> = {
-      'circular_dependencies': 'Presence of circular import chains. These cause runtime errors and recursion risks.',
-      'coupling_health': 'Measures how tightly connected modules are. Lower coupling means easier maintenance.',
-      'complexity_health': 'Cyclomatic complexity average. High values indicate hard-to-test code.',
-      'architecture_health': 'Adherence to layered architecture principles and separation of concerns.',
-      'stability_distribution': 'Ratio of abstractness to instability across packages.',
+      'circular_dependencies': 'Impact of circular imports on graph acyclicity.',
+      'coupling_health': 'Ratio of tight coupling to loose coupling.',
+      'complexity_health': 'Cyclomatic complexity distribution.',
+      'architecture_health': 'Adherence to modular boundaries.',
+      'stability_distribution': 'Abstractness vs Instability balance.',
     };
-    return descs[key] || 'General code health metric.';
+    return descs[key] || 'Metric analysis.';
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
-      {/* 1. MAIN SCORE CARD */}
-      <div className="flex items-center gap-8 p-8 bg-slate-50 border border-slate-200 rounded-xl relative overflow-hidden">
-        {/* Decorative Background */}
-        <div className="absolute inset-0 opacity-30 pointer-events-none"
-             style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '16px 16px' }}
-        />
+      {/* --- SECTION 1: SCORE & RECOMMENDATIONS (Split Grid) --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <div className="relative w-28 h-28 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 z-10">
-          <svg className="w-full h-full -rotate-90 p-1">
-            <circle cx="50%" cy="50%" r="42%" fill="none" stroke="#f1f5f9" strokeWidth="6" />
-            <circle
-              cx="50%" cy="50%" r="42%" fill="none" stroke="currentColor" strokeWidth="6"
-              strokeDasharray="280"
-              strokeDashoffset={280 * (1 - score / 100)}
-              className={`transition-all duration-1000 ease-out ${colorClass}`}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-black ${colorClass}`}>{score}</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase">/100</span>
+        {/* LEFT: Main Score Card (Span 4) */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '12px 12px' }}
+          />
+
+          <div className="relative w-32 h-32 flex items-center justify-center mb-4">
+            <svg className="w-full h-full -rotate-90">
+              <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#f1f5f9" strokeWidth="8" />
+              <circle
+                cx="50%" cy="50%" r="45%" fill="none" stroke="currentColor" strokeWidth="8"
+                strokeDasharray="283"
+                strokeDashoffset={283 * (1 - score / 100)}
+                className={`transition-all duration-1000 ease-out ${colorClass}`}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className={`text-4xl font-black ${colorClass}`}>{healthScore.overall_grade}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Grade</span>
+            </div>
+          </div>
+
+          <div className="text-center relative z-10">
+            <h3 className="text-lg font-bold text-styx-900">System Health</h3>
+            <p className="text-xs text-stone-500 mt-2 leading-relaxed max-w-[250px]">
+              {healthScore.summary}
+            </p>
           </div>
         </div>
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-1">
-            <Heart className={`w-5 h-5 ${colorClass}`} />
-            <h3 className="text-xl font-bold text-slate-900">System Health</h3>
+        {/* RIGHT: Recommendations (Span 8) */}
+        <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
+            <TrendingUp className="w-4 h-4 text-styx-600" />
+            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-widest">Optimization Plan</h4>
           </div>
-          <p className="text-sm text-slate-500 max-w-md leading-relaxed mb-4">
-            {healthScore.summary}
-          </p>
-          <div className={`inline-flex items-center px-3 py-1 rounded text-xs font-bold uppercase tracking-wide border ${getGradeColor(healthScore.overall_grade)}`}>
-            Grade: {healthScore.overall_grade}
-          </div>
+
+          {healthScore.recommendations && healthScore.recommendations.length > 0 ? (
+            <ul className="space-y-3 flex-1">
+              {healthScore.recommendations.map((rec: string, i: number) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-stone-600 group">
+                  <CheckSquare className="w-4 h-4 mt-0.5 text-stone-400 group-hover:text-styx-600 transition-colors" />
+                  <span className="leading-relaxed">{rec}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm italic">
+              No immediate recommendations found.
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 2. COMPONENT BREAKDOWN */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* --- SECTION 2: METRICS ARRAY (5-Column Grid) --- */}
+      {/* This layout solves the "space thrashing" by fitting all 5 items in one row on large screens */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         {Object.entries(healthScore.components).map(([key, comp]) => (
           <div
             key={key}
-            className="group relative bg-white border border-slate-200 rounded-lg p-5 hover:border-teal-200 hover:shadow-sm transition-all"
+            className="group bg-white border border-slate-200 rounded-lg p-4 hover:border-teal-300 hover:shadow-md transition-all"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-2 text-slate-500">
-                <div className={`p-1.5 rounded ${getScoreColor(comp.score)} bg-slate-50`}>
-                  {getComponentIcon(key)}
-                </div>
-                <span className="text-xs font-bold uppercase tracking-wider truncate max-w-[120px]">
-                  {key.split('_')[0]}
-                </span>
+            {/* Metric Header */}
+            <div className="flex justify-between items-start mb-3">
+              <div className="p-2 bg-slate-50 rounded-md text-stone-500 group-hover:text-styx-600 group-hover:bg-styx-100 transition-colors">
+                {getComponentIcon(key)}
+              </div>
 
-                {/* Tooltip */}
-                <div className="relative ml-1">
-                  <HelpCircle className="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 cursor-help transition-colors" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-slate-900 text-slate-50 text-xs leading-relaxed rounded-lg shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none">
-                    {getComponentDesc(key)}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
-                  </div>
+              {/* Tooltip */}
+              <div className="relative">
+                <HelpCircle className="w-3.5 h-3.5 text-stone-300 hover:text-styx-600 cursor-help transition-colors" />
+                <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-styx-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-stone-700">
+                  {getComponentDesc(key)}
                 </div>
               </div>
             </div>
 
-            {/* Score Row */}
-            <div className="flex items-end justify-between">
-              <div className="flex items-baseline gap-1">
-                <span className={`text-2xl font-mono font-bold tabular-nums ${getScoreColor(comp.score)}`}>
-                  {comp.score.toFixed(0)}
-                </span>
-                <span className="text-[10px] text-slate-400">/100</span>
-              </div>
-              <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getGradeColor(comp.grade)}`}>
-                Grade {comp.grade}
-              </div>
+            {/* Metric Label */}
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+              {getComponentLabel(key)}
             </div>
 
-            {/* Weight Bar */}
-            <div className="mt-3 flex items-center gap-2">
-               <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${getScoreColor(comp.score).replace('text-', 'bg-')}`}
-                    style={{ width: `${comp.score}%` }}
-                  />
-               </div>
+            {/* Metric Score */}
+            <div className="flex items-baseline justify-between">
+              <div className={`text-2xl font-black font-mono ${getScoreColor(comp.score)}`}>
+                {comp.score.toFixed(0)}
+              </div>
+              <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">
+                {comp.grade}
+              </span>
+            </div>
+
+            {/* Mini Bar */}
+            <div className="mt-3 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${getScoreColor(comp.score).replace('text-', 'bg-')}`}
+                style={{ width: `${comp.score}%` }}
+              />
             </div>
           </div>
         ))}
       </div>
 
-      {/* 3. RECOMMENDATIONS */}
-      {healthScore.recommendations?.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-slate-500" />
-            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">Key Improvements</h4>
-          </div>
-          <div className="p-6">
-            <ul className="space-y-3">
-              {healthScore.recommendations.map((rec, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
-                  <span>{rec}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* 4. REFRESH ACTION */}
-      <div className="flex justify-center pt-4">
+      {/* --- FOOTER ACTION --- */}
+      <div className="flex justify-end pt-2">
         <button
           onClick={fetchHealthScore}
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-teal-600 transition-colors shadow-sm hover:shadow-lg font-bold text-xs uppercase tracking-widest group"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-stone-500 hover:text-styx-600 hover:bg-styx-100 rounded-lg transition-colors"
         >
-          <RefreshCw className={`w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
-          Recalculate Metrics
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Analysis
         </button>
       </div>
     </div>

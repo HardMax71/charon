@@ -1,9 +1,6 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Line, Float, Environment, Outlines } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { InputForm } from '@/components/InputForm/InputForm';
-import { Footer } from '@/components/Layout/Footer';
+import { DemoGraph } from '@/components/DemoGraph/DemoGraph';
 import {
   Network,
   AlertCircle,
@@ -14,127 +11,6 @@ import {
   Share2
 } from 'lucide-react';
 
-// --- 3D PREVIEW COMPONENTS --- //
-
-const ConnectionLine = ({ start, end }: { start: [number, number, number], end: [number, number, number] }) => {
-  return (
-    <Line
-      points={[start, end]}
-      color="#64748b" // Slate-500
-      lineWidth={1.5}
-      transparent
-      opacity={0.4}
-    />
-  );
-};
-
-const DataNode = ({ position, color, scale = 1 }: { position: [number, number, number], color: string, scale?: number }) => {
-  return (
-    <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-      <mesh position={position} scale={scale}>
-        <sphereGeometry args={[0.4, 32, 32]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.2}
-          metalness={0.1}
-          emissive={color}
-          emissiveIntensity={0.2}
-        />
-
-        {/* The Signature Black Outline */}
-        <Outlines thickness={0.05} color="#000000" transparent opacity={0.3} />
-
-        {/* Subtle Glow Halo */}
-        <mesh scale={1.2}>
-          <sphereGeometry args={[0.4, 32, 32]} />
-          <meshBasicMaterial color={color} transparent opacity={0.1} depthWrite={false} />
-        </mesh>
-      </mesh>
-    </Float>
-  );
-};
-
-const RotatingGraph = () => {
-  const groupRef = useRef<THREE.Group>(null);
-
-  // Generate a random static graph structure
-  const { nodes, connections } = useMemo(() => {
-    // Colors matching the App Theme
-    const nodes = [
-      { pos: [0, 0, 0], color: "#0f172a", scale: 1.8 }, // Core (Slate-900)
-      { pos: [2.5, 1.2, 1], color: "#0d9488", scale: 1.2 }, // Teal
-      { pos: [-2.5, -1.2, 1], color: "#f59e0b", scale: 1.2 }, // Amber
-      { pos: [1.2, -2.5, -1], color: "#ef4444", scale: 1.2 }, // Red
-      { pos: [-1.2, 2.5, -1], color: "#3b82f6", scale: 1.2 }, // Blue
-      { pos: [0, 3.5, 0], color: "#10b981", scale: 0.9 }, // Green
-      { pos: [3.5, 0, -2], color: "#64748b", scale: 0.9 }, // Slate
-    ] as const;
-
-    const connections = [
-      [0, 1], [0, 2], [0, 3], [0, 4], // Star topology
-      [1, 5], [2, 3], [4, 2], [6, 0]  // Cross connections
-    ];
-
-    return { nodes, connections };
-  }, []);
-
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.1; // Slow, majestic rotation
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      {nodes.map((node, i) => (
-        <DataNode key={i} position={node.pos as [number, number, number]} color={node.color} scale={node.scale} />
-      ))}
-      {connections.map(([startIdx, endIdx], i) => (
-        <ConnectionLine
-          key={i}
-          start={nodes[startIdx].pos as [number, number, number]}
-          end={nodes[endIdx].pos as [number, number, number]}
-        />
-      ))}
-    </group>
-  );
-};
-
-const PreviewScene = () => {
-  return (
-    <div className="w-full h-full absolute inset-0 bg-slate-50">
-      {/* Grid Background matching main app */}
-      <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-
-      <Canvas camera={{ position: [0, 2, 9], fov: 45 }} shadows dpr={[1, 2]}>
-        {/* Laboratory Lighting Setup */}
-        <ambientLight intensity={0.7} color="#ffffff" />
-        <directionalLight position={[10, 10, 5]} intensity={1.2} castShadow />
-        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#0d9488" />
-
-        {/* Soft City Reflection for Matte finish */}
-        <Environment preset="city" />
-
-        <RotatingGraph />
-
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          autoRotate
-          autoRotateSpeed={0.8}
-          maxPolarAngle={Math.PI / 1.8}
-        />
-      </Canvas>
-
-      {/* Overlay Badge */}
-      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-widest text-slate-500 shadow-sm flex items-center gap-2">
-        <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
-        Live R3F Simulation
-      </div>
-    </div>
-  );
-};
-
 // --- MAIN PAGE COMPONENT --- //
 
 export const HomePage = () => {
@@ -143,10 +19,10 @@ export const HomePage = () => {
 
       {/* --- GRID BACKGROUND --- */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-30"
-           style={{
-             backgroundImage: 'radial-gradient(#94a3b8 1.5px, transparent 1.5px)',
-             backgroundSize: '40px 40px'
-           }}
+        style={{
+          backgroundImage: 'radial-gradient(#0d9488 1px, transparent 1px)',
+          backgroundSize: '30px 30px'
+        }}
       />
 
       <div className="relative z-10 flex flex-col min-h-screen border-x border-slate-200 max-w-[1400px] mx-auto shadow-2xl shadow-slate-200/50 bg-white/90 backdrop-blur-sm">
@@ -156,7 +32,7 @@ export const HomePage = () => {
 
           {/* Left Block: Branding & Title */}
           <div className="lg:col-span-7 p-8 md:p-16 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col justify-between min-h-[600px] relative overflow-hidden group">
-            <span className="absolute top-6 right-6 font-mono text-9xl font-bold text-slate-100 select-none -z-10 transition-colors duration-500">01</span>
+            <span className="absolute top-6 right-6 font-mono text-9xl font-bold text-slate-50 select-none -z-10 transition-colors duration-500">01</span>
 
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 border border-slate-900 rounded-full text-xs font-mono font-bold uppercase tracking-widest mb-8 bg-white">
@@ -269,8 +145,8 @@ export const HomePage = () => {
         <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
 
           {/* Visual Area: R3F Simulation */}
-          <div className="lg:col-span-8 bg-slate-100 relative border-b lg:border-b-0 border-slate-200 min-h-[400px] lg:min-h-auto">
-             <PreviewScene />
+          <div className="lg:col-span-8 bg-slate-100 relative border-b lg:border-b-0 border-slate-200 min-h-[400px] lg:min-h-auto overflow-hidden">
+            <DemoGraph />
           </div>
 
           {/* Text Content Area */}
@@ -288,19 +164,19 @@ export const HomePage = () => {
             <ul className="space-y-5 font-mono text-sm text-slate-700">
               <li className="flex items-center gap-3 group cursor-pointer">
                 <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-teal-500 group-hover:text-teal-700 transition-all">
-                   <Cpu className="w-4 h-4" />
+                  <Cpu className="w-4 h-4" />
                 </div>
                 <span className="font-bold">Identify "God Objects"</span>
               </li>
               <li className="flex items-center gap-3 group cursor-pointer">
                 <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-rose-500 group-hover:text-rose-700 transition-all">
-                   <Share2 className="w-4 h-4" />
+                  <Share2 className="w-4 h-4" />
                 </div>
                 <span className="font-bold">Visualize Blast Radius</span>
               </li>
               <li className="flex items-center gap-3 group cursor-pointer">
                 <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-amber-500 group-hover:text-amber-700 transition-all">
-                   <Terminal className="w-4 h-4" />
+                  <Terminal className="w-4 h-4" />
                 </div>
                 <span className="font-bold">Export Architecture as JSON</span>
               </li>

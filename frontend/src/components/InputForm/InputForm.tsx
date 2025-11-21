@@ -6,6 +6,7 @@ import { analyzeCode } from '@/services/api';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { FileInput } from '@/types/api';
+import { Github, FolderOpen, Upload } from 'lucide-react';
 
 export const InputForm = () => {
   const [activeTab, setActiveTab] = useState<'github' | 'local' | 'import'>('github');
@@ -79,62 +80,88 @@ export const InputForm = () => {
   };
 
   return (
-    <div className="bg-surface rounded-2xl shadow-lg border border-border-light p-8 md:p-10 lg:p-12 max-w-3xl w-full mx-auto animate-fade-in">
-      <h2 className="text-xl md:text-2xl font-extrabold mb-1.5 text-text-primary tracking-tight">
-        Analyze Python Project
-      </h2>
-      <p className="text-text-secondary mb-6 text-sm md:text-base">
-        Visualize dependencies and detect architectural issues
-      </p>
+    <div className="marble-panel p-8 md:p-10 w-full mx-auto animate-fade-in relative overflow-hidden">
+      {/* Decorative top highlight */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-teal-400 to-teal-500 opacity-50" />
+
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
+            Analyze Project
+          </h2>
+          <p className="text-slate-500 text-sm font-medium mt-1">
+            Select your source to begin autopsy
+          </p>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center border border-teal-100">
+          <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
+        </div>
+      </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 mb-8 border-b border-border-light">
+      <div className="flex p-1 bg-slate-100/80 rounded-xl mb-8 border border-slate-200/50 backdrop-blur-sm">
         <button
           onClick={() => setActiveTab('github')}
-          className={`px-6 py-3 font-semibold text-sm md:text-base rounded-t-lg transition-all ${
-            activeTab === 'github'
-              ? 'bg-background border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary hover:bg-background/50'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'github'
+            ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            }`}
         >
+          <Github className="w-4 h-4" />
           GitHub
         </button>
         <button
           onClick={() => setActiveTab('local')}
-          className={`px-6 py-3 font-semibold text-sm md:text-base rounded-t-lg transition-all ${
-            activeTab === 'local'
-              ? 'bg-background border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary hover:bg-background/50'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'local'
+            ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            }`}
         >
-          Local Folder
+          <FolderOpen className="w-4 h-4" />
+          Local
         </button>
         <button
           onClick={() => setActiveTab('import')}
-          className={`px-6 py-3 font-semibold text-sm md:text-base rounded-t-lg transition-all ${
-            activeTab === 'import'
-              ? 'bg-background border-b-2 border-primary text-primary'
-              : 'text-text-secondary hover:text-text-primary hover:bg-background/50'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'import'
+            ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            }`}
         >
+          <Upload className="w-4 h-4" />
           Import
         </button>
       </div>
 
       {/* Content */}
-      <div className="mt-6">
-        {activeTab === 'github' && <GitHubInput onSubmit={handleGitHubSubmit} />}
-        {activeTab === 'local' && <DragDropZone onFilesProcessed={handleLocalFiles} />}
+      <div className="relative min-h-[120px]">
+        {activeTab === 'github' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <GitHubInput onSubmit={handleGitHubSubmit} />
+          </div>
+        )}
+
+        {activeTab === 'local' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <DragDropZone onFilesProcessed={handleLocalFiles} />
+          </div>
+        )}
+
         {activeTab === 'import' && (
-          <div className="space-y-4">
-            <input
-              type="file"
-              accept=".json,.toml"
-              onChange={handleFileUpload}
-              className="w-full px-4 py-3.5 border-2 border-border-medium rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:bg-primary file:text-text-inverse file:font-semibold file:text-sm hover:file:bg-primary-hover file:cursor-pointer cursor-pointer"
-            />
-            <p className="text-sm text-text-secondary">
-              Upload a previously exported JSON or TOML file
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="relative group">
+              <input
+                type="file"
+                accept=".json,.toml"
+                onChange={handleFileUpload}
+                className="w-full px-4 py-8 border-2 border-dashed border-slate-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all file:hidden cursor-pointer bg-slate-50/50 hover:bg-teal-50/30 text-center text-slate-500 font-medium"
+              />
+              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
+                <Upload className="w-8 h-8 mb-2 opacity-50 group-hover:opacity-100 transition-opacity" />
+                <span className="text-sm">Click to upload JSON/TOML</span>
+              </div>
+            </div>
+            <p className="text-xs text-center text-slate-400 font-mono">
+              Supports Charon Export Format v1.0
             </p>
           </div>
         )}

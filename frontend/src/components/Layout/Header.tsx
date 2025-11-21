@@ -6,22 +6,22 @@ export const Header = () => {
   const isTemporal = location.pathname === '/temporal';
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md h-16">
-      <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200 transition-all duration-300">
+      <div className="w-full h-full flex items-center justify-between px-6 md:px-12 max-w-[1400px] mx-auto">
 
-        {/* Logo Section */}
+        {/* Logo Section - Primary Brand Anchor */}
         <Link
           to="/"
-          className="flex items-center gap-2 group"
+          className="logo-container group"
         >
-          <div className="w-8 h-8 bg-slate-900 text-white rounded flex items-center justify-center font-serif font-bold shadow-sm group-hover:bg-teal-600 transition-colors">
+          <div className="logo-icon group-hover:bg-styx-600 transition-colors">
             C
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black text-slate-900 tracking-tight leading-none group-hover:text-teal-700 transition-colors">
+            <span className="text-lg font-black text-styx-900 tracking-tight leading-none group-hover:text-styx-600 transition-colors">
               CHARON
             </span>
-            <span className="text-[10px] font-mono text-slate-400 tracking-widest uppercase leading-none">
+            <span className="text-[10px] font-mono text-stone-700 tracking-widest uppercase leading-none">
               System Visualizer
             </span>
           </div>
@@ -33,10 +33,10 @@ export const Header = () => {
             to="/temporal"
             className={`
               flex items-center gap-2 text-sm font-medium transition-colors
-              hover:text-teal-600 hover:underline decoration-2 underline-offset-4
-              ${isTemporal 
-                ? 'text-teal-700 font-bold' 
-                : 'text-slate-500'
+              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
+              ${isTemporal
+                ? 'text-styx-600 font-bold'
+                : 'text-stone-700'
               }
             `}
           >

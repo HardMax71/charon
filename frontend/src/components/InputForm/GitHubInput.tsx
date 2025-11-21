@@ -21,12 +21,12 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://github.com/owner/repo"
-        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-gray-900 placeholder-gray-400"
+        className="input-text text-gray-900 placeholder-gray-400"
       />
       <button
         type="submit"
         disabled={!url.trim()}
-        className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+        className="w-full btn btn-primary btn-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         Analyze Repository
       </button>

@@ -17,21 +17,28 @@
 
   /* Backgrounds */
   --bg-marble: #ffffff;
-  --bg-mist: #f0fdfa; /* Very pale teal tint */
+  --bg-mist: #f0fdfa;
+  /* Very pale teal tint */
 
   /* Text Colors (NO GREY) */
-  --text-abyss: #0f172a;     /* Deepest Navy (instead of black) */
-  --text-river: #0d9488;     /* Teal 600 (Primary Brand) */
-  --text-stone: #334155;     /* Slate 700 (Secondary Text) */
+  --text-abyss: #0f172a;
+  /* Deepest Navy (instead of black) */
+  --text-river: #0d9488;
+  /* Teal 600 (Primary Brand) */
+  --text-stone: #334155;
+  /* Slate 700 (Secondary Text) */
 
   /* Accents */
-  --gold-coin: #d97706;      /* Amber 600 (Charon's Obol) */
+  --gold-coin: #d97706;
+  /* Amber 600 (Charon's Obol) */
   --gold-glow: #fcd34d;
-  --danger-blood: #be123c;   /* Rose 700 */
+  --danger-blood: #be123c;
+  /* Rose 700 */
 
   /* Shadows & Depth */
   --shadow-deep: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
-  --shadow-sharp: 4px 4px 0px 0px rgba(13, 148, 136, 0.2); /* Hard offset shadow */
+  --shadow-sharp: 4px 4px 0px 0px rgba(13, 148, 136, 0.2);
+  /* Hard offset shadow */
 }
 
 /* =========================================
@@ -63,7 +70,9 @@ body::after {
   z-index: -1;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: var(--text-abyss);
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -78,6 +87,87 @@ h1, h2, h3 {
    ========================================= */
 @layer components {
 
+  /* --- Dialogs & Modals --- */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+  }
+
+  .modal-panel {
+    @apply bg-white rounded-2xl shadow-2xl p-6 w-full border border-gray-100 transform transition-all;
+  }
+
+  .modal-header {
+    @apply flex justify-between items-center mb-5;
+  }
+
+  .modal-title {
+    @apply text-xl font-bold text-gray-900;
+  }
+
+  .modal-close-button {
+    @apply text-gray-400 hover:text-gray-600 transition-colors;
+  }
+
+  /* --- Buttons --- */
+  .btn {
+    @apply font-semibold rounded-lg transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-100 text-slate-700 hover:bg-slate-200;
+  }
+
+  .btn-ghost {
+    @apply text-slate-500 hover:text-slate-700 hover:bg-slate-100;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-md {
+    @apply px-4 py-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* --- Cards & Panels --- */
+  .metric-card {
+    @apply bg-white border rounded-xl p-5 transition-all hover:shadow-md;
+  }
+
+  .stat-item {
+    @apply text-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg;
+  }
+
+  /* --- Form Inputs --- */
+  .input-base {
+    @apply w-full border rounded-md text-sm transition-all;
+  }
+
+  .input-text {
+    @apply input-base px-4 py-3 border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+  }
+
+  .input-select {
+    @apply input-base appearance-none bg-white border-slate-300 text-slate-700 font-medium py-2 pl-8 pr-8 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20 cursor-pointer;
+  }
+
+  /* --- Text & Labels --- */
+  .section-header {
+    @apply text-[10px] font-bold text-slate-400 uppercase tracking-wider;
+  }
+
+  .mono-label {
+    @apply font-mono text-xs;
+  }
+
   /* --- Marble Panels (The Boat) --- */
   .marble-panel {
     @apply bg-white/90 backdrop-blur-xl border border-slate-200;
@@ -91,6 +181,7 @@ h1, h2, h3 {
     border-color: var(--text-river);
     transform: translateY(-2px);
   }
+
 
   /* --- Divine Buttons --- */
   .btn-olympus {
@@ -111,6 +202,7 @@ h1, h2, h3 {
     @apply bg-amber-500 text-white;
     box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
   }
+
   .btn-gold:hover {
     background: var(--gold-coin);
     transform: scale(1.05);
@@ -126,13 +218,14 @@ h1, h2, h3 {
   .input-scroll:focus {
     background: white;
     border-color: var(--text-river);
-    box-shadow: var(--shadow-sharp); /* Hard shadow pop */
+    box-shadow: var(--shadow-sharp);
+    /* Hard shadow pop */
   }
 
   /* --- Metrics: The Obols --- */
   .metric-token {
     @apply flex flex-col p-4 rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   }
 
   .metric-value {
@@ -149,15 +242,13 @@ h1, h2, h3 {
    4. LAYOUT & UTILITIES
    ========================================= */
 
-/* Header - Floating Marble Slab */
-.header-bar {
-  @apply fixed top-6 left-6 right-6 z-50 h-16 marble-panel flex items-center justify-between px-8;
-}
+
 
 /* Logo Styling */
 .logo-container {
   @apply flex items-center gap-3 text-2xl text-slate-900;
 }
+
 .logo-icon {
   @apply w-8 h-8 rounded bg-teal-600 text-white flex items-center justify-center font-serif font-bold shadow-lg;
 }
@@ -176,19 +267,97 @@ h1, h2, h3 {
 .clean-tooltip {
   @apply bg-slate-900 text-white px-4 py-2 text-xs font-medium rounded-lg shadow-xl;
   font-family: 'Manrope', sans-serif;
-  border-bottom: 3px solid var(--gold-coin); /* Accent line */
+  border-bottom: 3px solid var(--gold-coin);
+  /* Accent line */
 }
 
 /* Drag Drop Zone */
 .upload-temple {
   @apply border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center bg-white/50 transition-all cursor-pointer;
 }
+
 .upload-temple:hover {
   @apply border-teal-500 bg-teal-50/50 scale-[1.02];
 }
 
 /* Scrollbar styling */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-river); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-river);
+}
+
+/* =========================================
+   5. ANIMATIONS
+   ========================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.4);
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 20px 0 rgba(13, 148, 136, 0.2);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideInBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}

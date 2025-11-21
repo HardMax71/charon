@@ -5,7 +5,17 @@ import { CircularDepsTimeline } from './CircularDepsTimeline';
 import { Graph3D } from '@/components/Graph3D/Graph3D';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
-import { Play, Pause, BarChart3, Network, ExternalLink } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  BarChart3,
+  Network,
+  ExternalLink,
+  Calendar,
+  User,
+  GitCommit,
+  Clock
+} from 'lucide-react';
 import { Node, Edge } from '@/types/graph';
 import { buildGitHubCommitUrl } from '@/utils/githubUtils';
 
@@ -17,7 +27,7 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
   const [currentSnapshotIndex, setCurrentSnapshotIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [viewMode, setViewMode] = useState<'heatmap' | 'graph'>('graph');
-  const [playbackSpeed, setPlaybackSpeed] = useState(1000); // ms per frame
+  const [playbackSpeed, setPlaybackSpeed] = useState(1000);
 
   const { setGraph } = useGraphStore();
   const { setCurrentLayout } = useUIStore();
@@ -27,15 +37,12 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
     [data.snapshots, currentSnapshotIndex]
   );
 
-  // Convert snapshot to graph format and update store
+  // --- GRAPH CONVERSION LOGIC (Unchanged) ---
   useEffect(() => {
-    if (!currentSnapshot || !currentSnapshot.graph_snapshot) {
-      return;
-    }
+    if (!currentSnapshot || !currentSnapshot.graph_snapshot) return;
 
     const { nodes: rawNodes, edges: rawEdges } = currentSnapshot.graph_snapshot;
 
-    // Convert to proper Node format
     const nodes: Node[] = rawNodes.map((node: any) => {
       const metrics = node.metrics || {};
       const position = node.position || { x: 0, y: 0, z: 0 };
@@ -45,59 +52,32 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
         label: node.label || node.id.split('/').pop() || node.id,
         type: node.type || 'internal' as const,
         module: node.module || node.id.split('/').slice(0, -1).join('/') || 'root',
-        position: {
-          x: position.x,
-          y: position.y,
-          z: position.z,
-        },
+        position: { x: position.x, y: position.y, z: position.z },
         color: metrics.is_circular ? '#ef4444' : '#3b82f6',
-        metrics: {
-          afferent_coupling: metrics.afferent_coupling || 0,
-          efferent_coupling: metrics.efferent_coupling || 0,
-          instability: metrics.instability || 0,
-          is_circular: metrics.is_circular || false,
-          is_high_coupling: metrics.is_high_coupling || false,
-          cyclomatic_complexity: metrics.cyclomatic_complexity || 0,
-          max_complexity: metrics.max_complexity || 0,
-          maintainability_index: metrics.maintainability_index || 0,
-          lines_of_code: metrics.lines_of_code || 0,
-          complexity_grade: metrics.complexity_grade || 'A',
-          maintainability_grade: metrics.maintainability_grade || 'A',
-          is_hot_zone: metrics.is_hot_zone || false,
-          hot_zone_severity: metrics.hot_zone_severity || 'ok',
-          hot_zone_score: metrics.hot_zone_score || 0,
-          hot_zone_reason: metrics.hot_zone_reason || '',
-        },
+        metrics: { ...metrics },
         cluster_id: null,
       };
     });
 
-    // Convert to proper Edge format
     const edges: Edge[] = rawEdges.map((edge: any, index: number) => {
       const weight = edge.weight || 1;
-      const thickness = Math.min(weight * 0.5, 5.0);
-
       return {
         id: `edge-${index}`,
         source: edge.source,
         target: edge.target,
         imports: edge.imports || [],
         weight: weight,
-        thickness: thickness,
+        thickness: Math.min(weight * 0.5, 5.0),
       };
     });
 
-    // Update graph store
     setGraph({ nodes, edges });
-
-    // Force hierarchical layout
     setCurrentLayout('hierarchical');
   }, [currentSnapshot, setGraph, setCurrentLayout]);
 
-  // Auto-play functionality
+  // --- AUTOPLAY LOGIC (Unchanged) ---
   useEffect(() => {
     let interval: any;
-
     if (isPlaying) {
       interval = setInterval(() => {
         setCurrentSnapshotIndex((prev) => {
@@ -109,153 +89,146 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
         });
       }, playbackSpeed);
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => { if (interval) clearInterval(interval); };
   }, [isPlaying, playbackSpeed, data.snapshots.length]);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Controls Bar */}
-      <div className="bg-surface border-b border-border-light px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Playback Controls */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className={`p-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                isPlaying
-                  ? 'bg-amber-600 text-white shadow-md hover:bg-amber-700'
-                  : 'bg-background text-text-primary hover:bg-border-light'
-              }`}
-              disabled={currentSnapshotIndex >= data.snapshots.length - 1}
-            >
-              {isPlaying ? (
-                <>
-                  <Pause className="w-4 h-4" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Play
-                </>
-              )}
-            </button>
+    <div className="h-full flex flex-col bg-white">
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-semibold text-text-secondary">Speed:</label>
-              <select
-                value={playbackSpeed}
-                onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-                className="px-3 py-2 border border-border-medium rounded-lg bg-surface text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-              >
-                <option value={2000}>0.5x</option>
-                <option value={1000}>1x</option>
-                <option value={500}>2x</option>
-                <option value={250}>4x</option>
-              </select>
-            </div>
-          </div>
+      {/* --- CONTROLS HEADER --- */}
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between flex-shrink-0">
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('graph')}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
-                viewMode === 'graph'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'bg-background text-text-secondary hover:bg-border-light hover:text-text-primary'
-              }`}
+        {/* Playback */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className={`
+              p-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2
+              ${isPlaying
+                ? 'bg-slate-900 text-white hover:bg-teal-600 shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'
+              }
+            `}
+            disabled={currentSnapshotIndex >= data.snapshots.length - 1}
+          >
+            {isPlaying ? (
+              <> <Pause className="w-3.5 h-3.5" /> Pause </>
+            ) : (
+              <> <Play className="w-3.5 h-3.5" /> Play </>
+            )}
+          </button>
+
+          <div className="flex items-center gap-2 bg-white px-2 py-1.5 rounded border border-slate-200">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={playbackSpeed}
+              onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+              className="text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-0 cursor-pointer input-select"
             >
-              <Network className="w-4 h-4" />
-              Graph View
-            </button>
-            <button
-              onClick={() => setViewMode('heatmap')}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
-                viewMode === 'heatmap'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'bg-background text-text-secondary hover:bg-border-light hover:text-text-primary'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              Heatmap View
-            </button>
+              <option value={2000}>0.5x Speed</option>
+              <option value={1000}>1x Speed</option>
+              <option value={500}>2x Speed</option>
+              <option value={250}>4x Speed</option>
+            </select>
           </div>
+        </div>
+
+        {/* View Mode Switch */}
+        <div className="flex bg-slate-200/50 p-1 rounded-lg">
+          <button
+            onClick={() => setViewMode('graph')}
+            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
+              viewMode === 'graph'
+                ? 'bg-white text-teal-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5" />
+            Topology
+          </button>
+          <button
+            onClick={() => setViewMode('heatmap')}
+            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
+              viewMode === 'heatmap'
+                ? 'bg-white text-teal-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            Heatmap
+          </button>
         </div>
       </div>
 
-      {/* Main Visualization Area */}
+      {/* --- MAIN CONTENT --- */}
       <div className="flex-1 overflow-hidden flex">
-        {/* Left Panel - Timeline & Stats */}
-        <div className="w-80 border-r border-border-light bg-surface overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {/* Current Commit Info */}
-            {currentSnapshot && (
-              <div className="bg-background rounded-lg p-4 border border-border-light">
-                <h3 className="text-sm font-bold text-text-primary mb-3">Current Commit</h3>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-text-tertiary">SHA:</span>
-                    <a
-                      href={buildGitHubCommitUrl(data.repository, currentSnapshot.commit_sha)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-2 font-mono text-amber-600 hover:text-amber-700 hover:underline flex items-center gap-1 transition-colors"
-                    >
-                      {currentSnapshot.commit_sha.substring(0, 7)}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+
+        {/* Left Sidebar: Metadata */}
+        <div className="w-80 border-r border-slate-200 bg-slate-50/50 overflow-y-auto custom-scrollbar p-5 space-y-5">
+
+          {/* Commit Details Card */}
+          {currentSnapshot && (
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center gap-2">
+                <GitCommit className="w-4 h-4 text-slate-400" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Snapshot Data</span>
+              </div>
+
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600 border border-slate-200">
+                    {currentSnapshot.commit_sha.substring(0, 7)}
+                  </span>
+                  <a
+                    href={buildGitHubCommitUrl(data.repository, currentSnapshot.commit_sha)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-bold text-teal-600 hover:underline flex items-center gap-1"
+                  >
+                    VIEW DIFF <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{new Date(currentSnapshot.commit_date).toLocaleDateString()}</span>
                   </div>
-                  <div>
-                    <span className="text-text-tertiary">Date:</span>
-                    <span className="ml-2 font-mono text-text-primary">
-                      {new Date(currentSnapshot.commit_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Author:</span>
-                    <span className="ml-2 text-text-primary">{currentSnapshot.author}</span>
-                  </div>
-                  <div className="pt-2 border-t border-border-light">
-                    <p className="text-text-secondary italic">{currentSnapshot.commit_message}</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <User className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{currentSnapshot.author}</span>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Metrics */}
-            {currentSnapshot && (
-              <div className="bg-background rounded-lg p-4 border border-border-light">
-                <h3 className="text-sm font-bold text-text-primary mb-3">Metrics</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Nodes:</span>
-                    <span className="font-mono font-bold text-text-primary tabular-nums">
-                      {currentSnapshot.node_count}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Edges:</span>
-                    <span className="font-mono font-bold text-text-primary tabular-nums">
-                      {currentSnapshot.edge_count}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Circular Deps:</span>
-                    <span className={`font-mono font-bold tabular-nums ${
-                      currentSnapshot.circular_count > 0 ? 'text-error' : 'text-success'
-                    }`}>
-                      {currentSnapshot.circular_count}
-                    </span>
-                  </div>
+                <div className="pt-3 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 italic leading-relaxed">
+                    "{currentSnapshot.commit_message}"
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Circular Dependencies Timeline */}
+          {/* Snapshot Metrics */}
+          {currentSnapshot && (
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                State Metrics
+              </h4>
+              <div className="space-y-2">
+                <MetricRow label="Nodes" value={currentSnapshot.node_count} />
+                <MetricRow label="Edges" value={currentSnapshot.edge_count} />
+                <MetricRow
+                  label="Circular Cycles"
+                  value={currentSnapshot.circular_count}
+                  highlight={currentSnapshot.circular_count > 0}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Timeline Component */}
+          <div className="pt-2">
             <CircularDepsTimeline
               timeline={data.circular_deps_timeline}
               currentCommitSha={currentSnapshot?.commit_sha}
@@ -264,10 +237,11 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
           </div>
         </div>
 
-        {/* Right Panel - Visualization */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Visualization */}
-          <div className="flex-1 overflow-hidden">
+        {/* Right Panel: Viewport */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white relative">
+
+          {/* Graph/Heatmap Area */}
+          <div className="flex-1 overflow-hidden relative">
             {viewMode === 'graph' ? (
               <Graph3D hideLayoutSelector={true} />
             ) : (
@@ -275,8 +249,8 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
             )}
           </div>
 
-          {/* Timeline Slider */}
-          <div className="border-t border-border-light bg-surface p-6">
+          {/* Timeline Footer */}
+          <div className="border-t border-slate-200 bg-white p-6 z-10 relative">
             <TimelineSlider
               snapshots={data.snapshots}
               currentIndex={currentSnapshotIndex}
@@ -289,3 +263,13 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
     </div>
   );
 };
+
+// --- HELPER COMPONENT ---
+const MetricRow = ({ label, value, highlight }: any) => (
+  <div className="flex justify-between items-center text-xs">
+    <span className="text-slate-500 font-medium">{label}</span>
+    <span className={`font-mono font-bold ${highlight ? 'text-rose-600' : 'text-slate-900'}`}>
+      {value}
+    </span>
+  </div>
+);

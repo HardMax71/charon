@@ -19,9 +19,16 @@ module.exports = {
           600: '#0d9488', // River Teal
           100: '#f0fdfa', // Mist
         },
+        stone: {
+          700: '#334155', // text-stone
+        },
         obol: {
           500: '#d97706', // Gold Coin
           400: '#fbbf24',
+          glow: '#fcd34d', // gold-glow
+        },
+        blood: {
+          700: '#be123c', // danger-blood
         }
       },
       boxShadow: {

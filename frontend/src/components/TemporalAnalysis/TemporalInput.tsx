@@ -171,7 +171,7 @@ export const TemporalInput = ({
                     value={repoUrl}
                     onChange={(e) => setRepoUrl(e.target.value)}
                     placeholder="github.com/owner/repo"
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:bg-white transition-all"
+                    className="input-text bg-slate-50 placeholder:text-slate-400 focus:bg-white"
                     disabled={isAnalyzing}
                   />
                 </div>
@@ -192,7 +192,7 @@ export const TemporalInput = ({
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full pl-12 pr-3 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none transition-all"
+                        className="input-base bg-white pl-12 pr-3 py-2.5 text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none"
                         disabled={isAnalyzing}
                       />
                     </div>
@@ -202,7 +202,7 @@ export const TemporalInput = ({
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none transition-all"
+                        className="input-base bg-white pl-8 pr-3 py-2.5 text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none"
                         disabled={isAnalyzing}
                       />
                     </div>
@@ -218,7 +218,7 @@ export const TemporalInput = ({
                     <select
                       value={sampleStrategy}
                       onChange={(e) => setSampleStrategy(e.target.value as any)}
-                      className="w-full pl-3 pr-10 py-2.5 bg-white border border-slate-200 rounded-md text-xs font-mono text-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 focus:outline-none appearance-none uppercase transition-all"
+                      className="input-select uppercase"
                       disabled={isAnalyzing}
                     >
                       <option value="all">Full History (Slow)</option>

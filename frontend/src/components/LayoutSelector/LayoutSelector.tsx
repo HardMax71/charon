@@ -1,7 +1,15 @@
 import { useMemo } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
-import { X, Minimize2, Maximize2 } from 'lucide-react';
+import {
+  X,
+  Minimize2,
+  Settings,
+  Layout,
+  Search,
+  Layers,
+  ChevronDown
+} from 'lucide-react';
 import { ExportDiagramButton } from '../ExportDiagram/ExportDiagramButton';
 import { ExportDocumentationButton } from '../ExportDocumentation/ExportDocumentationButton';
 
@@ -20,133 +28,136 @@ export const LayoutSelector = () => {
   const { graph, globalMetrics } = useGraphStore();
 
   const layouts: Array<{ value: 'hierarchical' | 'force' | 'circular'; label: string }> = [
-    { value: 'hierarchical', label: 'Hierarchical' },
-    { value: 'force', label: 'Force-Directed' },
-    { value: 'circular', label: 'Circular' },
+    { value: 'hierarchical', label: 'Hierarchical Tree' },
+    { value: 'force', label: 'Force Directed' },
+    { value: 'circular', label: 'Circular Ring' },
   ];
 
-  // Extract unique modules from graph
+  // Extract unique modules
   const modules = useMemo(() => {
     if (!graph) return [];
     const uniqueModules = new Set<string>();
     graph.nodes.forEach((node) => {
-      if (node.module) {
-        uniqueModules.add(node.module);
-      }
+      if (node.module) uniqueModules.add(node.module);
     });
     return Array.from(uniqueModules).sort();
   }, [graph]);
 
-  // Collapsed state - just a button
+  // Collapsed State
   if (!layoutSelectorExpanded) {
     return (
       <button
         onClick={() => setLayoutSelectorExpanded(true)}
-        className="fixed top-20 right-4 bg-amber-600 hover:bg-amber-700 text-white p-3 rounded-xl shadow-lg border border-amber-700 transition-all hover:shadow-xl group z-10 animate-slide-down"
-        title="Expand controls"
+        className="fixed top-20 right-6 z-40 bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-2.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group"
+        title="Configure View"
       >
-        <Maximize2 className="w-5 h-5" />
+        <Settings className="w-5 h-5 transition-transform group-hover:rotate-90" />
       </button>
     );
   }
 
-  // Expanded state - full panel
+  // Expanded State
   return (
-    <div className="fixed top-20 right-4 bg-surface/95 backdrop-blur-md rounded-xl shadow-lg border border-border-light p-5 space-y-5 max-w-sm z-10 animate-slide-down">
-      {/* Layout Selector */}
-      <div>
-        <div className="flex items-center justify-between mb-2.5">
-          <label className="text-sm md:text-base font-bold text-text-primary tracking-tight">
-            Layout
-          </label>
-          <button
-            onClick={() => setLayoutSelectorExpanded(false)}
-            className="p-1.5 text-text-tertiary hover:text-text-primary hover:bg-background rounded transition-colors"
-            title="Minimize"
-          >
-            <Minimize2 className="w-4 h-4" />
-          </button>
+    // FIXED: Changed 'overflow-hidden' to 'overflow-visible' so dropdowns can appear
+    <div className="fixed top-20 right-6 z-40 w-72 bg-white/95 backdrop-blur-md rounded-lg shadow-2xl border border-slate-200 overflow-visible animate-in slide-in-from-top-2 duration-300">
+
+      {/* Header */}
+      <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between select-none h-9 rounded-t-lg">
+        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-500">
+          <Settings className="w-3 h-3" />
+          <span>View Config</span>
         </div>
-        <select
-          value={currentLayout}
-          onChange={(e) => setCurrentLayout(e.target.value as any)}
-          className="w-full text-base border border-border-medium rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all cursor-pointer hover:border-border-dark bg-surface text-text-primary font-medium"
+        <button
+          onClick={() => setLayoutSelectorExpanded(false)}
+          className="text-slate-400 hover:text-slate-700 rounded hover:bg-slate-200/50 p-0.5 transition-colors"
         >
-          {layouts.map((layout) => (
-            <option key={layout.value} value={layout.value}>
-              {layout.label}
-            </option>
-          ))}
-        </select>
+          <Minimize2 className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Module Filter */}
-      <div>
-        <label className="text-sm md:text-base font-bold text-text-primary block mb-2.5 tracking-tight">
-          Filter by Module
-        </label>
-        <div className="relative">
-          <input
-            list="modules-list"
-            value={selectedModule || ''}
-            onChange={(e) => setSelectedModule(e.target.value || null)}
-            placeholder="Search or select module..."
-            className="w-full text-base border border-border-medium rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all hover:border-border-dark bg-surface text-text-primary font-medium placeholder:text-text-tertiary"
-          />
-          <datalist id="modules-list">
-            {modules.map((module) => (
-              <option key={module} value={module} />
-            ))}
-          </datalist>
-          {selectedModule && (
-            <button
-              onClick={() => setSelectedModule(null)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors p-1 hover:bg-background rounded"
-              title="Clear filter"
-              aria-label="Clear filter"
+      <div className="p-3 space-y-3">
+
+        {/* 1. Layout Selector */}
+        <div className="space-y-1.5">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block pl-0.5">
+            Topology Layout
+          </label>
+          <div className="relative group">
+            <Layout className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+            <select
+              value={currentLayout}
+              onChange={(e) => setCurrentLayout(e.target.value as any)}
+              className="input-select"
             >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+              {layouts.map((layout) => (
+                <option key={layout.value} value={layout.value}>
+                  {layout.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+          </div>
         </div>
-      </div>
 
-      {/* Cluster Visualization Toggle */}
-      {globalMetrics?.clusters && globalMetrics.clusters.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <label className="flex items-center gap-3 cursor-pointer flex-1">
+        {/* 2. Module Filter */}
+        <div className="space-y-1.5">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block pl-0.5">
+            Scope Filter
+          </label>
+          <div className="relative group">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+            <input
+              list="modules-list"
+              value={selectedModule || ''}
+              onChange={(e) => setSelectedModule(e.target.value || null)}
+              placeholder="Select module..."
+              className="input-text"
+            />
+            <datalist id="modules-list">
+              {modules.map((module) => (
+                <option key={module} value={module} />
+              ))}
+            </datalist>
+            {selectedModule && (
+              <button
+                onClick={() => setSelectedModule(null)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded p-0.5 transition-all"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Clusters Toggle */}
+        {globalMetrics?.clusters && globalMetrics.clusters.length > 0 && (
+          <div className="bg-slate-50 rounded border border-slate-200 p-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5 text-teal-600" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Communities</span>
+                <span className="text-[9px] text-slate-400 leading-none">{globalMetrics.clusters.length} detected</span>
+              </div>
+            </div>
+
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
+                className="sr-only peer"
                 checked={showClusters}
                 onChange={(e) => setShowClusters(e.target.checked)}
-                className="w-5 h-5 rounded border-border-medium text-amber-600 focus:ring-2 focus:ring-amber-500/20 cursor-pointer flex-shrink-0"
               />
-              <span className="text-sm md:text-base font-bold text-text-primary tracking-tight">
-                Show Clusters <span className="tabular-nums">({globalMetrics.clusters.length})</span>
-              </span>
+              <div className="w-7 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-teal-600"></div>
             </label>
-            <button
-              onClick={() => setShowClusterModal(true)}
-              className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm hover:shadow-md flex-shrink-0"
-            >
-              Details
-            </button>
           </div>
-          <p className="text-xs md:text-sm text-text-secondary mt-2 ml-8">
-            Visualize detected communities
-          </p>
+        )}
+
+        {/* 4. Actions Grid */}
+        <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+          <ExportDiagramButton />
+          <ExportDocumentationButton />
         </div>
-      )}
 
-      {/* Export Diagram */}
-      <div>
-        <ExportDiagramButton />
-      </div>
-
-      {/* Export Documentation */}
-      <div>
-        <ExportDocumentationButton />
       </div>
     </div>
   );
