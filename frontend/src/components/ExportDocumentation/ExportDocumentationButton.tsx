@@ -7,7 +7,7 @@ export const ExportDocumentationButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async (format: 'markdown' | 'html' | 'pdf') => {
+  const handleExport = async (format: 'md' | 'html' | 'pdf') => {
     if (!graph) return;
     setIsExporting(true);
     try {
@@ -64,7 +64,7 @@ export const ExportDocumentationButton = () => {
               <FormatOption
                 label="Markdown"
                 icon={FileCode}
-                onClick={() => handleExport('markdown')}
+                onClick={() => handleExport('md')}
               />
               <FormatOption
                 label="HTML Report"

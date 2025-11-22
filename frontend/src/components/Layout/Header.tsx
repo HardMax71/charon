@@ -16,8 +16,8 @@ export const Header = () => {
           to="/"
           className="logo-container group"
         >
-          <div className="logo-icon group-hover:bg-styx-600 transition-colors">
-            C
+          <div className="w-8 h-8 rounded overflow-hidden">
+            <img src="/icon.jpeg" alt="Charon Logo" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-black text-styx-900 tracking-tight leading-none group-hover:text-styx-600 transition-colors">

@@ -51,7 +51,7 @@ async def export_documentation(request: ExportDocumentationRequest):
     )
 
     # Generate documentation in requested format
-    if request.format == "markdown":
+    if request.format == "md":
         content = doc_service.generate_markdown()
         media_type = "text/markdown"
         extension = "md"

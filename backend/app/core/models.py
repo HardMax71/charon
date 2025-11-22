@@ -195,7 +195,7 @@ class ExportDocumentationRequest(BaseModel):
 
     graph: DependencyGraph
     global_metrics: dict
-    format: Literal["markdown", "html", "pdf"]
+    format: Literal["md", "html", "pdf"]
     project_name: str = "Project"
 
 

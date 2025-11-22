@@ -9,7 +9,7 @@ interface ExportDocumentationProps {
 
 export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: ExportDocumentationProps) => {
   const { graph } = useGraphStore();
-  const [format, setFormat] = useState<'markdown' | 'html' | 'pdf'>('markdown');
+  const [format, setFormat] = useState<'md' | 'html' | 'pdf'>('md');
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,11 +86,11 @@ export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: 
           <label className="text-xs text-text-tertiary mb-2 block">Format:</label>
           <select
             value={format}
-            onChange={(e) => setFormat(e.target.value as 'markdown' | 'html' | 'pdf')}
+            onChange={(e) => setFormat(e.target.value as 'md' | 'html' | 'pdf')}
             className="w-full px-3 py-2 border border-border-medium rounded-lg bg-background text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             disabled={isExporting}
           >
-            <option value="markdown">Markdown (.md)</option>
+            <option value="md">Markdown (.md)</option>
             <option value="html">HTML (.html)</option>
             <option value="pdf">PDF (.pdf)</option>
           </select>

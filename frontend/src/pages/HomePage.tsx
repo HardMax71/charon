@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { InputForm } from '@/components/InputForm/InputForm';
-import { DemoGraph } from '@/components/DemoGraph/DemoGraph';
+import { Graph3D } from '@/components/Graph3D/Graph3D';
+import { useGraphStore } from '@/stores/graphStore';
+import { DependencyGraph } from '@/types/graph';
 import {
   Network,
   AlertCircle,
@@ -11,184 +13,458 @@ import {
   Share2
 } from 'lucide-react';
 
-// --- MAIN PAGE COMPONENT --- //
-
 export const HomePage = () => {
+  const { graph } = useGraphStore();
+
+  // Example graph for demo purposes
+  const exampleGraph: DependencyGraph = useMemo(() => ({
+    nodes: [
+      {
+        id: 'app.main',
+        label: 'main.py',
+        type: 'internal' as const,
+        module: 'app',
+        position: { x: 0, y: 0, z: 0 },
+        color: '#0f172a',
+        cluster_id: 0,
+        metrics: {
+          afferent_coupling: 8,
+          efferent_coupling: 4,
+          instability: 0.33,
+          is_circular: false,
+          is_high_coupling: true,
+          cyclomatic_complexity: 12,
+          max_complexity: 8,
+          maintainability_index: 65,
+          lines_of_code: 245,
+          complexity_grade: 'B',
+          maintainability_grade: 'C',
+          is_hot_zone: true,
+          hot_zone_severity: 'warning' as const,
+          hot_zone_score: 0.72,
+          hot_zone_reason: 'High coupling with moderate complexity'
+        }
+      },
+      {
+        id: 'app.config',
+        label: 'config.py',
+        type: 'internal' as const,
+        module: 'app',
+        position: { x: 0, y: 20, z: 0 },
+        color: '#0f172a',
+        cluster_id: 0,
+        metrics: {
+          afferent_coupling: 6,
+          efferent_coupling: 2,
+          instability: 0.25,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 4,
+          max_complexity: 3,
+          maintainability_index: 82,
+          lines_of_code: 89,
+          complexity_grade: 'A',
+          maintainability_grade: 'A',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.15,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'services.user',
+        label: 'user_service.py',
+        type: 'internal' as const,
+        module: 'services',
+        position: { x: 20, y: 3, z: 15 },
+        color: '#0d9488',
+        cluster_id: 1,
+        metrics: {
+          afferent_coupling: 3,
+          efferent_coupling: 5,
+          instability: 0.625,
+          is_circular: true,
+          is_high_coupling: false,
+          cyclomatic_complexity: 18,
+          max_complexity: 12,
+          maintainability_index: 58,
+          lines_of_code: 312,
+          complexity_grade: 'C',
+          maintainability_grade: 'D',
+          is_hot_zone: true,
+          hot_zone_severity: 'critical' as const,
+          hot_zone_score: 0.88,
+          hot_zone_reason: 'Circular dependency with high complexity'
+        }
+      },
+      {
+        id: 'services.auth',
+        label: 'auth.py',
+        type: 'internal' as const,
+        module: 'services',
+        position: { x: 28, y: -7, z: 20 },
+        color: '#0d9488',
+        cluster_id: 1,
+        metrics: {
+          afferent_coupling: 4,
+          efferent_coupling: 3,
+          instability: 0.43,
+          is_circular: true,
+          is_high_coupling: false,
+          cyclomatic_complexity: 15,
+          max_complexity: 9,
+          maintainability_index: 62,
+          lines_of_code: 267,
+          complexity_grade: 'B',
+          maintainability_grade: 'C',
+          is_hot_zone: true,
+          hot_zone_severity: 'warning' as const,
+          hot_zone_score: 0.65,
+          hot_zone_reason: 'Part of circular dependency chain'
+        }
+      },
+      {
+        id: 'models.user',
+        label: 'user.py',
+        type: 'internal' as const,
+        module: 'models',
+        position: { x: 30, y: 15, z: 18 },
+        color: '#0d9488',
+        cluster_id: 1,
+        metrics: {
+          afferent_coupling: 5,
+          efferent_coupling: 2,
+          instability: 0.29,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 6,
+          max_complexity: 4,
+          maintainability_index: 78,
+          lines_of_code: 156,
+          complexity_grade: 'A',
+          maintainability_grade: 'B',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.22,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'services.data',
+        label: 'data_service.py',
+        type: 'internal' as const,
+        module: 'services',
+        position: { x: -20, y: 3, z: 15 },
+        color: '#0d9488',
+        cluster_id: 2,
+        metrics: {
+          afferent_coupling: 3,
+          efferent_coupling: 4,
+          instability: 0.57,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 14,
+          max_complexity: 10,
+          maintainability_index: 68,
+          lines_of_code: 298,
+          complexity_grade: 'B',
+          maintainability_grade: 'C',
+          is_hot_zone: false,
+          hot_zone_severity: 'info' as const,
+          hot_zone_score: 0.45,
+          hot_zone_reason: 'Moderate instability'
+        }
+      },
+      {
+        id: 'models.data',
+        label: 'data.py',
+        type: 'internal' as const,
+        module: 'models',
+        position: { x: -30, y: 15, z: 18 },
+        color: '#0d9488',
+        cluster_id: 2,
+        metrics: {
+          afferent_coupling: 4,
+          efferent_coupling: 1,
+          instability: 0.2,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 5,
+          max_complexity: 3,
+          maintainability_index: 85,
+          lines_of_code: 134,
+          complexity_grade: 'A',
+          maintainability_grade: 'A',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.12,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'utils.logger',
+        label: 'logger.py',
+        type: 'internal' as const,
+        module: 'utils',
+        position: { x: 0, y: -20, z: -8 },
+        color: '#64748b',
+        cluster_id: 3,
+        metrics: {
+          afferent_coupling: 7,
+          efferent_coupling: 1,
+          instability: 0.125,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 3,
+          max_complexity: 2,
+          maintainability_index: 92,
+          lines_of_code: 67,
+          complexity_grade: 'A',
+          maintainability_grade: 'A',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.08,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'utils.helpers',
+        label: 'helpers.py',
+        type: 'internal' as const,
+        module: 'utils',
+        position: { x: 15, y: -25, z: -5 },
+        color: '#64748b',
+        cluster_id: 3,
+        metrics: {
+          afferent_coupling: 5,
+          efferent_coupling: 0,
+          instability: 0,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 8,
+          max_complexity: 5,
+          maintainability_index: 88,
+          lines_of_code: 145,
+          complexity_grade: 'A',
+          maintainability_grade: 'A',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.05,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'utils.constants',
+        label: 'constants.py',
+        type: 'internal' as const,
+        module: 'utils',
+        position: { x: -15, y: -25, z: -5 },
+        color: '#64748b',
+        cluster_id: 3,
+        metrics: {
+          afferent_coupling: 6,
+          efferent_coupling: 0,
+          instability: 0,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 1,
+          max_complexity: 1,
+          maintainability_index: 98,
+          lines_of_code: 42,
+          complexity_grade: 'A',
+          maintainability_grade: 'A',
+          is_hot_zone: false,
+          hot_zone_severity: 'ok' as const,
+          hot_zone_score: 0.02,
+          hot_zone_reason: ''
+        }
+      },
+      {
+        id: 'external.api',
+        label: 'api_client.py',
+        type: 'third_party' as const,
+        module: 'external',
+        position: { x: 0, y: 30, z: -15 },
+        color: '#f59e0b',
+        cluster_id: null,
+        metrics: {
+          afferent_coupling: 3,
+          efferent_coupling: 5,
+          instability: 0.625,
+          is_circular: false,
+          is_high_coupling: false,
+          cyclomatic_complexity: 10,
+          max_complexity: 7,
+          maintainability_index: 72,
+          lines_of_code: 189,
+          complexity_grade: 'B',
+          maintainability_grade: 'B',
+          is_hot_zone: false,
+          hot_zone_severity: 'info' as const,
+          hot_zone_score: 0.38,
+          hot_zone_reason: 'External dependency with moderate instability'
+        }
+      }
+    ],
+    edges: [
+      { id: 'e1', source: 'app.main', target: 'app.config', imports: ['CONFIG'], weight: 1, thickness: 0.5 },
+      { id: 'e2', source: 'app.main', target: 'services.user', imports: ['UserService'], weight: 2, thickness: 1 },
+      { id: 'e3', source: 'app.main', target: 'services.data', imports: ['DataService'], weight: 2, thickness: 1 },
+      { id: 'e4', source: 'app.main', target: 'utils.logger', imports: ['logger'], weight: 1, thickness: 0.5 },
+      { id: 'e5', source: 'services.user', target: 'models.user', imports: ['User'], weight: 3, thickness: 1.5 },
+      { id: 'e6', source: 'services.user', target: 'services.auth', imports: ['authenticate'], weight: 2, thickness: 1 },
+      { id: 'e7', source: 'services.user', target: 'utils.logger', imports: ['logger'], weight: 1, thickness: 0.5 },
+      { id: 'e8', source: 'services.auth', target: 'app.config', imports: ['SECRET_KEY'], weight: 1, thickness: 0.5 },
+      { id: 'e9', source: 'services.auth', target: 'services.user', imports: ['get_user'], weight: 2, thickness: 1 },
+      { id: 'e10', source: 'services.data', target: 'models.data', imports: ['Data'], weight: 3, thickness: 1.5 },
+      { id: 'e11', source: 'services.data', target: 'utils.logger', imports: ['logger'], weight: 1, thickness: 0.5 },
+      { id: 'e12', source: 'services.data', target: 'utils.constants', imports: ['DB_CONFIG'], weight: 1, thickness: 0.5 },
+      { id: 'e13', source: 'app.config', target: 'utils.constants', imports: ['DEFAULT_CONFIG'], weight: 1, thickness: 0.5 },
+      { id: 'e14', source: 'external.api', target: 'app.config', imports: ['API_KEY'], weight: 1, thickness: 0.5 },
+      { id: 'e15', source: 'services.user', target: 'external.api', imports: ['api_call'], weight: 2, thickness: 1 },
+      { id: 'e16', source: 'services.data', target: 'external.api', imports: ['fetch_data'], weight: 2, thickness: 1 },
+      { id: 'e17', source: 'services.user', target: 'utils.helpers', imports: ['validate'], weight: 1, thickness: 0.5 },
+      { id: 'e18', source: 'models.user', target: 'utils.helpers', imports: ['format_name'], weight: 1, thickness: 0.5 }
+    ]
+  }), []);
+
   return (
-    <div className="flex-1 w-full h-full overflow-y-auto bg-white text-slate-900 font-sans selection:bg-teal-100 selection:text-teal-900">
+    <div className="h-[calc(100vh-4rem)] w-full overflow-y-auto snap-y snap-mandatory scroll-smooth">
 
-      {/* --- GRID BACKGROUND --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-30"
-        style={{
-          backgroundImage: 'radial-gradient(#0d9488 1px, transparent 1px)',
-          backgroundSize: '30px 30px'
-        }}
-      />
+      {/* FIRST SCREEN */}
+      <div className="h-[calc(100vh-4rem)] w-full shrink-0 snap-start bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full h-full flex items-center justify-center py-6 sm:py-8 lg:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
 
-      <div className="relative z-10 flex flex-col min-h-screen border-x border-slate-200 max-w-[1400px] mx-auto shadow-2xl shadow-slate-200/50 bg-white/90 backdrop-blur-sm">
-
-        {/* --- HERO SECTION --- */}
-        <header className="grid grid-cols-1 lg:grid-cols-12 border-b border-slate-200">
-
-          {/* Left Block: Branding & Title */}
-          <div className="lg:col-span-7 p-8 md:p-16 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col justify-between min-h-[600px] relative overflow-hidden group">
-            <span className="absolute top-6 right-6 font-mono text-9xl font-bold text-slate-50 select-none -z-10 transition-colors duration-500">01</span>
-
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 border border-slate-900 rounded-full text-xs font-mono font-bold uppercase tracking-widest mb-8 bg-white">
+            {/* Branding */}
+            <div className="space-y-4 sm:space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-slate-900 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest bg-white shadow-sm">
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
                 System Online
               </div>
 
-              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8 text-slate-900">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-none">
                 CODE<br />
                 VISUAL<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-800">AUTOPSY.</span>
               </h1>
 
-              <p className="text-lg md:text-xl text-slate-600 max-w-md font-medium leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-xl text-slate-600 font-medium leading-relaxed max-w-lg">
                 Stop guessing. Charon generates a 3D topology of your Python architecture, exposing circular dependencies and coupling at the source.
               </p>
-            </div>
 
-            {/* Bottom Metric Strip */}
-            <div className="mt-12 flex items-center gap-8 font-mono text-xs text-slate-500 uppercase tracking-wider border-t border-slate-100 pt-8">
-              <div>
-                <span className="block text-slate-900 font-bold text-lg">AST</span>
-                Parser
-              </div>
-              <div>
-                <span className="block text-slate-900 font-bold text-lg">NX</span>
-                Graph Logic
-              </div>
-              <div>
-                <span className="block text-slate-900 font-bold text-lg">R3F</span>
-                Render Engine
-              </div>
-            </div>
-          </div>
-
-          {/* Right Block: The Input Console */}
-          <div className="lg:col-span-5 bg-slate-50 p-8 md:p-16 flex flex-col justify-center relative border-b lg:border-b-0">
-            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[size:100%_4px] pointer-events-none" />
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6 text-slate-500 font-mono text-xs uppercase tracking-wider">
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4" />
-                  <span>Target Acquisition</span>
+              <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 pt-2 sm:pt-4 font-mono text-[10px] sm:text-xs text-slate-500 uppercase tracking-wider">
+                <div>
+                  <span className="block text-slate-900 font-bold text-base sm:text-lg">AST</span>
+                  Parser
                 </div>
-                <span className="text-teal-600">Ready to scan</span>
-              </div>
-
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                <InputForm />
-              </div>
-
-              <div className="mt-8 flex gap-6 text-xs font-mono text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  Secure Connection
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                  Github API v3
-                </span>
+                <div>
+                  <span className="block text-slate-900 font-bold text-base sm:text-lg">NX</span>
+                  Graph Logic
+                </div>
+                <div>
+                  <span className="block text-slate-900 font-bold text-base sm:text-lg">R3F</span>
+                  Render Engine
+                </div>
               </div>
             </div>
+
+            {/* Form */}
+            <div>
+              <InputForm />
+            </div>
           </div>
-        </header>
+        </div>
+      </div>
 
-        {/* --- FEATURE GRID (Technical Lab) --- */}
-        <section className="bg-white relative z-10 border-b border-slate-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-
+      {/* SECOND SCREEN */}
+      <div className="h-[calc(100vh-4rem)] w-full shrink-0 snap-start bg-white flex flex-col overflow-hidden">
+        {/* Features strip */}
+        <div className="flex-none bg-white/90 border-b border-slate-200 py-2 sm:py-3 lg:py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 sm:gap-0">
             <TechCell
               index="01"
               icon={<Network className="text-indigo-600" />}
               label="Topology"
               title="Force-Directed Graph"
-              desc="Physics-based rendering reveals the gravitational pull of your core modules."
-              borderColor="border-indigo-200"
+              desc="Physics-based rendering reveals gravitational pull of core modules."
             />
-
             <TechCell
               index="02"
               icon={<AlertCircle className="text-rose-600" />}
               label="Diagnostics"
               title="Cycle Detection"
-              desc="Instantaneously identify recursive import chains that break runtime logic."
-              borderColor="border-rose-200"
+              desc="Identify recursive import chains that break runtime logic."
             />
-
             <TechCell
               index="03"
               icon={<GitMerge className="text-amber-600" />}
               label="Analysis"
               title="Coupling Metrics"
-              desc="Calculate Instability (I) and Abstractness (A) per package automatically."
-              borderColor="border-amber-200"
+              desc="Calculate Instability and Abstractness per package automatically."
             />
-
             <TechCell
               index="04"
               icon={<Workflow className="text-teal-600" />}
               label="Structure"
               title="Auto-Clustering"
-              desc="Community detection algorithms suggest natural microservice boundaries."
-              borderColor="border-teal-200"
+              desc="Community detection suggests natural microservice boundaries."
             />
           </div>
-        </section>
+        </div>
 
-        {/* --- DEEP DIVE SECTION --- */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+        {/* Graph Demo + Description */}
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 bg-slate-50">
 
-          {/* Visual Area: R3F Simulation */}
-          <div className="lg:col-span-8 bg-slate-100 relative border-b lg:border-b-0 border-slate-200 min-h-[400px] lg:min-h-auto overflow-hidden">
-            <DemoGraph />
+          {/* Graph */}
+          <div className="lg:col-span-8 relative bg-slate-100 min-h-[300px] lg:min-h-0">
+            <Graph3D
+              customGraph={graph || exampleGraph}
+              hideLayoutSelector={true}
+              hideNodeMetrics={true}
+              hideControlsLegend={true}
+              hideClusterBoxes={true}
+            />
           </div>
 
-          {/* Text Content Area */}
-          <div className="lg:col-span-4 p-12 flex flex-col justify-center bg-white border-l border-slate-200">
-            <div className="w-12 h-1.5 bg-teal-600 mb-8" />
-            <h2 className="text-4xl font-bold mb-6 tracking-tight text-slate-900">
-              Surgical<br />Refactoring.
-            </h2>
-            <p className="text-slate-600 mb-8 leading-relaxed font-medium">
-              Charon isn't just a visualizer; it's a decision engine.
-              By mapping the afferent and efferent coupling of every file,
-              you can perform architectural surgery with confidence.
-            </p>
+            {/* Description */}
+            <div className="lg:col-span-4 p-4 sm:p-6 flex flex-col justify-center bg-white">
+              <div className="w-12 h-1.5 bg-teal-600 mb-4" />
+              <h2 className="text-2xl font-bold mb-3 tracking-tight">
+                Surgical<br />Refactoring.
+              </h2>
+              <p className="text-slate-600 mb-4 leading-relaxed text-sm">
+                Charon isn't just a visualizer; it's a decision engine. Map afferent and efferent coupling for architectural surgery.
+              </p>
 
-            <ul className="space-y-5 font-mono text-sm text-slate-700">
-              <li className="flex items-center gap-3 group cursor-pointer">
-                <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-teal-500 group-hover:text-teal-700 transition-all">
-                  <Cpu className="w-4 h-4" />
-                </div>
-                <span className="font-bold">Identify "God Objects"</span>
-              </li>
-              <li className="flex items-center gap-3 group cursor-pointer">
-                <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-rose-500 group-hover:text-rose-700 transition-all">
-                  <Share2 className="w-4 h-4" />
-                </div>
-                <span className="font-bold">Visualize Blast Radius</span>
-              </li>
-              <li className="flex items-center gap-3 group cursor-pointer">
-                <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:border-amber-500 group-hover:text-amber-700 transition-all">
-                  <Terminal className="w-4 h-4" />
-                </div>
-                <span className="font-bold">Export Architecture as JSON</span>
-              </li>
-            </ul>
-          </div>
-        </section>
+              <ul className="space-y-2 font-mono text-xs text-slate-700">
+                <li className="flex items-center gap-2 group cursor-pointer">
+                  <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-teal-500 transition-all">
+                    <Cpu className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-bold">Identify "God Objects"</span>
+                </li>
+                <li className="flex items-center gap-2 group cursor-pointer">
+                  <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-rose-500 transition-all">
+                    <Share2 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-bold">Visualize Blast Radius</span>
+                </li>
+                <li className="flex items-center gap-2 group cursor-pointer">
+                  <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-amber-500 transition-all">
+                    <Terminal className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-bold">Export as JSON</span>
+                </li>
+              </ul>
+            </div>
+        </div>
       </div>
     </div>
   );
 };
 
-/* --- SUB-COMPONENTS --- */
+/* --- COMPONENTS --- */
 
 interface TechCellProps {
   index: string;
@@ -196,31 +472,26 @@ interface TechCellProps {
   label: string;
   title: string;
   desc: string;
-  borderColor: string;
 }
 
-const TechCell = ({ index, icon, label, title, desc, borderColor }: TechCellProps) => (
-  <div className={`
-    p-8 border-b border-slate-200 lg:border-b-0 lg:border-r last:border-r-0 
-    group hover:bg-slate-50 transition-all duration-300 border-t-4 border-t-transparent hover:${borderColor}
-  `}>
-    <div className="flex items-start justify-between mb-6">
-      {/* Darkened Index for readability */}
-      <span className="font-mono text-3xl font-light text-slate-300 group-hover:text-slate-400 transition-colors">
+const TechCell = ({ index, icon, label, title, desc }: TechCellProps) => (
+  <div className="px-3 sm:px-4 py-2 sm:py-3 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 flex flex-col gap-1.5 sm:gap-2 group hover:bg-slate-50 transition-colors border-slate-200">
+    <div className="flex items-start justify-between mb-1 sm:mb-2">
+      <span className="font-mono text-base sm:text-xl text-slate-300 group-hover:text-slate-400 transition-colors">
         {index}
       </span>
-      <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-300">
-        {React.cloneElement(icon, { size: 20 })}
+      <div className="p-1 sm:p-1.5 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
+        {React.cloneElement(icon, { size: 14, className: 'sm:w-4 sm:h-4' })}
       </div>
     </div>
 
-    <span className="inline-block font-mono text-[10px] uppercase tracking-widest text-slate-500 mb-2 border border-slate-200 px-2 py-0.5 rounded bg-white">
+    <span className="inline-block font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-slate-500 mb-1 sm:mb-1.5 border border-slate-200 px-1.5 py-0.5 rounded bg-white w-fit">
       {label}
     </span>
-    <h3 className="text-lg font-bold mb-3 text-slate-900 group-hover:text-teal-700 transition-colors">
+    <h3 className="text-xs sm:text-sm font-bold mb-1 sm:mb-1.5 text-slate-900 group-hover:text-teal-700 transition-colors leading-tight">
       {title}
     </h3>
-    <p className="text-sm text-slate-600 leading-relaxed font-medium">
+    <p className="text-[10px] sm:text-xs text-slate-600 leading-snug">
       {desc}
     </p>
   </div>

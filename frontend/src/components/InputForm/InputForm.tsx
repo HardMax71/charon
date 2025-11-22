@@ -150,22 +150,19 @@ export const InputForm = () => {
         )}
 
         {activeTab === 'import' && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="relative group">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <label className="block border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-300 hover:border-gray-400 cursor-pointer">
               <input
                 type="file"
                 accept=".json,.toml"
                 onChange={handleFileUpload}
-                className="w-full px-4 py-8 border-2 border-dashed border-slate-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all file:hidden cursor-pointer bg-slate-50/50 hover:bg-teal-50/30 text-center text-slate-500 font-medium"
+                className="hidden"
               />
-              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
-                <Upload className="w-8 h-8 mb-2 opacity-50 group-hover:opacity-100 transition-opacity" />
-                <span className="text-sm">Click to upload JSON/TOML</span>
-              </div>
-            </div>
-            <p className="text-xs text-center text-slate-400 font-mono">
-              Supports Charon Export Format v1.0
-            </p>
+              <p className="text-gray-600 mb-2">
+                Click to upload JSON/TOML
+              </p>
+              <p className="text-xs text-gray-400">Charon export format</p>
+            </label>
           </div>
         )}
       </div>
