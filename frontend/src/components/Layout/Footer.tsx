@@ -7,7 +7,7 @@ export const Footer = () => {
 
         {/* LEFT: System Metadata (Clean, Monospace) */}
         <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 uppercase tracking-wider">
-          <span className="font-bold text-slate-600">Charon Engine</span>
+          <span className="font-bold text-slate-600">Charon</span>
           <span className="text-slate-300">•</span>
           <span>v1.0.0</span>
           <span className="text-slate-300">•</span>

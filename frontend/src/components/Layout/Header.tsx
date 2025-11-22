@@ -23,7 +23,7 @@ export const Header = () => {
             <span className="text-lg font-black text-styx-900 tracking-tight leading-none group-hover:text-styx-600 transition-colors">
               CHARON
             </span>
-            <span className="text-[10px] font-mono text-stone-700 tracking-widest uppercase leading-none">
+            <span className="text-[10px] font-mono text-stone-700 tracking-widest uppercase leading-none mt-1">
               System Visualizer
             </span>
           </div>
