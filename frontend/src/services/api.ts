@@ -2,6 +2,7 @@ import axios from 'axios';
 import { AnalyzeRequest, SSEEvent } from '@/types/api';
 import { AnalysisResult, ImpactAnalysis, HealthScore } from '@/types/metrics';
 import { DependencyGraph } from '@/types/graph';
+import { FitnessRule, FitnessValidationResult, FitnessRuleConfig } from '@/types/fitness';
 
 const API_BASE = '/api';
 
@@ -155,6 +156,40 @@ export const calculateHealthScore = async (
       },
       global_metrics: globalMetrics,
     }
+  );
+
+  return response.data;
+};
+
+// Fitness Functions API
+
+export const validateFitnessRules = async (
+  graph: DependencyGraph,
+  globalMetrics: any,
+  rules: FitnessRule[],
+  failOnError: boolean = true,
+  failOnWarning: boolean = false
+): Promise<FitnessValidationResult> => {
+  const response = await axios.post<FitnessValidationResult>(
+    `${API_BASE}/fitness/validate`,
+    {
+      graph: {
+        nodes: graph.nodes,
+        edges: graph.edges,
+      },
+      global_metrics: globalMetrics,
+      rules,
+      fail_on_error: failOnError,
+      fail_on_warning: failOnWarning,
+    }
+  );
+
+  return response.data;
+};
+
+export const getExampleFitnessConfig = async (): Promise<FitnessRuleConfig> => {
+  const response = await axios.get<FitnessRuleConfig>(
+    `${API_BASE}/fitness/config/example`
   );
 
   return response.data;

@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "no-circular-deps",
+      "name": "No Circular Dependencies",
+      "description": "Circular dependencies are not allowed",
+      "rule_type": "no_circular",
+      "severity": "error",
+      "enabled": true,
+      "parameters": {}
+    },
+    {
+      "id": "max-coupling",
+      "name": "Maximum Coupling",
+      "description": "Modules should not depend on more than 10 others",
+      "rule_type": "max_coupling",
+      "severity": "warning",
+      "enabled": true,
+      "parameters": {
+        "max_efferent": 10
+      }
+    },
+    {
+      "id": "third-party-limit",
+      "name": "Third-Party Limit",
+      "description": "Keep third-party dependencies under 30%",
+      "rule_type": "max_third_party_percent",
+      "severity": "warning",
+      "enabled": true,
+      "parameters": {
+        "max_percent": 30
+      }
+    }
+  ]
+}

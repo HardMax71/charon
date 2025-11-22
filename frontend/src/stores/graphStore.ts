@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DependencyGraph, Node, Edge } from '@/types/graph';
 import { GlobalMetrics, ImpactAnalysis } from '@/types/metrics';
+import { AnalysisSource } from '@/types/fitness';
 
 interface GraphState {
   graph: DependencyGraph | null;
@@ -10,6 +11,7 @@ interface GraphState {
   selectedEdge: Edge | null;
   hoveredNode: Node | null;
   impactAnalysis: ImpactAnalysis | null;
+  analysisSource: AnalysisSource | null;
 
   setGraph: (graph: DependencyGraph) => void;
   setGlobalMetrics: (metrics: GlobalMetrics) => void;
@@ -18,6 +20,7 @@ interface GraphState {
   setSelectedEdge: (edge: Edge | null) => void;
   setHoveredNode: (node: Node | null) => void;
   setImpactAnalysis: (impact: ImpactAnalysis | null) => void;
+  setAnalysisSource: (source: AnalysisSource) => void;
   updateNodePosition: (nodeId: string, position: { x: number; y: number; z: number }) => void;
   updateNodePositions: (updates: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>) => void;
   reset: () => void;
@@ -31,6 +34,7 @@ export const useGraphStore = create<GraphState>((set) => ({
   selectedEdge: null,
   hoveredNode: null,
   impactAnalysis: null,
+  analysisSource: null,
 
   setGraph: (graph) => set({ graph }),
   setGlobalMetrics: (globalMetrics) => set({ globalMetrics }),
@@ -39,6 +43,7 @@ export const useGraphStore = create<GraphState>((set) => ({
   setSelectedEdge: (selectedEdge) => set({ selectedEdge }),
   setHoveredNode: (hoveredNode) => set({ hoveredNode }),
   setImpactAnalysis: (impactAnalysis) => set({ impactAnalysis }),
+  setAnalysisSource: (analysisSource) => set({ analysisSource }),
 
   updateNodePosition: (nodeId, position) => set((state) => {
     if (!state.graph) return state;
@@ -74,5 +79,6 @@ export const useGraphStore = create<GraphState>((set) => ({
     selectedEdge: null,
     hoveredNode: null,
     impactAnalysis: null,
+    analysisSource: null,
   }),
 }));

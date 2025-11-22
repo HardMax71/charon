@@ -4,6 +4,7 @@ import { Footer } from './components/Layout/Footer.tsx';
 import { HomePage } from './pages/HomePage';
 import { ResultsPage } from './pages/ResultsPage';
 import { TemporalAnalysisPage } from './pages/TemporalAnalysisPage';
+import { FitnessPage } from './pages/FitnessPage';
 import { ProgressIndicator } from './components/ProgressIndicator/ProgressIndicator';
 import { DependencyModal } from './components/DependencyModal/DependencyModal';
 import { ClusterModal } from './components/ClusterModal/ClusterModal';
@@ -20,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/fitness" element={<FitnessPage />} />
           <Route path="/temporal" element={<TemporalAnalysisPage />} />
         </Routes>
 

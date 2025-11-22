@@ -10,7 +10,7 @@ import { Github, FolderOpen, Upload } from 'lucide-react';
 
 export const InputForm = () => {
   const [activeTab, setActiveTab] = useState<'github' | 'local' | 'import'>('github');
-  const { setGraph, setGlobalMetrics, setWarnings } = useGraphStore();
+  const { setGraph, setGlobalMetrics, setWarnings, setAnalysisSource } = useGraphStore();
   const { setLoading, setLoadingProgress } = useUIStore();
   const navigate = useNavigate();
 
@@ -28,6 +28,7 @@ export const InputForm = () => {
         setGraph({ nodes: result.graph.nodes, edges: result.graph.edges });
         setGlobalMetrics(result.global_metrics);
         setWarnings(result.warnings || []);
+        setAnalysisSource({ type: 'github', url, timestamp: new Date().toISOString() });
         setLoading(false);
         navigate('/results');
       },
@@ -52,6 +53,7 @@ export const InputForm = () => {
         setGraph({ nodes: result.graph.nodes, edges: result.graph.edges });
         setGlobalMetrics(result.global_metrics);
         setWarnings(result.warnings || []);
+        setAnalysisSource({ type: 'local', fileName: `${files.length} files`, timestamp: new Date().toISOString() });
         setLoading(false);
         navigate('/results');
       },
@@ -73,6 +75,7 @@ export const InputForm = () => {
       setGraph(data.graph);
       setGlobalMetrics(data.global_metrics);
       setWarnings([]);
+      setAnalysisSource({ type: 'import', fileName: file.name, timestamp: new Date().toISOString() });
       navigate('/results');
     } catch (err) {
       alert('Failed to load file');

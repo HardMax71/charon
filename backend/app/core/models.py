@@ -319,3 +319,83 @@ class HealthScoreResponse(BaseModel):
     weights: HealthScoreWeights
     summary: str
     recommendations: list[str]
+
+
+class FitnessRule(BaseModel):
+    """Architectural fitness function rule."""
+
+    id: str = Field(description="Unique rule identifier")
+    name: str = Field(description="Human-readable rule name")
+    description: str = Field(description="Detailed description of the rule")
+    rule_type: Literal[
+        "import_restriction",
+        "max_coupling",
+        "no_circular",
+        "max_third_party_percent",
+        "max_depth",
+        "max_complexity"
+    ] = Field(description="Type of rule")
+    severity: Literal["error", "warning", "info"] = Field(default="error", description="Violation severity")
+    enabled: bool = Field(default=True, description="Whether the rule is active")
+    parameters: dict = Field(description="Rule-specific parameters")
+
+
+class FitnessViolation(BaseModel):
+    """Violation of an architectural fitness function."""
+
+    rule_id: str = Field(description="ID of the violated rule")
+    rule_name: str = Field(description="Name of the violated rule")
+    severity: Literal["error", "warning", "info"]
+    message: str = Field(description="Human-readable violation message")
+    details: dict = Field(description="Additional context about the violation")
+    affected_modules: list[str] = Field(default_factory=list, description="Modules involved in violation")
+
+
+class FitnessValidationResult(BaseModel):
+    """Result of fitness function validation."""
+
+    passed: bool = Field(description="Whether all rules passed")
+    total_rules: int = Field(description="Total number of rules evaluated")
+    violations: list[FitnessViolation] = Field(default_factory=list)
+    errors: int = Field(default=0, description="Number of error-level violations")
+    warnings: int = Field(default=0, description="Number of warning-level violations")
+    infos: int = Field(default=0, description="Number of info-level violations")
+    timestamp: str = Field(description="Validation timestamp")
+    summary: str = Field(description="Summary of validation results")
+
+
+class FitnessRuleConfig(BaseModel):
+    """Configuration file for fitness functions."""
+
+    version: str = Field(default="1.0", description="Config version")
+    rules: list[FitnessRule] = Field(description="List of fitness rules")
+
+
+class FitnessValidationRequest(BaseModel):
+    """Request to validate fitness functions."""
+
+    graph: DependencyGraph = Field(description="Dependency graph to validate")
+    global_metrics: GlobalMetrics = Field(description="Global metrics")
+    rules: list[FitnessRule] = Field(description="Rules to validate against")
+    fail_on_error: bool = Field(default=True, description="Fail if errors found")
+    fail_on_warning: bool = Field(default=False, description="Fail if warnings found")
+
+
+class FitnessTrendPoint(BaseModel):
+    """Single point in fitness trend history."""
+
+    timestamp: str
+    passed: bool
+    errors: int
+    warnings: int
+    infos: int
+    total_violations: int
+
+
+class FitnessTrendResponse(BaseModel):
+    """Historical fitness trend data."""
+
+    project_name: str
+    rule_id: str | None = Field(default=None, description="Optional filter by rule")
+    data_points: list[FitnessTrendPoint]
+    summary: dict

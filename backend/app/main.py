@@ -8,7 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
 from app.core.exceptions import CharonException
-from app.api.routes import analyze, export, diff, diagram, temporal, documentation
+from app.api.routes import analyze, export, diff, diagram, temporal, documentation, fitness
 from app.middleware.error_handler import (
     charon_exception_handler,
     validation_exception_handler,
@@ -50,6 +50,7 @@ app.include_router(diff.router, prefix=settings.api_prefix, tags=["diff"])
 app.include_router(diagram.router, prefix=settings.api_prefix, tags=["diagram"])
 app.include_router(temporal.router, prefix=settings.api_prefix, tags=["temporal"])
 app.include_router(documentation.router, prefix=settings.api_prefix, tags=["documentation"])
+app.include_router(fitness.router, prefix=settings.api_prefix, tags=["fitness"])
 
 
 @app.get("/")

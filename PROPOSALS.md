@@ -58,7 +58,7 @@ Extend beyond Python to support JavaScript/TypeScript, Java, Go, Rust, etc.
 - Unified graph representation
 - Cross-language dependency tracking (e.g., Python calling Node.js microservice)
 
-## 5. Architectural Fitness Functions
+## 5. Architectural Fitness Functions - DONE
 
 Define and track architectural rules over time. Fail CI builds if rules are violated.
 
@@ -69,10 +69,19 @@ Define and track architectural rules over time. Fail CI builds if rules are viol
 - "Third-party dependencies must be < 20% of total imports"
 
 **Implementation**:
-- DSL for defining rules
+- DSL for defining rules (YAML/JSON configuration)
 - CLI mode for CI/CD integration
 - Rule violation reports
 - Historical trend tracking
+
+**Features**:
+- 6 rule types: import_restriction, max_coupling, no_circular, max_third_party_percent, max_depth, max_complexity
+- Severity levels: error, warning, info
+- REST API endpoints for validation
+- CLI tool with exit codes for CI/CD
+- Historical tracking with trend analysis
+- Pattern-based module filtering
+- Comprehensive documentation and examples
 
 ## 6. Dependency Impact Analysis - DONE
 

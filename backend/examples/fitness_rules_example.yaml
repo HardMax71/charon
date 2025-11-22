@@ -1,0 +1,125 @@
+# Charon Architectural Fitness Functions Configuration
+# This file defines architectural rules that will be validated against your codebase
+
+version: "1.0"
+
+rules:
+  # Rule 1: API Layer Isolation
+  # Ensures API layer doesn't directly access database layer
+  - id: "no-api-to-db"
+    name: "API Layer Isolation"
+    description: "API layer modules should not directly import from database layer. Use repository pattern instead."
+    rule_type: "import_restriction"
+    severity: "error"
+    enabled: true
+    parameters:
+      forbidden_source_pattern: "/api/"
+      forbidden_target_pattern: "/database/"
+      message_template: "API modules must not import directly from database layer. Use repository pattern."
+
+  # Rule 2: No Services to Models
+  # Business logic layer should not import from data models
+  - id: "no-service-to-model"
+    name: "Service Layer Isolation"
+    description: "Service layer should work with DTOs, not database models"
+    rule_type: "import_restriction"
+    severity: "warning"
+    enabled: true
+    parameters:
+      forbidden_source_pattern: "/services/"
+      forbidden_target_pattern: "/models/"
+      message_template: "Services should use DTOs instead of importing database models directly"
+
+  # Rule 3: Maximum Efferent Coupling
+  # Prevents god modules that depend on too many other modules
+  - id: "max-efferent-coupling"
+    name: "Maximum Efferent Coupling"
+    description: "No module should depend on more than 10 other modules"
+    rule_type: "max_coupling"
+    severity: "warning"
+    enabled: true
+    parameters:
+      max_efferent: 10
+      module_pattern: ".*"
+
+  # Rule 4: Maximum Total Coupling for Core Modules
+  # Core modules should have low coupling
+  - id: "core-low-coupling"
+    name: "Core Module Low Coupling"
+    description: "Core modules should maintain low coupling (max 15 total)"
+    rule_type: "max_coupling"
+    severity: "error"
+    enabled: true
+    parameters:
+      max_total: 15
+      module_pattern: "/core/"
+
+  # Rule 5: No Circular Dependencies
+  # Circular dependencies make code hard to maintain and test
+  - id: "no-circular-deps"
+    name: "No Circular Dependencies"
+    description: "Circular dependencies are not allowed in the codebase"
+    rule_type: "no_circular"
+    severity: "error"
+    enabled: true
+    parameters: {}
+
+  # Rule 6: Third-Party Dependency Limit
+  # Keep third-party dependencies under control
+  - id: "third-party-limit"
+    name: "Third-Party Dependency Limit"
+    description: "Third-party dependencies should be less than 20% of total modules"
+    rule_type: "max_third_party_percent"
+    severity: "warning"
+    enabled: true
+    parameters:
+      max_percent: 20
+
+  # Rule 7: Maximum Dependency Chain Depth
+  # Prevents deeply nested dependency chains
+  - id: "max-dependency-depth"
+    name: "Maximum Dependency Depth"
+    description: "Dependency chains should not exceed 5 levels deep"
+    rule_type: "max_depth"
+    severity: "info"
+    enabled: true
+    parameters:
+      max_depth: 5
+
+  # Rule 8: Maximum Complexity
+  # Maintains code quality by limiting complexity
+  - id: "max-complexity"
+    name: "Maximum Complexity"
+    description: "Modules should maintain reasonable complexity levels"
+    rule_type: "max_complexity"
+    severity: "warning"
+    enabled: true
+    parameters:
+      max_cyclomatic: 15
+      min_maintainability: 20
+      module_pattern: ".*"
+
+  # Rule 9: Critical Modules - High Quality Bar
+  # Critical modules should have very low complexity
+  - id: "critical-module-quality"
+    name: "Critical Module Quality"
+    description: "Critical modules (auth, payment) must have very low complexity"
+    rule_type: "max_complexity"
+    severity: "error"
+    enabled: true
+    parameters:
+      max_cyclomatic: 10
+      min_maintainability: 40
+      module_pattern: "/(auth|payment|security)/"
+
+  # Rule 10: Utils Should Be Simple
+  # Utility modules should remain simple and focused
+  - id: "utils-simple"
+    name: "Simple Utilities"
+    description: "Utility modules should have minimal coupling"
+    rule_type: "max_coupling"
+    severity: "warning"
+    enabled: true
+    parameters:
+      max_efferent: 5
+      module_pattern: "/utils/"

@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, Activity } from 'lucide-react';
+import { Clock, Activity, Shield, CheckCircle } from 'lucide-react';
 
 export const Header = () => {
   const location = useLocation();
   const isTemporal = location.pathname === '/temporal';
+  const isFitness = location.pathname === '/fitness';
 
   return (
     <header className="sticky top-0 z-50 w-full h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200 transition-all duration-300">
@@ -29,6 +30,20 @@ export const Header = () => {
 
         {/* Navigation Section */}
         <nav className="flex items-center gap-6">
+          <Link
+            to="/fitness"
+            className={`
+              flex items-center gap-2 text-sm font-medium transition-colors
+              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
+              ${isFitness
+                ? 'text-styx-600 font-bold'
+                : 'text-stone-700'
+              }
+            `}
+          >
+            {isFitness ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <Shield className="w-4 h-4" />}
+            <span>Fitness Functions</span>
+          </Link>
           <Link
             to="/temporal"
             className={`
