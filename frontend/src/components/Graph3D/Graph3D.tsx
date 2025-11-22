@@ -15,6 +15,7 @@ interface Graph3DProps {
   hideClusterBoxes?: boolean;
   hideNodeMetrics?: boolean;
   hideControlsLegend?: boolean;
+  nodeMetricsPosition?: 'fixed' | 'absolute';
   // Allow overriding layout from parent (optional, syncs with store if undefined)
   layout?: 'force' | 'hierarchical' | 'circular';
   selectedModule?: string | null;
@@ -34,6 +35,7 @@ export const Graph3D = ({
   hideClusterBoxes = false,
   hideNodeMetrics = false,
   hideControlsLegend = false,
+  nodeMetricsPosition = 'fixed',
   layout: propLayout,
   removedEdgeIds,
   removedNodeIds,
@@ -163,7 +165,7 @@ export const Graph3D = ({
       {/* Overlays */}
       {!hideNodeMetrics && (
         <div className="absolute top-4 left-4 z-10">
-          <NodeMetricsModal />
+          <NodeMetricsModal position={nodeMetricsPosition} />
         </div>
       )}
 

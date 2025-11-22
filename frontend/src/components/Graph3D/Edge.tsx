@@ -55,6 +55,12 @@ export const Edge = ({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: Ed
       opacity = 1.0;
       width = 2.5; // Thicker to stand out
     }
+    // Circular Dependency Edge: RED (third priority - from edge data)
+    else if (edge.color) {
+      color = edge.color;
+      opacity = 0.9;
+      width = 2.0; // Thicker to highlight circular dependencies
+    }
     // Module Filter Focus
     else if (selectedModule) {
       const sIn = sourceNode.module === selectedModule || (sourceNode.module && sourceNode.module.startsWith(selectedModule + '.'));

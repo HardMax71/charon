@@ -29,7 +29,7 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
   const [viewMode, setViewMode] = useState<'heatmap' | 'graph'>('graph');
   const [playbackSpeed, setPlaybackSpeed] = useState(1000);
 
-  const { setGraph } = useGraphStore();
+  const { setGraph, setImpactAnalysis, setSelectedNode } = useGraphStore();
   const { setCurrentLayout } = useUIStore();
 
   const currentSnapshot = useMemo(
@@ -37,15 +37,25 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
     [data.snapshots, currentSnapshotIndex]
   );
 
-  // --- GRAPH CONVERSION LOGIC (Unchanged) ---
+  // --- GRAPH CONVERSION LOGIC ---
   useEffect(() => {
     if (!currentSnapshot || !currentSnapshot.graph_snapshot) return;
 
+    // Clear any existing impact analysis and selections to prevent interference
+    setImpactAnalysis(null);
+    setSelectedNode(null);
+
     const { nodes: rawNodes, edges: rawEdges } = currentSnapshot.graph_snapshot;
+
+    // Create node map to track circular status
+    const nodeCircularMap = new Map<string, boolean>();
 
     const nodes: Node[] = rawNodes.map((node: any) => {
       const metrics = node.metrics || {};
       const position = node.position || { x: 0, y: 0, z: 0 };
+      const isCircular = Boolean(metrics.is_circular);
+
+      nodeCircularMap.set(node.id, isCircular);
 
       return {
         id: node.id,
@@ -53,27 +63,49 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
         type: node.type || 'internal' as const,
         module: node.module || node.id.split('/').slice(0, -1).join('/') || 'root',
         position: { x: position.x, y: position.y, z: position.z },
-        color: metrics.is_circular ? '#ef4444' : '#3b82f6',
-        metrics: { ...metrics },
+        color: isCircular ? '#ef4444' : '#3b82f6',
+        metrics: {
+          afferent_coupling: metrics.afferent_coupling || 0,
+          efferent_coupling: metrics.efferent_coupling || 0,
+          instability: metrics.instability || 0,
+          is_circular: isCircular,
+          is_high_coupling: Boolean(metrics.is_high_coupling),
+          cyclomatic_complexity: metrics.cyclomatic_complexity || 0,
+          max_complexity: metrics.max_complexity || 0,
+          maintainability_index: metrics.maintainability_index || 0,
+          lines_of_code: metrics.lines_of_code || 0,
+          complexity_grade: metrics.complexity_grade || 'A',
+          maintainability_grade: metrics.maintainability_grade || 'A',
+          is_hot_zone: Boolean(metrics.is_hot_zone),
+          hot_zone_severity: metrics.hot_zone_severity || 'ok',
+          hot_zone_score: metrics.hot_zone_score || 0,
+          hot_zone_reason: metrics.hot_zone_reason || '',
+        },
         cluster_id: null,
       };
     });
 
     const edges: Edge[] = rawEdges.map((edge: any, index: number) => {
       const weight = edge.weight || 1;
+      const sourceCircular = nodeCircularMap.get(edge.source) || false;
+      const targetCircular = nodeCircularMap.get(edge.target) || false;
+      const isCircularEdge = sourceCircular && targetCircular;
+
       return {
-        id: `edge-${index}`,
+        id: `edge-${currentSnapshotIndex}-${index}`,
         source: edge.source,
         target: edge.target,
         imports: edge.imports || [],
         weight: weight,
         thickness: Math.min(weight * 0.5, 5.0),
+        color: isCircularEdge ? '#ef4444' : undefined,
       };
     });
 
-    setGraph({ nodes, edges });
+    // Force complete graph replacement by creating new object
+    setGraph({ nodes: [...nodes], edges: [...edges] });
     setCurrentLayout('hierarchical');
-  }, [currentSnapshot, setGraph, setCurrentLayout]);
+  }, [currentSnapshot, currentSnapshotIndex, setGraph, setCurrentLayout, setImpactAnalysis, setSelectedNode]);
 
   // --- AUTOPLAY LOGIC (Unchanged) ---
   useEffect(() => {
@@ -103,7 +135,7 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             className={`
-              p-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2
+              h-10 px-4 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2
               ${isPlaying
                 ? 'bg-slate-900 text-white hover:bg-teal-600 shadow-sm'
                 : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'
@@ -118,26 +150,28 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
             )}
           </button>
 
-          <div className="flex items-center gap-2 bg-white px-2 py-1.5 rounded border border-slate-200">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <div className="relative h-10">
             <select
               value={playbackSpeed}
               onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-              className="text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-0 cursor-pointer input-select"
+              className="input-select h-full text-xs font-bold uppercase"
             >
               <option value={2000}>0.5x Speed</option>
               <option value={1000}>1x Speed</option>
               <option value={500}>2x Speed</option>
               <option value={250}>4x Speed</option>
             </select>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
           </div>
         </div>
 
         {/* View Mode Switch */}
-        <div className="flex bg-slate-200/50 p-1 rounded-lg">
+        <div className="flex bg-slate-200/50 p-1 rounded-lg h-10">
           <button
             onClick={() => setViewMode('graph')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
               viewMode === 'graph'
                 ? 'bg-white text-teal-700 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -148,7 +182,7 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
           </button>
           <button
             onClick={() => setViewMode('heatmap')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
               viewMode === 'heatmap'
                 ? 'bg-white text-teal-700 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -243,7 +277,11 @@ export const TemporalVisualization = ({ data }: TemporalVisualizationProps) => {
           {/* Graph/Heatmap Area */}
           <div className="flex-1 overflow-hidden relative">
             {viewMode === 'graph' ? (
-              <Graph3D hideLayoutSelector={true} />
+              <Graph3D
+                key={`graph-${currentSnapshotIndex}`}
+                hideLayoutSelector={true}
+                nodeMetricsPosition="absolute"
+              />
             ) : (
               <ChurnHeatmap data={data.churn_data} currentSnapshot={currentSnapshot} repositoryUrl={data.repository} />
             )}

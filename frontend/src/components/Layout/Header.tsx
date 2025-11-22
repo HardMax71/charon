@@ -70,7 +70,7 @@ export const Header = () => {
               }
             `}
           >
-            {isTemporal ? <Activity className="w-4 h-4 animate-pulse" /> : <Clock className="w-4 h-4" />}
+            {isTemporal ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <Clock className="w-4 h-4" />}
             <span>Temporal Analysis</span>
           </Link>
         </nav>

@@ -171,7 +171,7 @@ export const TemporalInput = ({
                     value={repoUrl}
                     onChange={(e) => setRepoUrl(e.target.value)}
                     placeholder="github.com/owner/repo"
-                    className="input-text bg-slate-50 placeholder:text-slate-400 focus:bg-white"
+                    className="input-text bg-slate-50 placeholder:text-slate-400 focus:bg-white pl-12"
                     disabled={isAnalyzing}
                   />
                 </div>

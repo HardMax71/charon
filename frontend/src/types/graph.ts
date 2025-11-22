@@ -42,6 +42,7 @@ export interface Edge {
   imports: string[];
   weight: number;
   thickness: number;
+  color?: string;
 }
 
 export interface DependencyGraph {

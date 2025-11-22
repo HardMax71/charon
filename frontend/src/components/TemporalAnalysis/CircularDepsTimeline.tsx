@@ -79,7 +79,7 @@ export const CircularDepsTimeline = ({
               <div className="mt-2 pt-2 border-t border-border-light">
                 <div className="text-xs text-text-tertiary space-y-1">
                   {entry.new_circular_nodes.slice(0, 3).map((node: string) => (
-                    <div key={node} className="font-mono text-error">• {node}</div>
+                    <div key={node} className="font-mono text-error truncate" title={node}>• {node}</div>
                   ))}
                   {entry.new_circular_nodes.length > 3 && (
                     <div className="text-text-tertiary italic">

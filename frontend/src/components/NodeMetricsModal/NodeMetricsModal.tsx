@@ -14,7 +14,11 @@ import {
   Box
 } from 'lucide-react';
 
-export const NodeMetricsModal = () => {
+interface NodeMetricsModalProps {
+  position?: 'fixed' | 'absolute';
+}
+
+export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) => {
   const { selectedNode, setSelectedNode, impactAnalysis } = useGraphStore();
   const { setShowImpactModal } = useUIStore();
 
@@ -22,9 +26,13 @@ export const NodeMetricsModal = () => {
 
   const { metrics, label, id, module, type } = selectedNode;
 
+  const positionClasses = position === 'fixed'
+    ? 'fixed top-20 left-6'
+    : 'absolute top-4 left-4';
+
   return (
     // Floating HUD Panel (z-50 to sit above everything)
-    <div className="fixed top-20 left-6 z-50 w-80 animate-in slide-in-from-left-4 duration-300">
+    <div className={`${positionClasses} z-50 w-80 animate-in slide-in-from-left-4 duration-300`}>
 
       <div className="bg-white/95 backdrop-blur-xl border border-slate-200 rounded-xl shadow-2xl overflow-hidden flex flex-col">
 
