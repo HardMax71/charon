@@ -8,9 +8,11 @@ import { useUIStore } from '@/stores/uiStore';
 interface EdgeProps {
   edge: EdgeType;
   nodes: Node[];
+  removedEdgeIds?: string[];
+  addedEdgeIds?: string[];
 }
 
-export const Edge = ({ edge, nodes }: EdgeProps) => {
+export const Edge = ({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: EdgeProps) => {
   const { setSelectedEdge } = useGraphStore();
   const { setShowDependencyModal, selectedModule } = useUIStore();
 
@@ -41,8 +43,20 @@ export const Edge = ({ edge, nodes }: EdgeProps) => {
     let opacity = 0.6;     // Higher default opacity
     let width = 1.2;       // Thicker default line
 
+    // Removed Edge: RED (highest priority - stays visible after removal)
+    if (removedEdgeIds.includes(edge.id)) {
+      color = '#ef4444'; // Red-500
+      opacity = 1.0;
+      width = 3.0; // Extra thick to stand out
+    }
+    // Added Edge: GREEN (second priority)
+    else if (addedEdgeIds.includes(edge.id)) {
+      color = '#10b981'; // Emerald-500
+      opacity = 1.0;
+      width = 2.5; // Thicker to stand out
+    }
     // Module Filter Focus
-    if (selectedModule) {
+    else if (selectedModule) {
       const sIn = sourceNode.module === selectedModule || (sourceNode.module && sourceNode.module.startsWith(selectedModule + '.'));
       const tIn = targetNode.module === selectedModule || (targetNode.module && targetNode.module.startsWith(selectedModule + '.'));
 
@@ -56,7 +70,7 @@ export const Edge = ({ edge, nodes }: EdgeProps) => {
     }
 
     return { start, end, midPoint, arrowPosition, arrowRotation, edgeColor: color, edgeOpacity: opacity, lineWidth: width };
-  }, [edge, nodes, selectedModule]);
+  }, [edge, nodes, selectedModule, removedEdgeIds, addedEdgeIds]);
 
   // 2. Safe check before rendering
   if (!edgeData) return null;

@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
+import { DependencyGraph } from '@/types/graph';
+import { GlobalMetrics } from '@/types/metrics';
 import {
   X,
   Minimize2,
@@ -13,7 +15,15 @@ import {
 import { ExportDiagramButton } from '../ExportDiagram/ExportDiagramButton';
 import { ExportDocumentationButton } from '../ExportDocumentation/ExportDocumentationButton';
 
-export const LayoutSelector = () => {
+interface LayoutSelectorProps {
+  // Allow overriding global state for "What-If" scenarios
+  customGraph?: DependencyGraph | null;
+  customMetrics?: GlobalMetrics | null;
+  // Allow overriding default fixed positioning
+  className?: string;
+}
+
+export const LayoutSelector = ({ customGraph, customMetrics, className }: LayoutSelectorProps) => {
   const {
     currentLayout,
     setCurrentLayout,
@@ -21,11 +31,15 @@ export const LayoutSelector = () => {
     setSelectedModule,
     showClusters,
     setShowClusters,
-    setShowClusterModal,
     layoutSelectorExpanded,
     setLayoutSelectorExpanded,
   } = useUIStore();
-  const { graph, globalMetrics } = useGraphStore();
+
+  const { graph: globalGraph, globalMetrics: globalMetricsStore } = useGraphStore();
+
+  // Resolve which data to display (Props > Store)
+  const activeGraph = customGraph !== undefined ? customGraph : globalGraph;
+  const activeMetrics = customMetrics !== undefined ? customMetrics : globalMetricsStore;
 
   const layouts: Array<{ value: 'hierarchical' | 'force' | 'circular'; label: string }> = [
     { value: 'hierarchical', label: 'Hierarchical Tree' },
@@ -35,20 +49,23 @@ export const LayoutSelector = () => {
 
   // Extract unique modules
   const modules = useMemo(() => {
-    if (!graph) return [];
+    if (!activeGraph) return [];
     const uniqueModules = new Set<string>();
-    graph.nodes.forEach((node) => {
+    activeGraph.nodes.forEach((node) => {
       if (node.module) uniqueModules.add(node.module);
     });
     return Array.from(uniqueModules).sort();
-  }, [graph]);
+  }, [activeGraph]);
+
+  // Default positioning if no className provided (Maintains backward compatibility)
+  const positionClass = className || "fixed top-20 right-6 z-40";
 
   // Collapsed State
   if (!layoutSelectorExpanded) {
     return (
       <button
         onClick={() => setLayoutSelectorExpanded(true)}
-        className="fixed top-20 right-6 z-40 bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-2.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group"
+        className={`${positionClass} bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-2.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group`}
         title="Configure View"
       >
         <Settings className="w-5 h-5 transition-transform group-hover:rotate-90" />
@@ -58,8 +75,7 @@ export const LayoutSelector = () => {
 
   // Expanded State
   return (
-    // FIXED: Changed 'overflow-hidden' to 'overflow-visible' so dropdowns can appear
-    <div className="fixed top-20 right-6 z-40 w-72 bg-white/95 backdrop-blur-md rounded-lg shadow-2xl border border-slate-200 overflow-visible animate-in slide-in-from-top-2 duration-300">
+    <div className={`${positionClass} w-72 bg-white/95 backdrop-blur-md rounded-lg shadow-2xl border border-slate-200 overflow-visible animate-in slide-in-from-top-2 duration-300`}>
 
       {/* Header */}
       <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between select-none h-9 rounded-t-lg">
@@ -87,7 +103,7 @@ export const LayoutSelector = () => {
             <select
               value={currentLayout}
               onChange={(e) => setCurrentLayout(e.target.value as any)}
-              className="input-select"
+              className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-8 pr-8 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer hover:bg-white transition-colors"
             >
               {layouts.map((layout) => (
                 <option key={layout.value} value={layout.value}>
@@ -111,7 +127,7 @@ export const LayoutSelector = () => {
               value={selectedModule || ''}
               onChange={(e) => setSelectedModule(e.target.value || null)}
               placeholder="Select module..."
-              className="input-text"
+              className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-8 pr-6 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors placeholder:text-slate-400"
             />
             <datalist id="modules-list">
               {modules.map((module) => (
@@ -121,7 +137,7 @@ export const LayoutSelector = () => {
             {selectedModule && (
               <button
                 onClick={() => setSelectedModule(null)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded p-0.5 transition-all"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 rounded p-0.5 transition-all"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -130,13 +146,13 @@ export const LayoutSelector = () => {
         </div>
 
         {/* 3. Clusters Toggle */}
-        {globalMetrics?.clusters && globalMetrics.clusters.length > 0 && (
+        {activeMetrics?.clusters && activeMetrics.clusters.length > 0 && (
           <div className="bg-slate-50 rounded border border-slate-200 p-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="w-3.5 h-3.5 text-teal-600" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Communities</span>
-                <span className="text-[9px] text-slate-400 leading-none">{globalMetrics.clusters.length} detected</span>
+                <span className="text-[9px] text-slate-400 leading-none">{activeMetrics.clusters.length} detected</span>
               </div>
             </div>
 
@@ -154,6 +170,8 @@ export const LayoutSelector = () => {
 
         {/* 4. Actions Grid */}
         <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+          {/* Note: Diagram Buttons might need props to handle customGraph export if they support it,
+              otherwise they will export the original graph. For UI fixes, this is sufficient. */}
           <ExportDiagramButton />
           <ExportDocumentationButton />
         </div>

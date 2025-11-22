@@ -50,15 +50,9 @@ export const ClusterBoundingBoxes = () => {
           </lineSegments>
 
           {/* 2. Subtle Fill (Forcefield effect) */}
-          <mesh>
+          <mesh raycast={() => null}>
             <boxGeometry args={box.args} />
             <meshBasicMaterial color={box.color} transparent opacity={0.03} depthWrite={false} side={THREE.DoubleSide} />
-          </mesh>
-
-          {/* 3. Cluster Label */}
-          <mesh position={[0, box.args[1]/2 + 1, 0]}>
-            <planeGeometry args={[8, 2]} />
-            <meshBasicMaterial color={box.color} transparent opacity={0.8} />
           </mesh>
         </group>
       ))}

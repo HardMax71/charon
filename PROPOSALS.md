@@ -125,7 +125,7 @@ Calculate a single health score for the project based on:
 
 Track score over time to measure architectural improvements.
 
-## 10. Interactive Refactoring Scenarios
+## 10. Interactive Refactoring Scenarios - DONE
 
 "What if" mode: temporarily remove/add dependencies and see how metrics change.
 
@@ -136,6 +136,18 @@ Track score over time to measure architectural improvements.
 - Allow manual edge/node manipulation
 - Recalculate metrics on the fly
 - Compare before/after side-by-side
+
+**Features**:
+- Interactive graph manipulation controls (remove nodes, remove edges, add edges)
+- Real-time metrics recalculation using client-side calculator
+- Side-by-side before/after comparison with delta visualization
+- Change history log tracking all modifications
+- Visual indicators for improved/regressed metrics
+- Reset functionality to restore original graph
+- Circular dependency detection in modified graphs
+- Coupling threshold analysis and high-coupling file identification
+- Empty state with helpful instructions when no graph is available
+- Analysis source tracking (GitHub, local, or imported data)
 
 ## 11. Team Ownership Mapping
 

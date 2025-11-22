@@ -1,19 +1,95 @@
-import { useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
+import { Vector3 } from 'three';
 import { Node } from './Node';
 import { Edge } from './Edge';
 import { ClusterBoundingBoxes } from './ClusterBoundingBoxes';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { analyzeImpact } from '@/services/api';
+import { DependencyGraph } from '@/types/graph';
 
-export const Scene = () => {
-  const { graph, selectedNode, setSelectedNode, setImpactAnalysis } = useGraphStore();
+interface SceneProps {
+  customGraph?: DependencyGraph;
+  disableImpactAnalysis?: boolean;
+  hideClusterBoxes?: boolean;
+  removedEdgeIds?: string[];
+  removedNodeIds?: string[];
+  addedNodeIds?: string[];
+  addedEdgeIds?: string[];
+  highlightedNodeId?: string | null;
+  focusNodeId?: string | null;
+  onNodeDragEnd?: (nodeId: string, position: { x: number; y: number; z: number }) => void;
+}
+
+// Helper component to handle camera focus
+const CameraFocus = ({ focusNodeId, graph }: { focusNodeId: string | null, graph: DependencyGraph }) => {
+  const { camera, controls } = useThree();
+  const lastFocusedIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Only run when focusNodeId changes, not when graph updates
+    if (focusNodeId && focusNodeId !== lastFocusedIdRef.current && graph && controls) {
+      const node = graph.nodes.find(n => n.id === focusNodeId);
+      if (node) {
+        const { x, y, z } = node.position;
+        const target = new Vector3(x, y, z);
+        const offset = new Vector3(40, 40, 40);
+
+        // @ts-ignore
+        if (controls.target) {
+          // Focus on node temporarily
+          // @ts-ignore
+          controls.target.copy(target);
+          camera.position.copy(target).add(offset);
+          // @ts-ignore
+          controls.update();
+
+          // Reset controls target to center after a short delay
+          setTimeout(() => {
+            // @ts-ignore
+            if (controls.target) {
+              // @ts-ignore
+              controls.target.set(0, 0, 0);
+              // @ts-ignore
+              controls.update();
+            }
+          }, 1500);
+        }
+        lastFocusedIdRef.current = focusNodeId;
+      }
+    } else if (!focusNodeId) {
+      lastFocusedIdRef.current = null;
+    }
+  }, [focusNodeId, camera, controls]);
+
+  return null;
+};
+
+export const Scene = ({
+  customGraph,
+  disableImpactAnalysis = false,
+  hideClusterBoxes = false,
+  removedEdgeIds = [],
+  removedNodeIds = [],
+  addedNodeIds = [],
+  addedEdgeIds = [],
+  highlightedNodeId = null,
+  focusNodeId = null,
+  onNodeDragEnd
+}: SceneProps = {}) => {
+  const { graph: storeGraph, selectedNode, setSelectedNode, setImpactAnalysis } = useGraphStore();
   const { isDraggingNode } = useUIStore();
 
-  // Trigger impact analysis
+  // Use custom graph if provided, otherwise use store graph
+  const graph = customGraph || storeGraph;
+
+  // Trigger impact analysis (only if not disabled and not using custom graph)
   useEffect(() => {
+    if (disableImpactAnalysis || customGraph) {
+      return;
+    }
     if (!selectedNode || !graph) {
       setImpactAnalysis(null);
       return;
@@ -24,7 +100,7 @@ export const Scene = () => {
         console.error('Impact analysis failed:', error);
         setImpactAnalysis(null);
       });
-  }, [selectedNode, graph, setImpactAnalysis]);
+  }, [selectedNode, graph, setImpactAnalysis, disableImpactAnalysis, customGraph]);
 
   if (!graph) {
     return (
@@ -38,15 +114,17 @@ export const Scene = () => {
     <Canvas className="w-full h-full" shadows dpr={[1, 2]}>
       {/* 1. THE LABORATORY ENVIRONMENT */}
       <color attach="background" args={['#f8fafc']} /> {/* Slate-50 */}
-      <fog attach="fog" args={['#f8fafc', 50, 400]} />
 
       <PerspectiveCamera makeDefault position={[80, 60, 80]} near={0.1} far={10000} />
       <OrbitControls
+        makeDefault
         enabled={!isDraggingNode}
         enableDamping
         dampingFactor={0.05}
         maxPolarAngle={Math.PI / 1.8} // Prevent going below ground too much
       />
+
+      <CameraFocus focusNodeId={focusNodeId} graph={graph} />
 
       {/* Lighting Setup for "Matte/Ceramic" look */}
       <ambientLight intensity={0.7} color="#ffffff" />
@@ -63,7 +141,7 @@ export const Scene = () => {
 
       {/* Ground Plane for raycasting deselection */}
       <mesh
-        position={[0, -50, 0]}
+        position={[0, -500, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         onClick={(e) => { e.stopPropagation(); setSelectedNode(null); }}
       >
@@ -73,14 +151,27 @@ export const Scene = () => {
 
       {/* --- GRAPH ELEMENTS --- */}
       <group position={[0, 0, 0]}>
-        <ClusterBoundingBoxes />
+        {!hideClusterBoxes && <ClusterBoundingBoxes />}
 
         {graph.edges.map((edge) => (
-          <Edge key={edge.id} edge={edge} nodes={graph.nodes} />
+          <Edge
+            key={edge.id}
+            edge={edge}
+            nodes={graph.nodes}
+            removedEdgeIds={removedEdgeIds}
+            addedEdgeIds={addedEdgeIds}
+          />
         ))}
 
         {graph.nodes.map((node) => (
-          <Node key={node.id} node={node} />
+          <Node
+            key={node.id}
+            node={node}
+            isAdded={addedNodeIds.includes(node.id)}
+            isRemoved={removedNodeIds.includes(node.id)}
+            isHighlighted={highlightedNodeId === node.id}
+            onNodeDragEnd={onNodeDragEnd}
+          />
         ))}
       </group>
     </Canvas>
