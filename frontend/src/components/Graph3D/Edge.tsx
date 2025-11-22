@@ -32,10 +32,18 @@ export const Edge = ({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: Ed
       .multiplyScalar(0.5)
       .add(new Vector3(0, start.distanceTo(end) * 0.15, 0)); // Proportional height
 
-    // Arrow logic
-    const direction = new Vector3().subVectors(end, midPoint).normalize();
-    const arrowPosition = new Vector3().copy(end).sub(direction.multiplyScalar(4)); // Moved further back from larger nodes
-    const arrowRotation = new Euler().setFromQuaternion(new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction));
+    // Arrow logic - Calculate tangent at end of quadratic Bezier curve
+    // For quadratic Bezier, tangent at end is: 2 * (end - midPoint)
+    const tangent = new Vector3().subVectors(end, midPoint).normalize();
+
+    // Position arrow slightly before the end point (offset by node radius + small gap)
+    const arrowOffset = tangent.clone().multiplyScalar(3.5);
+    const arrowPosition = new Vector3().copy(end).sub(arrowOffset);
+
+    // Rotate arrow to point in the direction of the tangent
+    const arrowRotation = new Euler().setFromQuaternion(
+      new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), tangent)
+    );
 
     // Style Logic
     // Default: Much darker and thicker for visibility against white
