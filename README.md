@@ -1,6 +1,10 @@
 <div align="center">
   <img src="frontend/public/icon.png" width="120" alt="Charon">
   <h1>Charon</h1>
+
+  [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
+  [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
 
 Ever wondered what your codebase actually looks like? Not the syntax, but the structure. The dependencies. The tangled mess of imports that somehow became your architecture. Charon shows you exactly that, in 3D, so you can finally see where things went wrong (or right).
