@@ -9,9 +9,7 @@ from app.api.routes import (
 )
 from app.core import setup_logging
 from app.core.config import settings
-from app.core.exceptions import CharonException
 from app.middleware.error_handler import (
-    charon_exception_handler,
     validation_exception_handler,
     http_exception_handler,
     unhandled_exception_handler,
@@ -29,7 +27,6 @@ app = FastAPI(
     description="3D dependency visualizer for Python projects",
 )
 
-app.add_exception_handler(CharonException, charon_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(Exception, unhandled_exception_handler)
@@ -38,8 +35,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=[
+        "Content-Type",
+        "Accept",
+        "Authorization",
+    ],
+    expose_headers=["Content-Disposition"],
 )
 
 app.include_router(analyze.router, prefix=settings.api_prefix, tags=["analysis"])

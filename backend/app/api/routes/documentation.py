@@ -24,7 +24,7 @@ async def export_documentation(request: ExportDocumentationRequest) -> Response:
 
     doc_service = DocumentationService(
         graph=graph,
-        global_metrics=request.global_metrics.model_dump(),
+        global_metrics=request.global_metrics,
         project_name=request.project_name,
     )
 

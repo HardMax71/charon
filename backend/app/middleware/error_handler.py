@@ -7,17 +7,6 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.exceptions import (
-    CharonException,
-    NotFoundException,
-    ValidationException,
-    AnalysisException,
-    ExportException,
-    GitHubException,
-    DiagramException,
-    DocumentationException,
-)
-
 logger = logging.getLogger("charon.error_handler")
 
 
@@ -44,54 +33,6 @@ def create_error_response(
     return JSONResponse(
         status_code=status_code,
         content=content,
-    )
-
-
-async def charon_exception_handler(
-    request: Request, exc: CharonException
-) -> JSONResponse:
-    """Handle custom Charon exceptions."""
-    # Map exception types to status codes
-    status_map = {
-        NotFoundException: status.HTTP_404_NOT_FOUND,
-        ValidationException: status.HTTP_400_BAD_REQUEST,
-        AnalysisException: status.HTTP_500_INTERNAL_SERVER_ERROR,
-        ExportException: status.HTTP_500_INTERNAL_SERVER_ERROR,
-        GitHubException: status.HTTP_502_BAD_GATEWAY,
-        DiagramException: status.HTTP_500_INTERNAL_SERVER_ERROR,
-        DocumentationException: status.HTTP_500_INTERNAL_SERVER_ERROR,
-    }
-
-    status_code = status_map.get(type(exc), status.HTTP_500_INTERNAL_SERVER_ERROR)
-    error_type = type(exc).__name__
-
-    # Log with appropriate level
-    if status_code >= 500:
-        logger.error(
-            f"{error_type} on {request.method} {request.url.path}: {exc.message}",
-            extra={
-                "error_type": error_type,
-                "path": request.url.path,
-                "method": request.method,
-                "details": exc.details,
-            },
-        )
-    else:
-        logger.warning(
-            f"{error_type} on {request.method} {request.url.path}: {exc.message}",
-            extra={
-                "error_type": error_type,
-                "path": request.url.path,
-                "method": request.method,
-            },
-        )
-
-    return create_error_response(
-        status_code=status_code,
-        error_type=error_type,
-        message=exc.message,
-        details=exc.details,
-        path=str(request.url.path),
     )
 
 

@@ -1,6 +1,6 @@
 from collections import deque
 
-from app.core.exceptions import NotFoundException
+from fastapi import HTTPException, status
 
 
 class ImpactAnalysisService:
@@ -32,7 +32,10 @@ class ImpactAnalysisService:
                 - metrics: impact statistics
         """
         if node_id not in self.nodes:
-            raise NotFoundException(f"Node '{node_id}' not found in graph")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Node '{node_id}' not found in graph",
+            )
 
         # BFS to find all transitive dependents
         affected_nodes: dict[str, int] = {node_id: 0}  # node_id -> distance

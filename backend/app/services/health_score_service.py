@@ -1,6 +1,13 @@
 import math
-from typing import Any
 import networkx as nx
+
+from app.core.models import (
+    GlobalMetrics,
+    HealthScoreComponent,
+    HealthScoreComponents,
+    HealthScoreWeights,
+    HealthScoreResponse,
+)
 
 
 class HealthScoreService:
@@ -22,14 +29,14 @@ class HealthScoreService:
     - Stability Distribution (10%): Based on instability metric distribution
     """
 
-    def __init__(self, graph: nx.DiGraph, global_metrics: dict[str, Any]):
+    def __init__(self, graph: nx.DiGraph, global_metrics: GlobalMetrics):
         self.graph = graph
         self.global_metrics = global_metrics
         self.total_nodes = len(
             [n for n in graph.nodes if graph.nodes[n].get("type") == "internal"]
         )
 
-    def calculate_health_score(self) -> dict[str, Any]:
+    def calculate_health_score(self) -> HealthScoreResponse:
         """Calculate comprehensive health score."""
         # Calculate individual component scores
         circular_score = self._calculate_circular_dependency_score()
@@ -48,45 +55,45 @@ class HealthScoreService:
         }
 
         overall_score = (
-            circular_score["score"] * weights["circular"]
-            + coupling_score["score"] * weights["coupling"]
-            + complexity_score["score"] * weights["complexity"]
-            + architecture_score["score"] * weights["architecture"]
-            + stability_score["score"] * weights["stability"]
+            circular_score.score * weights["circular"]
+            + coupling_score.score * weights["coupling"]
+            + complexity_score.score * weights["complexity"]
+            + architecture_score.score * weights["architecture"]
+            + stability_score.score * weights["stability"]
         )
 
         # Determine overall grade
         overall_grade = self._get_grade(overall_score)
 
-        return {
-            "overall_score": round(overall_score, 2),
-            "overall_grade": overall_grade,
-            "components": {
-                "circular_dependencies": circular_score,
-                "coupling_health": coupling_score,
-                "complexity_health": complexity_score,
-                "architecture_health": architecture_score,
-                "stability_distribution": stability_score,
-            },
-            "weights": weights,
-            "summary": self._generate_summary(overall_score, overall_grade),
-            "recommendations": self._generate_recommendations(
+        return HealthScoreResponse(
+            overall_score=round(overall_score, 2),
+            overall_grade=overall_grade,
+            components=HealthScoreComponents(
+                circular_dependencies=circular_score,
+                coupling_health=coupling_score,
+                complexity_health=complexity_score,
+                architecture_health=architecture_score,
+                stability_distribution=stability_score,
+            ),
+            weights=HealthScoreWeights(**weights),
+            summary=self._generate_summary(overall_score, overall_grade),
+            recommendations=self._generate_recommendations(
                 circular_score,
                 coupling_score,
                 complexity_score,
                 architecture_score,
                 stability_score,
             ),
-        }
+        )
 
-    def _calculate_circular_dependency_score(self) -> dict[str, Any]:
+    def _calculate_circular_dependency_score(self) -> HealthScoreComponent:
         """
         Calculate score based on circular dependencies.
 
         Perfect score (100) = 0 circular dependencies
         Score decreases based on % of nodes in circular dependencies
         """
-        circular_count = self.global_metrics.get("circular_dependencies_count", 0)
+        circular_count = len(self.global_metrics.circular_dependencies)
         circular_nodes = len(
             [
                 n
@@ -96,7 +103,9 @@ class HealthScoreService:
         )
 
         if self.total_nodes == 0:
-            return {"score": 100, "grade": "A", "details": "No internal nodes"}
+            return HealthScoreComponent(
+                score=100, grade="A", details={"message": "No internal nodes"}
+            )
 
         # Percentage of nodes involved in circular dependencies
         circular_percentage = (circular_nodes / self.total_nodes) * 100
@@ -105,18 +114,18 @@ class HealthScoreService:
         # Use exponential decay for harsh penalty
         score = max(0, 100 * math.exp(-circular_percentage / 20))
 
-        return {
-            "score": round(score, 2),
-            "grade": self._get_grade(score),
-            "details": {
+        return HealthScoreComponent(
+            score=round(score, 2),
+            grade=self._get_grade(score),
+            details={
                 "circular_dependency_count": circular_count,
                 "nodes_in_cycles": circular_nodes,
                 "total_nodes": self.total_nodes,
                 "percentage_affected": round(circular_percentage, 2),
             },
-        }
+        )
 
-    def _calculate_coupling_score(self) -> dict[str, Any]:
+    def _calculate_coupling_score(self) -> HealthScoreComponent:
         """
         Calculate score based on coupling metrics.
 
@@ -124,11 +133,11 @@ class HealthScoreService:
         - Average coupling (lower is better)
         - High coupling file count (fewer is better)
         """
-        avg_afferent = self.global_metrics.get("avg_afferent_coupling", 0)
-        avg_efferent = self.global_metrics.get("avg_efferent_coupling", 0)
+        avg_afferent = self.global_metrics.avg_afferent_coupling
+        avg_efferent = self.global_metrics.avg_efferent_coupling
         avg_coupling = avg_afferent + avg_efferent
 
-        high_coupling_count = len(self.global_metrics.get("high_coupling_files", []))
+        high_coupling_count = len(self.global_metrics.high_coupling_files)
         high_coupling_percentage = (
             (high_coupling_count / self.total_nodes * 100)
             if self.total_nodes > 0
@@ -151,19 +160,19 @@ class HealthScoreService:
 
         score = max(0, coupling_health - high_coupling_penalty)
 
-        return {
-            "score": round(score, 2),
-            "grade": self._get_grade(score),
-            "details": {
+        return HealthScoreComponent(
+            score=round(score, 2),
+            grade=self._get_grade(score),
+            details={
                 "avg_afferent_coupling": round(avg_afferent, 2),
                 "avg_efferent_coupling": round(avg_efferent, 2),
                 "avg_total_coupling": round(avg_coupling, 2),
                 "high_coupling_files": high_coupling_count,
                 "high_coupling_percentage": round(high_coupling_percentage, 2),
             },
-        }
+        )
 
-    def _calculate_complexity_score(self) -> dict[str, Any]:
+    def _calculate_complexity_score(self) -> HealthScoreComponent:
         """
         Calculate score based on complexity metrics.
 
@@ -171,8 +180,8 @@ class HealthScoreService:
         - Average cyclomatic complexity (threshold: 10)
         - Average maintainability index (0-100 scale)
         """
-        avg_complexity = self.global_metrics.get("avg_complexity", 0)
-        avg_maintainability = self.global_metrics.get("avg_maintainability", 100)
+        avg_complexity = self.global_metrics.avg_complexity
+        avg_maintainability = self.global_metrics.avg_maintainability
 
         # Complexity score (McCabe thresholds)
         # 1-10: Simple (100), 10-20: Complex (50-100), 20+: Very complex (0-50)
@@ -190,10 +199,10 @@ class HealthScoreService:
         # Weighted average (60% maintainability, 40% complexity)
         score = (maintainability_health * 0.6) + (complexity_health * 0.4)
 
-        return {
-            "score": round(score, 2),
-            "grade": self._get_grade(score),
-            "details": {
+        return HealthScoreComponent(
+            score=round(score, 2),
+            grade=self._get_grade(score),
+            details={
                 "avg_cyclomatic_complexity": round(avg_complexity, 2),
                 "avg_maintainability_index": round(avg_maintainability, 2),
                 "complexity_classification": self._classify_complexity(avg_complexity),
@@ -201,9 +210,9 @@ class HealthScoreService:
                     avg_maintainability
                 ),
             },
-        }
+        )
 
-    def _calculate_architecture_score(self) -> dict[str, Any]:
+    def _calculate_architecture_score(self) -> HealthScoreComponent:
         """
         Calculate score based on architecture quality.
 
@@ -211,18 +220,16 @@ class HealthScoreService:
         - God objects (hot zones with critical severity)
         - Total hot zone count
         """
-        hot_zones = self.global_metrics.get("hot_zone_files", [])
+        hot_zones = self.global_metrics.hot_zone_files
 
-        critical_hot_zones = len(
-            [hz for hz in hot_zones if hz.get("severity") == "critical"]
-        )
-        warning_hot_zones = len(
-            [hz for hz in hot_zones if hz.get("severity") == "warning"]
-        )
+        critical_hot_zones = len([hz for hz in hot_zones if hz.severity == "critical"])
+        warning_hot_zones = len([hz for hz in hot_zones if hz.severity == "warning"])
         total_hot_zones = len(hot_zones)
 
         if self.total_nodes == 0:
-            return {"score": 100, "grade": "A", "details": "No internal nodes"}
+            return HealthScoreComponent(
+                score=100, grade="A", details={"message": "No internal nodes"}
+            )
 
         # God objects = critical hot zones
         god_object_percentage = (critical_hot_zones / self.total_nodes) * 100
@@ -236,19 +243,19 @@ class HealthScoreService:
 
         score = max(0, 100 - god_object_penalty - hot_zone_penalty)
 
-        return {
-            "score": round(score, 2),
-            "grade": self._get_grade(score),
-            "details": {
+        return HealthScoreComponent(
+            score=round(score, 2),
+            grade=self._get_grade(score),
+            details={
                 "god_objects": critical_hot_zones,
                 "warning_hot_zones": warning_hot_zones,
                 "total_hot_zones": total_hot_zones,
                 "god_object_percentage": round(god_object_percentage, 2),
                 "hot_zone_percentage": round(hot_zone_percentage, 2),
             },
-        }
+        )
 
-    def _calculate_stability_score(self) -> dict[str, Any]:
+    def _calculate_stability_score(self) -> HealthScoreComponent:
         """
         Calculate score based on instability distribution.
 
@@ -267,7 +274,9 @@ class HealthScoreService:
             instability_values.append(instability)
 
         if not instability_values:
-            return {"score": 100, "grade": "A", "details": "No internal nodes"}
+            return HealthScoreComponent(
+                score=100, grade="A", details={"message": "No internal nodes"}
+            )
 
         # Count nodes in each zone
         stable_count = len([i for i in instability_values if i <= 0.3])
@@ -287,10 +296,10 @@ class HealthScoreService:
         # Score = good zones percentage minus half of intermediate percentage
         score = max(0, good_zones_percentage - (intermediate_percentage * 0.5))
 
-        return {
-            "score": round(score, 2),
-            "grade": self._get_grade(score),
-            "details": {
+        return HealthScoreComponent(
+            score=round(score, 2),
+            grade=self._get_grade(score),
+            details={
                 "stable_modules": stable_count,
                 "intermediate_modules": intermediate_count,
                 "unstable_modules": unstable_count,
@@ -301,7 +310,7 @@ class HealthScoreService:
                     sum(instability_values) / len(instability_values), 2
                 ),
             },
-        }
+        )
 
     def _get_grade(self, score: float) -> str:
         """Convert score to letter grade."""
@@ -349,26 +358,26 @@ class HealthScoreService:
 
     def _generate_recommendations(
         self,
-        circular_score: dict,
-        coupling_score: dict,
-        complexity_score: dict,
-        architecture_score: dict,
-        stability_score: dict,
+        circular_score: HealthScoreComponent,
+        coupling_score: HealthScoreComponent,
+        complexity_score: HealthScoreComponent,
+        architecture_score: HealthScoreComponent,
+        stability_score: HealthScoreComponent,
     ) -> list[str]:
         """Generate actionable recommendations based on scores."""
         recommendations = []
 
         # Circular dependencies
-        if circular_score["score"] < 70:
-            circular_count = circular_score["details"]["circular_dependency_count"]
+        if circular_score.score < 70:
+            circular_count = circular_score.details["circular_dependency_count"]
             recommendations.append(
                 f"Break {circular_count} circular dependenc{'y' if circular_count == 1 else 'ies'} "
                 "to improve modularity and testability."
             )
 
         # Coupling
-        if coupling_score["score"] < 70:
-            avg_coupling = coupling_score["details"]["avg_total_coupling"]
+        if coupling_score.score < 70:
+            avg_coupling = coupling_score.details["avg_total_coupling"]
             if avg_coupling > 10:
                 recommendations.append(
                     f"Reduce average coupling from {avg_coupling:.1f} to below 10 "
@@ -376,17 +385,15 @@ class HealthScoreService:
                 )
 
         # Complexity
-        if complexity_score["score"] < 70:
-            avg_complexity = complexity_score["details"]["avg_cyclomatic_complexity"]
+        if complexity_score.score < 70:
+            avg_complexity = complexity_score.details["avg_cyclomatic_complexity"]
             if avg_complexity > 10:
                 recommendations.append(
                     f"Reduce average cyclomatic complexity from {avg_complexity:.1f} to below 10 "
                     "by extracting methods and simplifying conditional logic."
                 )
 
-            avg_maintainability = complexity_score["details"][
-                "avg_maintainability_index"
-            ]
+            avg_maintainability = complexity_score.details["avg_maintainability_index"]
             if avg_maintainability < 20:
                 recommendations.append(
                     f"Improve maintainability index from {avg_maintainability:.1f} to above 20 "
@@ -394,8 +401,8 @@ class HealthScoreService:
                 )
 
         # Architecture
-        if architecture_score["score"] < 70:
-            god_objects = architecture_score["details"]["god_objects"]
+        if architecture_score.score < 70:
+            god_objects = architecture_score.details["god_objects"]
             if god_objects > 0:
                 recommendations.append(
                     f"Refactor {god_objects} god object{'s' if god_objects > 1 else ''} "
@@ -403,8 +410,8 @@ class HealthScoreService:
                 )
 
         # Stability
-        if stability_score["score"] < 70:
-            intermediate_pct = stability_score["details"]["intermediate_percentage"]
+        if stability_score.score < 70:
+            intermediate_pct = stability_score.details["intermediate_percentage"]
             if intermediate_pct > 40:
                 recommendations.append(
                     f"{intermediate_pct:.0f}% of modules have intermediate instability (0.3-0.7). "

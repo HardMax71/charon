@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Any
 import networkx as nx
 from collections import defaultdict
+
+from app.core.models import GlobalMetrics
 
 
 class DocumentationService:
@@ -10,7 +11,7 @@ class DocumentationService:
     def __init__(
         self,
         graph: nx.DiGraph,
-        global_metrics: dict[str, Any],
+        global_metrics: GlobalMetrics,
         project_name: str = "Project",
     ):
         self.graph = graph
@@ -252,8 +253,11 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         """Generate project overview section."""
         node_count = len(self.graph.nodes)
         edge_count = len(self.graph.edges)
-        circular_deps = self.global_metrics.get("circular_dependencies_count", 0)
-        avg_coupling = self.global_metrics.get("average_coupling", 0)
+        circular_deps = len(self.global_metrics.circular_dependencies)
+        avg_coupling = (
+            self.global_metrics.avg_afferent_coupling
+            + self.global_metrics.avg_efferent_coupling
+        )
 
         return f"""## Project Overview
 
@@ -261,8 +265,8 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 - Total Dependencies: {edge_count}
 - Circular Dependencies: {circular_deps}
 - Average Coupling: {avg_coupling:.2f}
-- Max Coupling: {self.global_metrics.get("max_coupling", 0)}
-- Total Complexity: {self.global_metrics.get("total_complexity", 0)}"""
+- Average Complexity: {self.global_metrics.avg_complexity:.2f}
+- Average Maintainability: {self.global_metrics.avg_maintainability:.2f}"""
 
     def _generate_module_dependency_table(self) -> str:
         """Generate module dependency table."""
@@ -426,7 +430,7 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         """Generate hot zones section."""
         lines = ["## Hot Zones", ""]
 
-        hot_zone_files = self.global_metrics.get("hot_zone_files", [])
+        hot_zone_files = self.global_metrics.hot_zone_files
 
         if hot_zone_files:
             lines.append(

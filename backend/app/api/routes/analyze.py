@@ -73,6 +73,5 @@ async def calculate_health_score(
     Returns a 0-100 score with grade and actionable recommendations.
     """
     nx_graph = AnalysisOrchestratorService.build_networkx_graph(graph)
-    health_service = HealthScoreService(nx_graph, global_metrics.model_dump())
-    result = health_service.calculate_health_score()
-    return HealthScoreResponse(**result)
+    health_service = HealthScoreService(nx_graph, global_metrics)
+    return health_service.calculate_health_score()
