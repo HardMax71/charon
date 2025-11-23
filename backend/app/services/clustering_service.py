@@ -4,7 +4,7 @@ from collections import defaultdict
 
 
 class ClusteringService:
-    """Detect communities and calculate cluster metrics."""
+    """Detect clusters and calculate cluster metrics."""
 
     def __init__(self, graph: nx.DiGraph):
         """
@@ -14,23 +14,23 @@ class ClusteringService:
             graph: NetworkX directed graph
         """
         self.graph = graph
-        self.communities: Dict[int, Set[str]] = {}
-        self.node_to_community: Dict[str, int] = {}
+        self.clusters: Dict[int, Set[str]] = {}
+        self.node_to_cluster: Dict[str, int] = {}
 
     def detect_communities(self, resolution: float = 1.0) -> Dict:
         """
-        Detect communities using Louvain algorithm.
+        Detect clusters using Louvain community detection algorithm.
 
         Args:
             resolution: Resolution parameter for Louvain (default 1.0)
-                       Higher values = more smaller communities
-                       Lower values = fewer larger communities
+                       Higher values = more smaller clusters
+                       Lower values = fewer larger clusters
 
         Returns:
             Dictionary with cluster information
         """
         # Convert directed graph to undirected for community detection
-        # (Louvain works on undirected graphs)
+        # (Louvain algorithm works on undirected graphs)
         undirected_graph = self.graph.to_undirected()
 
         # Only cluster internal nodes
@@ -42,7 +42,7 @@ class ClusteringService:
         # Create subgraph with only internal nodes
         internal_subgraph = undirected_graph.subgraph(internal_nodes)
 
-        # Detect communities using Louvain algorithm
+        # Detect clusters using Louvain algorithm
         try:
             communities = nx.community.louvain_communities(
                 internal_subgraph,
@@ -51,25 +51,25 @@ class ClusteringService:
             )
 
             # Convert to dictionary format
-            self.communities = {i: set(comm) for i, comm in enumerate(communities)}
+            self.clusters = {i: set(comm) for i, comm in enumerate(communities)}
 
-            # Create reverse mapping (node -> community_id)
-            self.node_to_community = {}
-            for comm_id, nodes in self.communities.items():
+            # Create reverse mapping (node -> cluster_id)
+            self.node_to_cluster = {}
+            for cluster_id, nodes in self.clusters.items():
                 for node in nodes:
-                    self.node_to_community[node] = comm_id
+                    self.node_to_cluster[node] = cluster_id
 
         except Exception as e:
-            # Fallback: each node is its own community
-            self.communities = {i: {node} for i, node in enumerate(internal_nodes)}
-            self.node_to_community = {node: i for i, node in enumerate(internal_nodes)}
+            # Fallback: each node is its own cluster
+            self.clusters = {i: {node} for i, node in enumerate(internal_nodes)}
+            self.node_to_cluster = {node: i for i, node in enumerate(internal_nodes)}
 
         # Calculate cluster metrics
         cluster_metrics = self._calculate_cluster_metrics()
 
         return {
-            "communities": self.communities,
-            "node_to_community": self.node_to_community,
+            "clusters": self.clusters,
+            "node_to_cluster": self.node_to_cluster,
             "metrics": cluster_metrics,
         }
 
@@ -82,12 +82,12 @@ class ClusteringService:
         """
         metrics = []
 
-        for comm_id, nodes in self.communities.items():
-            # Skip empty communities
+        for cluster_id, nodes in self.clusters.items():
+            # Skip empty clusters
             if not nodes:
                 continue
 
-            # Create subgraph for this community
+            # Create subgraph for this cluster
             subgraph = self.graph.subgraph(nodes)
 
             # Calculate internal edges (within cluster)
@@ -124,7 +124,7 @@ class ClusteringService:
             is_package_candidate = cohesion > 0.7 and external_edges < internal_edges
 
             metrics.append({
-                "cluster_id": comm_id,
+                "cluster_id": cluster_id,
                 "size": len(nodes),
                 "internal_edges": internal_edges,
                 "external_edges": external_edges,
@@ -140,15 +140,15 @@ class ClusteringService:
 
         return metrics
 
-    def _calculate_modularity_contribution(self, community_nodes: Set[str]) -> float:
+    def _calculate_modularity_contribution(self, cluster_nodes: Set[str]) -> float:
         """
-        Calculate modularity contribution for a community.
+        Calculate modularity contribution for a cluster.
 
-        Modularity measures how well a network is divided into communities.
+        Modularity measures how well a network is divided into clusters.
         Range: [-0.5, 1.0], higher is better.
 
         Args:
-            community_nodes: Set of nodes in the community
+            cluster_nodes: Set of nodes in the cluster
 
         Returns:
             Modularity contribution
@@ -158,15 +158,15 @@ class ClusteringService:
         if total_edges == 0:
             return 0.0
 
-        # Edges within community
+        # Edges within cluster
         internal_edges = 0
-        for node in community_nodes:
+        for node in cluster_nodes:
             for successor in self.graph.successors(node):
-                if successor in community_nodes:
+                if successor in cluster_nodes:
                     internal_edges += 1
 
         # Expected edges if random (based on degree)
-        degree_sum = sum(self.graph.degree(node) for node in community_nodes)
+        degree_sum = sum(self.graph.degree(node) for node in cluster_nodes)
         expected_edges = (degree_sum ** 2) / (4 * total_edges)
 
         # Modularity contribution
@@ -183,7 +183,7 @@ class ClusteringService:
         """
         suggestions = []
 
-        for comm_id, nodes in self.communities.items():
+        for cluster_id, nodes in self.clusters.items():
             # Skip small clusters (< 3 files)
             if len(nodes) < 3:
                 continue
@@ -193,14 +193,14 @@ class ClusteringService:
 
             # Get cluster metrics
             metrics = next(
-                (m for m in self._calculate_cluster_metrics() if m["cluster_id"] == comm_id),
+                (m for m in self._calculate_cluster_metrics() if m["cluster_id"] == cluster_id),
                 None
             )
 
             if metrics and metrics["is_package_candidate"]:
                 suggestions.append({
-                    "cluster_id": comm_id,
-                    "suggested_package_name": common_prefix or f"cluster_{comm_id}",
+                    "cluster_id": cluster_id,
+                    "suggested_package_name": common_prefix or f"cluster_{cluster_id}",
                     "modules": list(nodes),
                     "size": len(nodes),
                     "cohesion": metrics["cohesion"],

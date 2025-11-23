@@ -99,7 +99,7 @@ class AnalysisOrchestratorService:
                 is_high_coupling=metrics.get("is_high_coupling", False),
             )
 
-            cluster_id = clustering_result.node_to_community.get(node_id)
+            cluster_id = clustering_result.node_to_cluster.get(node_id)
 
             nodes.append(
                 Node(

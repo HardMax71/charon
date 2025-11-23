@@ -408,7 +408,7 @@ export const HomePage = () => {
               icon={<Workflow className="text-teal-600" />}
               label="Structure"
               title="Auto-Clustering"
-              desc="Community detection suggests natural microservice boundaries."
+              desc="Cluster detection suggests natural microservice boundaries."
             />
           </div>
         </div>

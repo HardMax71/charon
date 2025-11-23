@@ -42,7 +42,7 @@ class Node(BaseModel):
     position: Position3D
     color: str = Field(description="Hex color code")
     metrics: NodeMetrics
-    cluster_id: int | None = Field(default=None, description="Community/cluster ID")
+    cluster_id: int | None = Field(default=None, description="Cluster ID")
 
 
 class Edge(BaseModel):
@@ -63,7 +63,7 @@ class CircularDependency(BaseModel):
 
 
 class ClusterMetrics(BaseModel):
-    """Metrics for a single cluster/community."""
+    """Metrics for a single cluster."""
 
     cluster_id: int = Field(description="Cluster identifier")
     size: int = Field(description="Number of nodes in cluster")
@@ -77,10 +77,10 @@ class ClusterMetrics(BaseModel):
 
 
 class ClusteringResult(BaseModel):
-    """Result from community detection."""
+    """Result from cluster detection."""
 
-    communities: dict[int, set[str]] = Field(description="Cluster ID to set of node IDs")
-    node_to_community: dict[str, int] = Field(description="Node ID to cluster ID mapping")
+    clusters: dict[int, set[str]] = Field(description="Cluster ID to set of node IDs")
+    node_to_cluster: dict[str, int] = Field(description="Node ID to cluster ID mapping")
     metrics: list[ClusterMetrics] = Field(description="Metrics for each cluster")
 
 
@@ -144,7 +144,7 @@ class GlobalMetrics(BaseModel):
     avg_maintainability: float = Field(default=0, description="Average maintainability index")
     hot_zone_files: list[HotZoneFile] = Field(default_factory=list, description="Files with high complexity and coupling")
     # Clustering and refactoring
-    clusters: list[ClusterMetrics] = Field(default_factory=list, description="Detected communities")
+    clusters: list[ClusterMetrics] = Field(default_factory=list, description="Detected clusters")
     package_suggestions: list[PackageSuggestion] = Field(default_factory=list, description="Package reorganization suggestions")
     refactoring_suggestions: list[RefactoringSuggestion] = Field(default_factory=list, description="Automated refactoring suggestions")
     refactoring_summary: RefactoringSummary | None = Field(default=None, description="Refactoring analysis summary")

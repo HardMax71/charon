@@ -82,6 +82,23 @@ export const HealthScore = () => {
     return 'text-blood-700';
   };
 
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return 'bg-styx-600';
+    if (score >= 50) return 'bg-obol-500';
+    return 'bg-blood-700';
+  };
+
+  const getGradeColor = (grade: string) => {
+    switch (grade) {
+      case 'A': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'B': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'C': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'D': return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'F': return 'bg-rose-100 text-rose-700 border-rose-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+  };
+
   const score = Math.round(healthScore.overall_score);
   const colorClass = getScoreColor(score);
 
@@ -214,7 +231,7 @@ export const HealthScore = () => {
               <div className={`text-2xl font-black font-mono ${getScoreColor(comp.score)}`}>
                 {comp.score.toFixed(0)}
               </div>
-              <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getGradeColor(comp.grade)}`}>
                 {comp.grade}
               </span>
             </div>
@@ -222,7 +239,7 @@ export const HealthScore = () => {
             {/* Mini Bar */}
             <div className="mt-3 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${getScoreColor(comp.score).replace('text-', 'bg-')}`}
+                className={`h-full rounded-full transition-all duration-500 ease-out ${getScoreBgColor(comp.score)}`}
                 style={{ width: `${comp.score}%` }}
               />
             </div>

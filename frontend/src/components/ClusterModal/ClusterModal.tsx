@@ -24,7 +24,7 @@ export const ClusterModal = () => {
           <div>
             <h3 className="modal-title">Detected Clusters</h3>
             <p className="text-sm text-gray-500 mt-1">
-              {globalMetrics.clusters.length} communities found via Louvain algorithm
+              {globalMetrics.clusters.length} clusters found via Louvain algorithm
             </p>
           </div>
           <button

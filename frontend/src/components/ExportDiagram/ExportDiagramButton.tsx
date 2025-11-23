@@ -56,7 +56,7 @@ export const ExportDiagramButton = () => {
         <>
           <div className="fixed inset-0 z-[100]" onClick={() => setIsOpen(false)} />
           {/* Z-Index bumped to 200 to ensure visibility */}
-          <div className="absolute top-full left-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-2xl z-[200] p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
+          <div className="absolute top-full left-0 mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-2xl z-[200] p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
             <div className="space-y-0.5">
               <FormatOption
                 label="PlantUML"
@@ -100,7 +100,7 @@ const FormatOption = ({ label, icon: Icon, onClick, loading }: any) => (
   <button
     onClick={onClick}
     disabled={loading}
-    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-teal-700 rounded transition-colors disabled:opacity-50 text-left btn-secondary btn-sm"
+    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded transition-colors disabled:opacity-50 text-left"
   >
     <Icon className="w-3.5 h-3.5" />
     {label}

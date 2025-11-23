@@ -151,7 +151,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
             <div className="flex items-center gap-2">
               <Layers className="w-3.5 h-3.5 text-teal-600" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Communities</span>
+                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Clusters</span>
                 <span className="text-[9px] text-slate-400 leading-none">{activeMetrics.clusters.length} detected</span>
               </div>
             </div>

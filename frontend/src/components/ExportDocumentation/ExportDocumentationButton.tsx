@@ -59,7 +59,7 @@ export const ExportDocumentationButton = () => {
         <>
           <div className="fixed inset-0 z-[100]" onClick={() => setIsOpen(false)} />
           {/* Dropdown: Opens DOWN from RIGHT edge with high Z-index */}
-          <div className="absolute top-full right-0 mt-2 w-36 bg-white border border-slate-200 rounded-lg shadow-2xl z-[200] p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
+          <div className="absolute top-full right-0 mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-2xl z-[200] p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
             <div className="space-y-0.5">
               <FormatOption
                 label="Markdown"
@@ -87,7 +87,7 @@ export const ExportDocumentationButton = () => {
 const FormatOption = ({ label, icon: Icon, onClick }: any) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-teal-700 rounded transition-colors text-left group btn-secondary btn-sm"
+    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded transition-colors text-left group"
   >
     <Icon className="w-3.5 h-3.5 group-hover:text-teal-600" />
     <span>{label}</span>

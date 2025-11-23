@@ -9,77 +9,60 @@ logger = get_logger(__name__)
 MAX_AST_DEPTH = 100
 
 
-def parse_file(
-    content: str,
-    filepath: str,
-    max_depth: int = MAX_AST_DEPTH
-) -> ParseResult:
+def parse_file(content: str, filepath: str, max_depth: int = MAX_AST_DEPTH) -> ParseResult:
     """
-    Parse a Python file and extract all imports safely.
+    Parse Python file and extract imports using functional list comprehensions.
 
-    Args:
-        content: File content as string
-        filepath: Path to the file (for error reporting)
-        max_depth: Maximum AST depth to prevent stack overflow (default: 100)
-
-    Returns:
-        ParseResult with imports and errors
+    Minimalist approach: single try-except, list comprehensions for import extraction.
     """
-    imports: list[ImportInfo] = []
-    errors: list[str] = []
-
     try:
         tree = ast.parse(content, filename=filepath)
 
-        depth = _get_ast_depth(tree)
-        if depth > max_depth:
-            logger.warning("AST depth %d exceeds limit %d for %s", depth, max_depth, filepath)
-            errors.append(f"AST too deep ({depth} > {max_depth}), skipping detailed analysis")
-            return ParseResult(imports=[], errors=errors)
+        module_path = extract_module_path(filepath, "")
+        if not module_path:
+            module_path = filepath.replace("/", ".").replace("\\", ".").replace(".py", "")
 
-    except SyntaxError as e:
-        logger.error("Syntax error in %s:%d: %s", filepath, e.lineno, e.msg)
-        errors.append(f"Syntax error in {filepath}:{e.lineno}: {e.msg}")
-        return ParseResult(imports=imports, errors=errors)
-    except RecursionError:
-        logger.error("Recursion limit hit parsing %s", filepath, exc_info=True)
-        errors.append(f"File too complex to parse: {filepath}")
-        return ParseResult(imports=imports, errors=errors)
-    except Exception as e:
-        logger.error("Failed to parse %s: %s", filepath, str(e), exc_info=True)
-        errors.append(f"Failed to parse {filepath}: {str(e)}")
-        return ParseResult(imports=imports, errors=errors)
+        # Check depth to prevent stack overflow
+        if (depth := _get_ast_depth(tree)) > max_depth:
+            logger.warning("AST depth %d exceeds limit for %s", depth, filepath)
+            return ParseResult(imports=[], errors=[f"AST too deep ({depth} > {max_depth})"])
 
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                imports.append(
-                    ImportInfo(
-                        module=alias.name,
-                        names=[alias.name.split(".")[0]],
-                        level=0,
-                        lineno=node.lineno,
-                    )
-                )
-
-        elif isinstance(node, ast.ImportFrom):
-            if node.module is None and node.level == 0:
-                continue
-
-            module = node.module or ""
-            names = [alias.name for alias in node.names]
-
-            imports.append(
-                ImportInfo(
-                    module=module,
-                    names=names,
-                    level=node.level,
-                    lineno=node.lineno,
-                )
+        # Extract all imports in functional style with list comprehensions
+        imports = [
+            # Handle 'import x' statements
+            ImportInfo(
+                module=alias.name,
+                names=[alias.name.split(".")[0]],
+                level=0,
+                lineno=node.lineno
             )
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        ] + [
+            # Handle 'from x import y' statements
+            ImportInfo(
+                module=node.module or _resolve_relative_base(module_path, node.level),
+                names=[a.name for a in node.names],
+                level=node.level,
+                lineno=node.lineno
+            )
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and not (node.module is None and node.level == 0)
+        ]
 
-    logger.debug("Parsed %s: %d imports, %d errors", filepath, len(imports), len(errors))
-    return ParseResult(imports=imports, errors=errors)
+        logger.debug("Parsed %s: %d imports", filepath, len(imports))
+        return ParseResult(imports=imports, errors=[])
+
+    except Exception as e:
+        # Single exception handler with conditional error message
+        error_msg = (
+            f"Syntax error in {filepath}:{e.lineno}: {e.msg}"
+            if isinstance(e, SyntaxError)
+            else f"Parse error in {filepath}: {str(e)}"
+        )
+        logger.error(error_msg, exc_info=not isinstance(e, SyntaxError))
+        return ParseResult(imports=[], errors=[error_msg])
 
 
 def _get_ast_depth(node: ast.AST) -> int:
@@ -105,6 +88,19 @@ def _get_ast_depth(node: ast.AST) -> int:
             stack.append((child, depth + 1))
 
     return max_depth
+
+
+def _resolve_relative_base(module_path: str, level: int) -> str:
+    """Infer the module path targeted by a relative import."""
+    if level <= 0 or not module_path:
+        return module_path
+
+    parts = module_path.split(".")
+    if level >= len(parts):
+        return ""
+
+    base = parts[:-level]
+    return ".".join(base) if base else ""
 
 
 def extract_module_path(filepath: str, project_root: str) -> str:

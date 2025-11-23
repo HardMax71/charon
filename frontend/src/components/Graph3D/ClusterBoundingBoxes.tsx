@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import * as THREE from 'three';
@@ -8,6 +8,15 @@ const CLUSTER_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 export const ClusterBoundingBoxes = () => {
   const { graph, globalMetrics } = useGraphStore();
   const { showClusters } = useUIStore();
+
+  // Force recalculation by tracking a version counter
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+
+  // Watch for node position changes and force update
+  useEffect(() => {
+    if (!graph?.nodes) return;
+    setUpdateTrigger(prev => prev + 1);
+  }, [graph?.nodes]);
 
   const boxes = useMemo(() => {
     if (!graph || !globalMetrics?.clusters || !showClusters) return [];
@@ -35,7 +44,7 @@ export const ClusterBoundingBoxes = () => {
         args: [size.x, size.y, size.z] as [number, number, number]
       };
     }).filter(Boolean) as any[];
-  }, [graph, globalMetrics, showClusters]);
+  }, [graph?.nodes, globalMetrics, showClusters, updateTrigger]);
 
   if (!showClusters) return null;
 
