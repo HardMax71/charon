@@ -1,5 +1,4 @@
 from collections import deque
-from typing import Dict, List
 
 from app.core.exceptions import NotFoundException
 
@@ -13,7 +12,7 @@ class ImpactAnalysisService:
         self.edges = graph_data.get("edges", [])
 
         # Build adjacency list for dependents (who depends on this node)
-        self.dependents: Dict[str, List[str]] = {}
+        self.dependents: dict[str, list[str]] = {}
         for edge in self.edges:
             source = edge["source"]
             target = edge["target"]
@@ -36,8 +35,8 @@ class ImpactAnalysisService:
             raise NotFoundException(f"Node '{node_id}' not found in graph")
 
         # BFS to find all transitive dependents
-        affected_nodes: Dict[str, int] = {node_id: 0}  # node_id -> distance
-        impact_levels: Dict[int, List[str]] = {0: [node_id]}
+        affected_nodes: dict[str, int] = {node_id: 0}  # node_id -> distance
+        impact_levels: dict[int, list[str]] = {0: [node_id]}
 
         queue = deque([(node_id, 0)])
         visited = {node_id}

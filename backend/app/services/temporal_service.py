@@ -1,7 +1,6 @@
 import hashlib
 from collections import defaultdict
 from datetime import datetime
-from typing import List, Dict, Optional
 
 from app.core import get_logger
 from app.services.analyzer_service import analyze_files
@@ -18,13 +17,13 @@ class TemporalAnalysisService:
 
     def __init__(self):
         self.github_service = GitHubService()
-        self.snapshots_cache: Dict[str, List[Dict]] = {}
+        self.snapshots_cache: dict[str, list[dict]] = {}
 
     async def analyze_repository_history_streaming(
         self,
         repo_url: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         sample_strategy: str = "all",
     ):
         """
@@ -145,10 +144,10 @@ class TemporalAnalysisService:
     async def analyze_repository_history(
         self,
         repo_url: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         sample_strategy: str = "all",  # "all", "daily", "weekly", "monthly"
-    ) -> Dict:
+    ) -> dict:
         """
         Analyze dependency evolution over git history.
 
@@ -252,7 +251,7 @@ class TemporalAnalysisService:
 
         return result
 
-    def _sample_commits(self, commits: List[Dict], strategy: str) -> List[Dict]:
+    def _sample_commits(self, commits: list[dict], strategy: str) -> list[dict]:
         """Sample commits based on strategy."""
         if strategy == "all":
             return commits
@@ -288,8 +287,8 @@ class TemporalAnalysisService:
         return sampled
 
     async def _analyze_commit(
-        self, repo_url: str, commit: Dict, previous_snapshot: Optional[Dict]
-    ) -> Optional[Dict]:
+        self, repo_url: str, commit: dict, previous_snapshot: dict | None
+    ) -> dict | None:
         """Analyze dependencies at a specific commit."""
         try:
             # Fetch files at this commit
@@ -394,12 +393,12 @@ class TemporalAnalysisService:
 
     def _calculate_changes(
         self,
-        previous_snapshot: Dict,
-        current_dependencies: Dict,
+        previous_snapshot: dict,
+        current_dependencies: dict,
         current_nodes: int,
         current_edges: int,
         current_circular_count: int,
-    ) -> Dict:
+    ) -> dict:
         """Calculate changes between snapshots."""
         prev_deps = previous_snapshot.get("dependencies", {})
 
@@ -430,7 +429,7 @@ class TemporalAnalysisService:
             - previous_snapshot["circular_count"],
         }
 
-    def _calculate_churn(self, snapshots: List[Dict]) -> Dict:
+    def _calculate_churn(self, snapshots: list[dict]) -> dict:
         """Calculate dependency churn metrics."""
         # Track how often each node's dependencies changed
         node_churn = defaultdict(int)
@@ -462,8 +461,8 @@ class TemporalAnalysisService:
         }
 
     def _generate_churn_heatmap(
-        self, snapshots: List[Dict], node_churn: Dict[str, int]
-    ) -> List[Dict]:
+        self, snapshots: list[dict], node_churn: dict[str, int]
+    ) -> list[dict]:
         """Generate heatmap data for visualization."""
         heatmap_data = []
 
@@ -487,7 +486,7 @@ class TemporalAnalysisService:
 
         return heatmap_data
 
-    def _track_circular_dependencies(self, snapshots: List[Dict]) -> List[Dict]:
+    def _track_circular_dependencies(self, snapshots: list[dict]) -> list[dict]:
         """Track when circular dependencies were introduced."""
         timeline = []
         seen_circular = set()
@@ -511,6 +510,6 @@ class TemporalAnalysisService:
 
         return timeline
 
-    def get_cached_analysis(self, analysis_id: str) -> Optional[Dict]:
+    def get_cached_analysis(self, analysis_id: str) -> dict | None:
         """Retrieve cached analysis results."""
         return self.snapshots_cache.get(analysis_id)

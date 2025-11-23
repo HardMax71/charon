@@ -1,5 +1,4 @@
 import networkx as nx
-from typing import Dict, List, Set
 import statistics
 
 from app.core.config import settings
@@ -7,7 +6,7 @@ from app.utils.cycle_detector import detect_cycles, get_nodes_in_cycles
 from app.services.complexity_service import ComplexityService
 
 
-def percentile(values: List[float], percent: float) -> float:
+def percentile(values: list[float], percent: float) -> float:
     """Calculate percentile of a list of values."""
     if not values:
         return 0.0
@@ -27,11 +26,11 @@ class MetricsCalculator:
 
     def __init__(self, graph: nx.DiGraph):
         self.graph = graph
-        self.cycles: List[List[str]] = []
-        self.nodes_in_cycles: Set[str] = set()
+        self.cycles: list[list[str]] = []
+        self.nodes_in_cycles: set[str] = set()
         self.high_coupling_threshold: float = 0
 
-    def calculate_all(self) -> Dict:
+    def calculate_all(self) -> dict:
         """Calculate all metrics for the graph."""
         # Detect circular dependencies
         self.cycles = detect_cycles(self.graph)
@@ -62,7 +61,7 @@ class MetricsCalculator:
 
         return self._calculate_global_metrics()
 
-    def _calculate_node_metrics(self, node: str) -> Dict:
+    def _calculate_node_metrics(self, node: str) -> dict:
         """Calculate metrics for a single node."""
         # Efferent coupling (fan-out): number of outgoing dependencies
         efferent_coupling = self.graph.out_degree(node)
@@ -112,7 +111,7 @@ class MetricsCalculator:
             "hot_zone_reason": hot_zone["reason"],
         }
 
-    def _calculate_global_metrics(self) -> Dict:
+    def _calculate_global_metrics(self) -> dict:
         """Calculate global project metrics."""
         internal_nodes = [
             n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "internal"

@@ -1,6 +1,6 @@
 import logging
 import traceback
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
@@ -29,7 +29,7 @@ def create_error_response(
     path: str = None,
 ) -> JSONResponse:
     """Create a standardized error response."""
-    content: Dict[str, Any] = {
+    content: dict[str, Any] = {
         "error": error_type,
         "detail": message,
         "status_code": status_code,

@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from typing import List
 import networkx as nx
 
 from app.core.models import (
@@ -42,7 +41,7 @@ class FitnessService:
 
     def validate_rules(
         self,
-        rules: List[FitnessRule],
+        rules: list[FitnessRule],
         fail_on_error: bool = True,
         fail_on_warning: bool = False,
     ) -> FitnessValidationResult:
@@ -82,7 +81,7 @@ class FitnessService:
             summary=summary,
         )
 
-    def _evaluate_rule(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_rule(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate a single rule."""
         evaluators = {
             "import_restriction": self._evaluate_import_restriction,
@@ -108,7 +107,7 @@ class FitnessService:
 
         return evaluator(rule)
 
-    def _evaluate_import_restriction(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_import_restriction(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate import restriction rules.
 
         Parameters:
@@ -155,7 +154,7 @@ class FitnessService:
 
         return violations
 
-    def _evaluate_max_coupling(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_max_coupling(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate maximum coupling rules.
 
         Parameters:
@@ -225,7 +224,7 @@ class FitnessService:
 
         return violations
 
-    def _evaluate_no_circular(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_no_circular(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate no circular dependencies rule."""
         violations = []
 
@@ -252,7 +251,7 @@ class FitnessService:
 
     def _evaluate_max_third_party_percent(
         self, rule: FitnessRule
-    ) -> List[FitnessViolation]:
+    ) -> list[FitnessViolation]:
         """Evaluate maximum third-party dependency percentage.
 
         Parameters:
@@ -292,7 +291,7 @@ class FitnessService:
 
         return violations
 
-    def _evaluate_max_depth(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_max_depth(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate maximum dependency depth/chain length.
 
         Parameters:
@@ -340,7 +339,7 @@ class FitnessService:
 
         return violations
 
-    def _evaluate_max_complexity(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_max_complexity(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate maximum complexity rule.
 
         Parameters:
@@ -408,7 +407,7 @@ class FitnessService:
 
     def _generate_summary(
         self,
-        violations: List[FitnessViolation],
+        violations: list[FitnessViolation],
         errors: int,
         warnings: int,
         infos: int,

@@ -59,7 +59,7 @@ def load_rules(rules_path: str) -> FitnessRuleConfig:
         print(f"{Colors.RED}Error: Rules file not found: {rules_path}{Colors.RESET}")
         sys.exit(2)
 
-    with open(path, "r") as f:
+    with open(path) as f:
         if path.suffix in [".yaml", ".yml"]:
             data = yaml.safe_load(f)
         else:
@@ -77,7 +77,7 @@ def load_graph_data(graph_path: str) -> tuple[DependencyGraph, GlobalMetrics]:
         )
         sys.exit(2)
 
-    with open(path, "r") as f:
+    with open(path) as f:
         data = json.load(f)
 
     # Handle both AnalysisResult format and raw graph format

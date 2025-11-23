@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
@@ -244,7 +244,7 @@ class ImportAnalyzeRequest(BaseModel):
 
 # Discriminated union - Pydantic V2 will automatically validate based on 'source' Literal field
 # Order matters: more specific models first
-AnalyzeRequest = Union[GitHubAnalyzeRequest, LocalAnalyzeRequest, ImportAnalyzeRequest]
+AnalyzeRequest = GitHubAnalyzeRequest | LocalAnalyzeRequest | ImportAnalyzeRequest
 
 
 class ExportRequest(BaseModel):

@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from typing import Optional
 
 from app.core.models import (
     FitnessValidationResult,
@@ -52,7 +51,7 @@ class FitnessOrchestratorService:
     def save_validation_result(
         project_name: str,
         result: FitnessValidationResult,
-        storage_path: Optional[str] = None,
+        storage_path: str | None = None,
     ) -> SaveResultResponse:
         """Save fitness validation result for historical tracking."""
         if storage_path is None:
@@ -76,8 +75,8 @@ class FitnessOrchestratorService:
     @staticmethod
     def get_fitness_trend(
         project_name: str,
-        rule_id: Optional[str] = None,
-        storage_path: Optional[str] = None,
+        rule_id: str | None = None,
+        storage_path: str | None = None,
         limit: int = 100,
     ) -> FitnessTrendResponse:
         """Get historical fitness trend data for a project."""
@@ -112,11 +111,11 @@ class FitnessOrchestratorService:
 
     @staticmethod
     def _parse_history_file(
-        history_file: Path, rule_id: Optional[str], limit: int
+        history_file: Path, rule_id: str | None, limit: int
     ) -> list[FitnessTrendPoint]:
         """Parse history file and extract trend points."""
         data_points = []
-        with open(history_file, "r") as f:
+        with open(history_file) as f:
             lines = f.readlines()
             for line in lines[-limit:]:
                 result = json.loads(line.strip())

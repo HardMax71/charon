@@ -1,5 +1,5 @@
 import networkx as nx
-from typing import Dict, List, Any
+from typing import Any
 from collections import defaultdict
 
 
@@ -15,7 +15,7 @@ class RefactoringService:
         """
         self.graph = graph
 
-    def analyze_refactoring_opportunities(self) -> List[Dict[str, Any]]:
+    def analyze_refactoring_opportunities(self) -> list[dict[str, Any]]:
         """
         Analyze the graph and generate refactoring suggestions.
 
@@ -46,7 +46,7 @@ class RefactoringService:
 
         return suggestions
 
-    def _detect_god_objects(self, internal_nodes: List[str]) -> List[Dict[str, Any]]:
+    def _detect_god_objects(self, internal_nodes: list[str]) -> list[dict[str, Any]]:
         """
         Detect God Objects - modules with excessive dependencies.
 
@@ -95,7 +95,7 @@ class RefactoringService:
 
         return suggestions
 
-    def _detect_feature_envy(self, internal_nodes: List[str]) -> List[Dict[str, Any]]:
+    def _detect_feature_envy(self, internal_nodes: list[str]) -> list[dict[str, Any]]:
         """
         Detect Feature Envy - modules that heavily depend on a specific other module.
 
@@ -147,8 +147,8 @@ class RefactoringService:
         return suggestions
 
     def _detect_inappropriate_intimacy(
-        self, internal_nodes: List[str]
-    ) -> List[Dict[str, Any]]:
+        self, internal_nodes: list[str]
+    ) -> list[dict[str, Any]]:
         """
         Detect Inappropriate Intimacy - bidirectional dependencies between modules.
 
@@ -196,7 +196,7 @@ class RefactoringService:
 
         return suggestions
 
-    def _detect_unused_modules(self, internal_nodes: List[str]) -> List[Dict[str, Any]]:
+    def _detect_unused_modules(self, internal_nodes: list[str]) -> list[dict[str, Any]]:
         """
         Detect unused or dead code - internal modules with no incoming dependencies.
         """
@@ -231,7 +231,7 @@ class RefactoringService:
 
         return suggestions
 
-    def _detect_hub_modules(self, internal_nodes: List[str]) -> List[Dict[str, Any]]:
+    def _detect_hub_modules(self, internal_nodes: list[str]) -> list[dict[str, Any]]:
         """
         Detect Hub Modules - modules with very high afferent coupling.
 
@@ -287,7 +287,7 @@ class RefactoringService:
 
         return suggestions
 
-    def _suggest_circular_dependency_fixes(self) -> List[Dict[str, Any]]:
+    def _suggest_circular_dependency_fixes(self) -> list[dict[str, Any]]:
         """
         Suggest fixes for circular dependencies already detected.
         """
@@ -335,8 +335,8 @@ class RefactoringService:
         return suggestions
 
     def _detect_unstable_dependencies(
-        self, internal_nodes: List[str]
-    ) -> List[Dict[str, Any]]:
+        self, internal_nodes: list[str]
+    ) -> list[dict[str, Any]]:
         """
         Detect violations of Stable Dependencies Principle.
 
@@ -402,7 +402,7 @@ class RefactoringService:
 
         return suggestions
 
-    def get_summary_stats(self) -> Dict[str, Any]:
+    def get_summary_stats(self) -> dict[str, Any]:
         """Get summary statistics for the analysis."""
         internal_nodes = [
             n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "internal"

@@ -1,5 +1,5 @@
 import json
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from app.core.models import TemporalAnalysisRequest, TemporalAnalysisResponse
 from app.core.exceptions import NotFoundException

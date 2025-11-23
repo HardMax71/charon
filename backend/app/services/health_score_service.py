@@ -1,5 +1,5 @@
 import math
-from typing import Dict, List, Any
+from typing import Any
 import networkx as nx
 
 
@@ -22,14 +22,14 @@ class HealthScoreService:
     - Stability Distribution (10%): Based on instability metric distribution
     """
 
-    def __init__(self, graph: nx.DiGraph, global_metrics: Dict[str, Any]):
+    def __init__(self, graph: nx.DiGraph, global_metrics: dict[str, Any]):
         self.graph = graph
         self.global_metrics = global_metrics
         self.total_nodes = len(
             [n for n in graph.nodes if graph.nodes[n].get("type") == "internal"]
         )
 
-    def calculate_health_score(self) -> Dict[str, Any]:
+    def calculate_health_score(self) -> dict[str, Any]:
         """Calculate comprehensive health score."""
         # Calculate individual component scores
         circular_score = self._calculate_circular_dependency_score()
@@ -79,7 +79,7 @@ class HealthScoreService:
             ),
         }
 
-    def _calculate_circular_dependency_score(self) -> Dict[str, Any]:
+    def _calculate_circular_dependency_score(self) -> dict[str, Any]:
         """
         Calculate score based on circular dependencies.
 
@@ -116,7 +116,7 @@ class HealthScoreService:
             },
         }
 
-    def _calculate_coupling_score(self) -> Dict[str, Any]:
+    def _calculate_coupling_score(self) -> dict[str, Any]:
         """
         Calculate score based on coupling metrics.
 
@@ -163,7 +163,7 @@ class HealthScoreService:
             },
         }
 
-    def _calculate_complexity_score(self) -> Dict[str, Any]:
+    def _calculate_complexity_score(self) -> dict[str, Any]:
         """
         Calculate score based on complexity metrics.
 
@@ -203,7 +203,7 @@ class HealthScoreService:
             },
         }
 
-    def _calculate_architecture_score(self) -> Dict[str, Any]:
+    def _calculate_architecture_score(self) -> dict[str, Any]:
         """
         Calculate score based on architecture quality.
 
@@ -248,7 +248,7 @@ class HealthScoreService:
             },
         }
 
-    def _calculate_stability_score(self) -> Dict[str, Any]:
+    def _calculate_stability_score(self) -> dict[str, Any]:
         """
         Calculate score based on instability distribution.
 
@@ -349,12 +349,12 @@ class HealthScoreService:
 
     def _generate_recommendations(
         self,
-        circular_score: Dict,
-        coupling_score: Dict,
-        complexity_score: Dict,
-        architecture_score: Dict,
-        stability_score: Dict,
-    ) -> List[str]:
+        circular_score: dict,
+        coupling_score: dict,
+        complexity_score: dict,
+        architecture_score: dict,
+        stability_score: dict,
+    ) -> list[str]:
         """Generate actionable recommendations based on scores."""
         recommendations = []
 

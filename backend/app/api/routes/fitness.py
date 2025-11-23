@@ -1,5 +1,3 @@
-from typing import Optional
-
 from app.core.models import (
     FitnessValidationRequest,
     FitnessValidationResult,
@@ -59,7 +57,7 @@ async def validate_from_config(
 async def save_validation_result(
     project_name: str,
     result: FitnessValidationResult,
-    storage_path: Optional[str] = None,
+    storage_path: str | None = None,
 ) -> SaveResultResponse:
     """Save fitness validation result for historical tracking.
 
@@ -76,8 +74,8 @@ async def save_validation_result(
 @router.get("/fitness/trend/{project_name}", response_model=FitnessTrendResponse)
 async def get_fitness_trend(
     project_name: str,
-    rule_id: Optional[str] = None,
-    storage_path: Optional[str] = None,
+    rule_id: str | None = None,
+    storage_path: str | None = None,
     limit: int = 100,
 ) -> FitnessTrendResponse:
     """Get historical fitness trend data for a project.

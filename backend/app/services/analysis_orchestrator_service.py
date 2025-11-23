@@ -1,4 +1,4 @@
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 import networkx as nx
 
 from app.core import get_logger

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 import networkx as nx
 from collections import defaultdict
 
@@ -10,7 +10,7 @@ class DocumentationService:
     def __init__(
         self,
         graph: nx.DiGraph,
-        global_metrics: Dict[str, Any],
+        global_metrics: dict[str, Any],
         project_name: str = "Project",
     ):
         self.graph = graph

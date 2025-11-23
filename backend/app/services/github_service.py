@@ -1,5 +1,4 @@
 import aiohttp
-from typing import List, Optional
 from app.core.models import FileInput
 from app.core.config import settings
 
@@ -11,7 +10,7 @@ class GitHubService:
         self.api_base = settings.github_api_base
         self.raw_base = settings.github_raw_base
 
-    async def fetch_repository(self, url: str, ref: str = "main") -> List[FileInput]:
+    async def fetch_repository(self, url: str, ref: str = "main") -> list[FileInput]:
         """
         Fetch all Python files from a GitHub repository.
 
@@ -50,10 +49,10 @@ class GitHubService:
     async def fetch_commit_history(
         self,
         url: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         max_commits: int = 50,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """
         Fetch commit history from a GitHub repository.
 
@@ -104,7 +103,7 @@ class GitHubService:
 
     async def fetch_repository_at_commit(
         self, url: str, commit_sha: str
-    ) -> List[FileInput]:
+    ) -> list[FileInput]:
         """
         Fetch repository files at a specific commit.
 
@@ -138,7 +137,7 @@ class GitHubService:
 
         raise ValueError(f"Invalid GitHub URL: {url}")
 
-    async def _get_repository_tree(self, owner: str, repo: str, ref: str) -> List[dict]:
+    async def _get_repository_tree(self, owner: str, repo: str, ref: str) -> list[dict]:
         """
         Get the repository file tree recursively.
 

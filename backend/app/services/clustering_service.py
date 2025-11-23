@@ -1,5 +1,4 @@
 import networkx as nx
-from typing import Dict, List, Set
 
 
 class ClusteringService:
@@ -13,10 +12,10 @@ class ClusteringService:
             graph: NetworkX directed graph
         """
         self.graph = graph
-        self.clusters: Dict[int, Set[str]] = {}
-        self.node_to_cluster: Dict[str, int] = {}
+        self.clusters: dict[int, set[str]] = {}
+        self.node_to_cluster: dict[str, int] = {}
 
-    def detect_communities(self, resolution: float = 1.0) -> Dict:
+    def detect_communities(self, resolution: float = 1.0) -> dict:
         """
         Detect clusters using Louvain community detection algorithm.
 
@@ -71,7 +70,7 @@ class ClusteringService:
             "metrics": cluster_metrics,
         }
 
-    def _calculate_cluster_metrics(self) -> List[Dict]:
+    def _calculate_cluster_metrics(self) -> list[dict]:
         """
         Calculate metrics for each detected cluster.
 
@@ -140,7 +139,7 @@ class ClusteringService:
 
         return metrics
 
-    def _calculate_modularity_contribution(self, cluster_nodes: Set[str]) -> float:
+    def _calculate_modularity_contribution(self, cluster_nodes: set[str]) -> float:
         """
         Calculate modularity contribution for a cluster.
 
@@ -174,7 +173,7 @@ class ClusteringService:
 
         return modularity
 
-    def get_cluster_suggestions(self) -> List[Dict]:
+    def get_cluster_suggestions(self) -> list[dict]:
         """
         Get package reorganization suggestions based on clusters.
 
@@ -220,7 +219,7 @@ class ClusteringService:
 
         return suggestions
 
-    def _find_common_prefix(self, nodes: Set[str]) -> str:
+    def _find_common_prefix(self, nodes: set[str]) -> str:
         """
         Find common module prefix for a set of nodes.
 
