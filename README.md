@@ -1,204 +1,75 @@
-# Charon
+<div align="center">
+  <img src="frontend/public/icon.png" width="120" alt="Charon">
+  <h1>Charon</h1>
+</div>
 
-A 3D dependency visualizer for Python projects that helps you understand code coupling, cohesion, and refactoring opportunities.
+Ever wondered what your codebase actually looks like? Not the syntax, but the structure. The dependencies. The tangled mess of imports that somehow became your architecture. Charon shows you exactly that, in 3D, so you can finally see where things went wrong (or right).
 
-## What is this?
+## Getting Started
 
-Charon analyzes Python codebases and creates interactive 3D visualizations of how your modules, files, and packages depend on each other. Think of it as a map for navigating through the underworld of tangled dependencies.
-
-It shows you:
-- Who imports what from where
-- Which files are highly coupled (and might need refactoring)
-- Circular dependencies that could cause problems
-- How third-party libraries fit into your architecture
-
-## Features
-
-### Core Analysis
-- File and module-level dependency tracking
-- Import resolution (including relative imports)
-- Separation of internal code vs third-party libraries
-- Automatic detection of circular dependencies
-- Coupling and cohesion metrics calculation
-
-### Visualization
-- Interactive 3D graph with hierarchical layout
-- Color-coded modules (same module = same color family)
-- Red highlighting for circular dependencies
-- Orange highlighting for highly coupled files (top 20%)
-- Arrow thickness shows number of imports
-- Click arrows to see exact dependencies
-- Switchable layouts (hierarchical, force-directed, circular)
-
-### Input Methods
-- GitHub repository URL (uses GitHub API)
-- Local folder drag & drop (up to 10MB)
-- Import from previously exported JSON/TOML files
-
-### Metrics & Analysis
-- Afferent coupling (how many modules depend on this one)
-- Efferent coupling (how many modules this one depends on)
-- Instability metric
-- Global project statistics
-- Per-file detailed metrics
-
-### Advanced Features
-- Diff mode: compare dependencies between commits or branches
-- Filter panel: hide/show specific modules
-- Hotspot detection: identify architectural pain points
-- Export to JSON/TOML for later analysis
-- Multiple layout algorithms
-
-## Tech Stack
-
-### Backend
-- FastAPI for the REST API
-- Python's `ast` module for static analysis
-- NetworkX for graph algorithms and cycle detection
-- Server-Sent Events (SSE) for progress updates
-- aiohttp for async GitHub API calls
-
-### Frontend
-- React 18 + TypeScript
-- Vite for build tooling
-- React Three Fiber (Three.js for React)
-- Zustand for state management
-- Tailwind CSS + shadcn/ui components
-
-## Architecture
-
-```
-┌─────────────┐
-│   Browser   │
-│  (Frontend) │
-└──────┬──────┘
-       │ HTTP/SSE
-       ▼
-┌─────────────┐
-│   FastAPI   │
-│  (Backend)  │
-└──────┬──────┘
-       │
-       ├─► AST Parser ──► Import Resolver
-       │
-       ├─► NetworkX ──► Cycle Detector
-       │
-       ├─► Metrics Calculator
-       │
-       └─► Layout Engine ──► 3D Positions
-```
-
-The backend is stateless - every analysis is done on-demand. GitHub repos are fetched via API (no cloning), and drag-dropped files are processed in-memory.
-
-## How It Works
-
-1. **Input**: You provide a GitHub URL, drag a local folder, or load a saved analysis file
-2. **Parsing**: Backend parses all `.py` files using Python's AST
-3. **Resolution**: Resolves all imports (relative and absolute) and classifies them as internal or third-party
-4. **Graph Building**: Creates a directed graph where nodes are files and edges are dependencies
-5. **Metrics**: Calculates coupling metrics and detects circular dependencies
-6. **Layout**: Positions nodes in 3D space using hierarchical layout
-7. **Coloring**: Assigns colors based on module structure, with overrides for problems
-8. **Visualization**: Renders interactive 3D scene in your browser
-
-## Installation
-
-### Using Docker (recommended)
+The fastest way to see what Charon does is to just run it with Docker:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
-Then open http://localhost:5173
+Then open http://localhost:5173 and paste in a GitHub repo URL. Within seconds you'll see your (or someone else's) codebase rendered as a 3D graph. Red nodes are circular dependencies, orange ones are highly coupled, and the arrows show who imports what.
 
-### Manual Setup
+If you don't want Docker, you can run the backend and frontend separately:
 
-Backend:
 ```bash
+# Backend (FastAPI)
 cd backend
 python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-```
 
-Frontend:
-```bash
+# Frontend (React)
 cd frontend
 npm install
 npm run dev
 ```
 
-## Usage
+Backend runs on port 8000, frontend on 5173. Both need to be running at the same time.
 
-1. Open the web interface
-2. Choose your input method:
-   - Paste a GitHub URL (e.g., `https://github.com/user/repo`)
-   - Drag and drop a local project folder
-   - Upload a previously exported JSON/TOML file
-3. Wait for analysis (progress shown with steps)
-4. Interact with the 3D graph:
-   - Click and drag to rotate
-   - Scroll to zoom
-   - Click nodes to see detailed metrics
-   - Click arrows to see exact import details
-5. Use the bottom panel to view metrics (Global/Entity tabs)
-6. Export results for later review
+## What It Does
 
-## Export Format
+Charon takes Python code and turns it into a graph. Each file becomes a node, each import becomes an edge. Then it calculates coupling metrics, detects circular dependencies, and positions everything in 3D space. You can analyze code three ways: paste a GitHub URL, drag and drop a local folder (10MB max), or import a saved analysis file.
 
-Exports include the full dependency graph plus metrics:
+The visualization is interactive. Drag to rotate, scroll to zoom, click nodes for metrics, click arrows for import details. Three layout modes available: hierarchical, force-directed, and circular. Colors show module boundaries (files in same module get similar colors), with red for circular dependencies and orange for high coupling.
 
-```json
-{
-  "graph": {
-    "nodes": [
-      {
-        "id": "package.module.file",
-        "label": "file.py",
-        "type": "internal",
-        "position": {"x": 0, "y": 0, "z": 0},
-        "color": "#hex",
-        "metrics": {
-          "afferent_coupling": 5,
-          "efferent_coupling": 3,
-          "instability": 0.375
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "module_a",
-        "target": "module_b",
-        "imports": ["ClassX", "func_y"],
-        "weight": 2
-      }
-    ]
-  },
-  "global_metrics": { ... }
-}
-```
+Beyond basic visualization, there's temporal analysis (watch dependencies evolve over git history), fitness functions (enforce architectural rules in CI/CD), health scoring (single number for codebase health), cluster detection (find natural groupings for package boundaries), refactoring suggestions (spot god objects and code smells), impact analysis (see blast radius of changes), what-if mode (test refactoring ideas by editing the graph), export tools (generate diagrams and docs), and complexity integration (hot zones where high complexity meets high coupling).
+More data about actual architecture is in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Limitations
+See [PROPOSALS.md](PROPOSALS.md) for the full feature list and what's planned next.
 
-- GitHub API rate limit: 60 requests/hour (unauthenticated)
-- File upload size: 10MB maximum
-- Only analyzes Python files (`.py`)
-- Standard library imports are ignored
-- Syntax errors in source files are skipped with warnings
+## How It Works Under The Hood
 
-## Future Ideas
+The backend uses Python's AST module to parse source files without executing them. It walks the AST looking for import statements, resolves them (including relative imports), and classifies them as internal or third-party. Then it builds a directed graph with NetworkX and runs algorithms for cycle detection, clustering, and metrics calculation.
 
-See [PROPOSALS.md](PROPOSALS.md) for planned features like:
-- Community detection and clustering algorithms
-- Automated refactoring suggestions
-- Live filesystem monitoring
-- And more...
+Positions in 3D space are computed using a hierarchical layout algorithm that places files in layers based on their position in the dependency tree. Third-party libraries go at the bottom, application code goes on top, and everything in between gets arranged to minimize edge crossings.
+
+The frontend is React with Three.js (via React Three Fiber) for 3D rendering. State management uses Zustand. The UI is Tailwind CSS with some custom components. Communication with the backend uses REST for most things and Server-Sent Events for progress updates during long-running analyses.
+
+Everything is stateless. The backend doesn't store anything. Each analysis is done from scratch, which keeps things simple but means you should export results if you want to save them.
+
+## Limitations Worth Knowing
+
+GitHub API rate limit is 60 requests per hour without authentication. If you're analyzing lots of repos, you'll hit it. The solution is to clone locally or set up a GitHub token.
+
+File uploads are capped at 10MB to avoid memory issues. Larger projects should be analyzed via GitHub URL instead.
+
+Only Python files are analyzed. If your project is multi-language, only the Python parts will show up.
+
+Standard library imports are ignored because they're not part of your architecture. Third-party libraries are included but separated visually.
+
+Syntax errors in source files get skipped with a warning. If you have broken Python files, they won't appear in the graph.
 
 ## Contributing
 
-This is an early-stage project. Issues and PRs welcome.
+This is an open source project. If you find bugs, open an issue. If you want to add features, open a PR. The code is split between backend (FastAPI, Python) and frontend (React, TypeScript), so pick whichever you're comfortable with.
 
 ## License
 
-MIT
+[MIT](LICENSE). Do whatever you want with it.
