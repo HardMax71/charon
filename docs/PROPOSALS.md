@@ -149,7 +149,7 @@ Track score over time to measure architectural improvements.
 - Empty state with helpful instructions when no graph is available
 - Analysis source tracking (GitHub, local, or imported data)
 
-## 11. Team Ownership Mapping
+## 11. Team Ownership Mapping - NOT PLANNED
 
 Integrate with git blame/CODEOWNERS to show which teams own which modules. Visualize cross-team dependencies.
 

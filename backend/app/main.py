@@ -6,6 +6,7 @@ from app.api.routes import (
     temporal,
     documentation,
     fitness,
+    performance,
 )
 from app.core import setup_logging
 from app.core.config import settings
@@ -53,6 +54,9 @@ app.include_router(
     documentation.router, prefix=settings.api_prefix, tags=["documentation"]
 )
 app.include_router(fitness.router, prefix=settings.api_prefix, tags=["fitness"])
+app.include_router(
+    performance.router, prefix=settings.api_prefix, tags=["performance"]
+)
 
 
 @app.get("/")

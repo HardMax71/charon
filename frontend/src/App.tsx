@@ -7,6 +7,7 @@ import { ResultsPage } from './pages/ResultsPage';
 import { TemporalAnalysisPage } from './pages/TemporalAnalysisPage';
 import { FitnessPage } from './pages/FitnessPage';
 import { RefactoringPage } from './pages/RefactoringPage';
+import { PerformancePage } from './pages/PerformancePage';
 import { ProgressIndicator } from './components/ProgressIndicator/ProgressIndicator';
 import { DependencyModal } from './components/DependencyModal/DependencyModal';
 import { ClusterModal } from './components/ClusterModal/ClusterModal';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/fitness" element={<FitnessPage />} />
             <Route path="/refactoring" element={<RefactoringPage />} />
             <Route path="/temporal" element={<TemporalAnalysisPage />} />
+            <Route path="/performance" element={<PerformancePage />} />
           </Routes>
 
           <ProgressIndicator />

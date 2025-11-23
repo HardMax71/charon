@@ -196,3 +196,34 @@ export const getExampleFitnessConfig = async (): Promise<FitnessRuleConfig> => {
 
   return response.data;
 };
+
+// Performance Profiling API
+
+export const analyzePerformance = async (
+  profileFile: File,
+  graph: DependencyGraph,
+  weights?: { execution_time: number; coupling: number; complexity: number; memory_usage: number; call_frequency: number }
+): Promise<import('@/types/performance').PerformanceAnalysisResult> => {
+  const formData = new FormData();
+  formData.append('file', profileFile);
+  formData.append('graph_json', JSON.stringify({
+    nodes: graph.nodes,
+    edges: graph.edges,
+  }));
+
+  if (weights) {
+    formData.append('weights_json', JSON.stringify(weights));
+  }
+
+  const response = await axios.post<import('@/types/performance').PerformanceAnalysisResult>(
+    `${API_BASE}/performance/analyze`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
+  return response.data;
+};
