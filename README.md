@@ -4,6 +4,8 @@
 
   [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
   [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+  [![Docker Publish](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml)
+  [![Release](https://github.com/HardMax71/charon/actions/workflows/release.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/release.yml)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
 
@@ -34,6 +36,21 @@ npm run dev
 ```
 
 Backend runs on port 8000, frontend on 5173. Both need to be running at the same time. The backend uses [uv](https://docs.astral.sh/uv/) for faster dependency management instead of pip.
+
+### Using Published Docker Images
+
+Pre-built images are automatically published to GitHub Container Registry on every commit to main:
+
+```bash
+# Pull latest images
+docker pull ghcr.io/hardmax71/charon-backend:latest
+docker pull ghcr.io/hardmax71/charon-frontend:latest
+
+# Or use specific commit SHA
+docker pull ghcr.io/hardmax71/charon-backend:main-abc1234
+```
+
+Images are also tagged with release versions when tags are pushed (e.g., `v0.0.8`).
 
 ## What It Does
 
