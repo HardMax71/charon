@@ -2,8 +2,8 @@
   <img src="frontend/public/icon.png" width="120" alt="Charon">
   <h1>Charon</h1>
 
-  [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
-  [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+  [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
+  [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
 
@@ -44,7 +44,7 @@ The visualization is interactive. Drag to rotate, scroll to zoom, click nodes fo
 Beyond basic visualization, there's temporal analysis (watch dependencies evolve over git history), fitness functions (enforce architectural rules in CI/CD), health scoring (single number for codebase health), cluster detection (find natural groupings for package boundaries), refactoring suggestions (spot god objects and code smells), impact analysis (see blast radius of changes), what-if mode (test refactoring ideas by editing the graph), export tools (generate diagrams and docs), and complexity integration (hot zones where high complexity meets high coupling).
 More data about actual architecture is in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-See [PROPOSALS.md](PROPOSALS.md) for the full feature list and what's planned next.
+See [PROPOSALS.md](docs/PROPOSALS.md) for the full feature list and what's planned next.
 
 ## How It Works Under The Hood
 

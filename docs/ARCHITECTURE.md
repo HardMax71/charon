@@ -218,7 +218,7 @@ services:
 
 ## Extensibility
 
-See [PROPOSALS.md](../PROPOSALS.md) for future enhancements:
+See [PROPOSALS.md](PROPOSALS.md) for future enhancements:
 - Multi-language support
 - Live filesystem monitoring
 - Refactoring suggestions

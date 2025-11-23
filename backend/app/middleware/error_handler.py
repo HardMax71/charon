@@ -151,15 +151,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         },
     )
 
-    # Print traceback to console for development
-    print(f"\n{'='*80}")
-    print(f"UNHANDLED EXCEPTION: {type(exc).__name__}")
-    print(f"Path: {request.method} {request.url.path}")
-    print(f"Message: {str(exc)}")
-    print(f"{'='*80}")
-    print(tb)
-    print(f"{'='*80}\n")
-
     return create_error_response(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         error_type=type(exc).__name__,
