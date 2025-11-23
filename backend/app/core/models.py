@@ -1,4 +1,4 @@
-from typing import Literal, Union, Annotated
+from typing import Literal, Union
 from pydantic import BaseModel, Field
 
 
@@ -13,23 +13,37 @@ class Position3D(BaseModel):
 class NodeMetrics(BaseModel):
     """Metrics for a single node."""
 
-    afferent_coupling: int = Field(description="Number of modules that depend on this one")
+    afferent_coupling: int = Field(
+        description="Number of modules that depend on this one"
+    )
     efferent_coupling: int = Field(description="Number of modules this one depends on")
     instability: float = Field(description="Ce / (Ca + Ce)")
     is_circular: bool = Field(default=False, description="Part of circular dependency")
     is_high_coupling: bool = Field(default=False, description="In top 20% of coupling")
     # Complexity metrics
-    cyclomatic_complexity: float = Field(default=0, description="Average cyclomatic complexity")
+    cyclomatic_complexity: float = Field(
+        default=0, description="Average cyclomatic complexity"
+    )
     max_complexity: int = Field(default=0, description="Maximum function complexity")
-    maintainability_index: float = Field(default=0, description="Maintainability index (0-100)")
+    maintainability_index: float = Field(
+        default=0, description="Maintainability index (0-100)"
+    )
     lines_of_code: int = Field(default=0, description="Total lines of code")
     complexity_grade: str = Field(default="A", description="Complexity grade (A-F)")
-    maintainability_grade: str = Field(default="A", description="Maintainability grade (A-F)")
+    maintainability_grade: str = Field(
+        default="A", description="Maintainability grade (A-F)"
+    )
     # Hot zone detection
-    is_hot_zone: bool = Field(default=False, description="High complexity + high coupling")
-    hot_zone_severity: Literal["critical", "warning", "info", "ok"] = Field(default="ok", description="Hot zone severity level")
+    is_hot_zone: bool = Field(
+        default=False, description="High complexity + high coupling"
+    )
+    hot_zone_severity: Literal["critical", "warning", "info", "ok"] = Field(
+        default="ok", description="Hot zone severity level"
+    )
     hot_zone_score: float = Field(default=0, description="Hot zone score (0-100)")
-    hot_zone_reason: str = Field(default="", description="Reason for hot zone classification")
+    hot_zone_reason: str = Field(
+        default="", description="Reason for hot zone classification"
+    )
 
 
 class Node(BaseModel):
@@ -99,13 +113,17 @@ class RefactoringSuggestion(BaseModel):
     """Automated refactoring suggestion based on code smells and anti-patterns."""
 
     module: str = Field(description="Module that needs refactoring")
-    severity: Literal["critical", "warning", "info"] = Field(description="Suggestion severity")
+    severity: Literal["critical", "warning", "info"] = Field(
+        description="Suggestion severity"
+    )
     pattern: str = Field(description="Anti-pattern or code smell name")
     description: str = Field(description="Brief description of the issue")
     metrics: dict = Field(description="Relevant metrics for this suggestion")
     recommendation: str = Field(description="High-level refactoring recommendation")
     details: str = Field(description="Detailed explanation with concrete steps")
-    suggested_refactoring: str = Field(description="Specific refactoring pattern to apply")
+    suggested_refactoring: str = Field(
+        description="Specific refactoring pattern to apply"
+    )
 
 
 class RefactoringSummary(BaseModel):
@@ -121,7 +139,9 @@ class HotZoneFile(BaseModel):
     """Hot zone file with high complexity and coupling."""
 
     file: str = Field(description="Module path")
-    severity: Literal["critical", "warning", "info", "ok"] = Field(description="Severity level")
+    severity: Literal["critical", "warning", "info", "ok"] = Field(
+        description="Severity level"
+    )
     score: float = Field(description="Hot zone score (0-100)")
     reason: str = Field(description="Reason for classification")
     complexity: float = Field(description="Cyclomatic complexity")
@@ -140,14 +160,28 @@ class GlobalMetrics(BaseModel):
     high_coupling_files: list[str]
     coupling_threshold: float
     # Complexity metrics
-    avg_complexity: float = Field(default=0, description="Average cyclomatic complexity")
-    avg_maintainability: float = Field(default=0, description="Average maintainability index")
-    hot_zone_files: list[HotZoneFile] = Field(default_factory=list, description="Files with high complexity and coupling")
+    avg_complexity: float = Field(
+        default=0, description="Average cyclomatic complexity"
+    )
+    avg_maintainability: float = Field(
+        default=0, description="Average maintainability index"
+    )
+    hot_zone_files: list[HotZoneFile] = Field(
+        default_factory=list, description="Files with high complexity and coupling"
+    )
     # Clustering and refactoring
-    clusters: list[ClusterMetrics] = Field(default_factory=list, description="Detected clusters")
-    package_suggestions: list[PackageSuggestion] = Field(default_factory=list, description="Package reorganization suggestions")
-    refactoring_suggestions: list[RefactoringSuggestion] = Field(default_factory=list, description="Automated refactoring suggestions")
-    refactoring_summary: RefactoringSummary | None = Field(default=None, description="Refactoring analysis summary")
+    clusters: list[ClusterMetrics] = Field(
+        default_factory=list, description="Detected clusters"
+    )
+    package_suggestions: list[PackageSuggestion] = Field(
+        default_factory=list, description="Package reorganization suggestions"
+    )
+    refactoring_suggestions: list[RefactoringSuggestion] = Field(
+        default_factory=list, description="Automated refactoring suggestions"
+    )
+    refactoring_summary: RefactoringSummary | None = Field(
+        default=None, description="Refactoring analysis summary"
+    )
 
 
 class DependencyGraph(BaseModel):
@@ -176,9 +210,15 @@ class SourceFilesResult(BaseModel):
     """Result from fetching source files."""
 
     success: bool = Field(description="Whether file fetching succeeded")
-    files: list[FileInput] | None = Field(default=None, description="Fetched files if successful")
-    project_name: str | None = Field(default=None, description="Project name if successful")
-    error_message: str | None = Field(default=None, description="Error message if failed")
+    files: list[FileInput] | None = Field(
+        default=None, description="Fetched files if successful"
+    )
+    project_name: str | None = Field(
+        default=None, description="Project name if successful"
+    )
+    error_message: str | None = Field(
+        default=None, description="Error message if failed"
+    )
 
 
 class GitHubAnalyzeRequest(BaseModel):
@@ -266,7 +306,9 @@ class ImpactAnalysisRequest(BaseModel):
 
     node_id: str = Field(description="ID of the node to analyze")
     graph: DependencyGraph = Field(description="Current dependency graph")
-    max_depth: int = Field(default=10, ge=1, le=50, description="Maximum depth for transitive search")
+    max_depth: int = Field(
+        default=10, ge=1, le=50, description="Maximum depth for transitive search"
+    )
 
 
 class SelectedNodeInfo(BaseModel):
@@ -311,7 +353,9 @@ class ImpactAnalysisResponse(BaseModel):
 
     selected_node: SelectedNodeInfo
     affected_nodes: dict[str, int] = Field(description="Mapping of node_id to distance")
-    impact_levels: dict[str, list[str]] = Field(description="Mapping of distance to list of node_ids")
+    impact_levels: dict[str, list[str]] = Field(
+        description="Mapping of distance to list of node_ids"
+    )
     affected_node_details: list[AffectedNodeDetail]
     metrics: ImpactMetrics
 
@@ -347,7 +391,9 @@ class HealthScoreWeights(BaseModel):
 class HealthScoreResponse(BaseModel):
     """Complete health score response."""
 
-    overall_score: float = Field(ge=0, le=100, description="Overall health score from 0-100")
+    overall_score: float = Field(
+        ge=0, le=100, description="Overall health score from 0-100"
+    )
     overall_grade: Literal["A", "B", "C", "D", "F"]
     components: HealthScoreComponents
     weights: HealthScoreWeights
@@ -367,9 +413,11 @@ class FitnessRule(BaseModel):
         "no_circular",
         "max_third_party_percent",
         "max_depth",
-        "max_complexity"
+        "max_complexity",
     ] = Field(description="Type of rule")
-    severity: Literal["error", "warning", "info"] = Field(default="error", description="Violation severity")
+    severity: Literal["error", "warning", "info"] = Field(
+        default="error", description="Violation severity"
+    )
     enabled: bool = Field(default=True, description="Whether the rule is active")
     parameters: dict = Field(description="Rule-specific parameters")
 
@@ -382,7 +430,9 @@ class FitnessViolation(BaseModel):
     severity: Literal["error", "warning", "info"]
     message: str = Field(description="Human-readable violation message")
     details: dict = Field(description="Additional context about the violation")
-    affected_modules: list[str] = Field(default_factory=list, description="Modules involved in violation")
+    affected_modules: list[str] = Field(
+        default_factory=list, description="Modules involved in violation"
+    )
 
 
 class FitnessValidationResult(BaseModel):
@@ -484,4 +534,6 @@ class TemporalAnalysisResponse(BaseModel):
     sample_strategy: str = Field(description="Sampling strategy used")
     snapshots: list[dict] = Field(description="Snapshot data for each analyzed commit")
     churn_data: dict = Field(description="Code churn data")
-    circular_deps_timeline: list[dict] = Field(description="Timeline of circular dependency events")
+    circular_deps_timeline: list[dict] = Field(
+        description="Timeline of circular dependency events"
+    )

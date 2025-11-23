@@ -89,7 +89,7 @@ class MetricsCalculator:
             cyclomatic_complexity,
             total_coupling,
             complexity_threshold=10.0,
-            coupling_threshold=5
+            coupling_threshold=5,
         )
 
         return {
@@ -118,16 +118,24 @@ class MetricsCalculator:
             n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "internal"
         ]
         third_party_nodes = [
-            n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "third_party"
+            n
+            for n in self.graph.nodes
+            if self.graph.nodes[n].get("type") == "third_party"
         ]
 
         # Calculate averages
         if internal_nodes:
             avg_afferent = statistics.mean(
-                [self.graph.nodes[n]["metrics"]["afferent_coupling"] for n in internal_nodes]
+                [
+                    self.graph.nodes[n]["metrics"]["afferent_coupling"]
+                    for n in internal_nodes
+                ]
             )
             avg_efferent = statistics.mean(
-                [self.graph.nodes[n]["metrics"]["efferent_coupling"] for n in internal_nodes]
+                [
+                    self.graph.nodes[n]["metrics"]["efferent_coupling"]
+                    for n in internal_nodes
+                ]
             )
         else:
             avg_afferent = 0.0
@@ -146,10 +154,16 @@ class MetricsCalculator:
         # Calculate complexity averages
         if internal_nodes:
             avg_complexity = statistics.mean(
-                [self.graph.nodes[n]["metrics"]["cyclomatic_complexity"] for n in internal_nodes]
+                [
+                    self.graph.nodes[n]["metrics"]["cyclomatic_complexity"]
+                    for n in internal_nodes
+                ]
             )
             avg_maintainability = statistics.mean(
-                [self.graph.nodes[n]["metrics"]["maintainability_index"] for n in internal_nodes]
+                [
+                    self.graph.nodes[n]["metrics"]["maintainability_index"]
+                    for n in internal_nodes
+                ]
             )
         else:
             avg_complexity = 0.0
@@ -164,8 +178,8 @@ class MetricsCalculator:
                 "reason": self.graph.nodes[n]["metrics"]["hot_zone_reason"],
                 "complexity": self.graph.nodes[n]["metrics"]["cyclomatic_complexity"],
                 "coupling": (
-                    self.graph.nodes[n]["metrics"]["afferent_coupling"] +
-                    self.graph.nodes[n]["metrics"]["efferent_coupling"]
+                    self.graph.nodes[n]["metrics"]["afferent_coupling"]
+                    + self.graph.nodes[n]["metrics"]["efferent_coupling"]
                 ),
             }
             for n in internal_nodes

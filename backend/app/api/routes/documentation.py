@@ -1,6 +1,5 @@
 import io
 
-from app.core.exceptions import DocumentationException
 from app.core.models import ExportDocumentationRequest
 from app.services import DocumentationService, AnalysisOrchestratorService
 from fastapi import APIRouter
@@ -56,7 +55,5 @@ async def export_documentation(request: ExportDocumentationRequest) -> Response:
     return Response(
         content=content,
         media_type=media_type,
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"'
-        }
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

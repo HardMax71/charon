@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.post("/fitness/validate", response_model=FitnessValidationResult)
 async def validate_fitness_functions(
-        request: FitnessValidationRequest,
+    request: FitnessValidationRequest,
 ) -> FitnessValidationResult:
     """Validate architectural fitness functions against a dependency graph.
 
@@ -39,11 +39,11 @@ async def validate_fitness_functions(
 
 @router.post("/fitness/validate-from-config", response_model=FitnessValidationResult)
 async def validate_from_config(
-        graph: DependencyGraph,
-        global_metrics: GlobalMetrics,
-        config: FitnessRuleConfig,
-        fail_on_error: bool = True,
-        fail_on_warning: bool = False,
+    graph: DependencyGraph,
+    global_metrics: GlobalMetrics,
+    config: FitnessRuleConfig,
+    fail_on_error: bool = True,
+    fail_on_warning: bool = False,
 ) -> FitnessValidationResult:
     """Validate using a fitness rule configuration file.
 
@@ -57,9 +57,9 @@ async def validate_from_config(
 
 @router.post("/fitness/save-result", response_model=SaveResultResponse)
 async def save_validation_result(
-        project_name: str,
-        result: FitnessValidationResult,
-        storage_path: Optional[str] = None,
+    project_name: str,
+    result: FitnessValidationResult,
+    storage_path: Optional[str] = None,
 ) -> SaveResultResponse:
     """Save fitness validation result for historical tracking.
 
@@ -75,10 +75,10 @@ async def save_validation_result(
 
 @router.get("/fitness/trend/{project_name}", response_model=FitnessTrendResponse)
 async def get_fitness_trend(
-        project_name: str,
-        rule_id: Optional[str] = None,
-        storage_path: Optional[str] = None,
-        limit: int = 100,
+    project_name: str,
+    rule_id: Optional[str] = None,
+    storage_path: Optional[str] = None,
+    limit: int = 100,
 ) -> FitnessTrendResponse:
     """Get historical fitness trend data for a project.
 

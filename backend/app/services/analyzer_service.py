@@ -10,7 +10,9 @@ from app.services.complexity_service import ComplexityService
 logger = get_logger(__name__)
 
 
-def analyze_files(files: list[FileInput], project_name: str = "project") -> DependencyAnalysis:
+def analyze_files(
+    files: list[FileInput], project_name: str = "project"
+) -> DependencyAnalysis:
     """
     Analyze Python files and extract dependencies.
 
@@ -21,7 +23,9 @@ def analyze_files(files: list[FileInput], project_name: str = "project") -> Depe
     Returns:
         DependencyAnalysis with validated, type-safe data
     """
-    logger.info("Starting analysis of %d files for project '%s'", len(files), project_name)
+    logger.info(
+        "Starting analysis of %d files for project '%s'", len(files), project_name
+    )
 
     module_map: dict[str, str] = {}
     modules: dict[str, str] = {}
@@ -32,7 +36,9 @@ def analyze_files(files: list[FileInput], project_name: str = "project") -> Depe
 
         module_path = extract_module_path(file.path, "")
         if not module_path:
-            module_path = file.path.replace("/", ".").replace("\\", ".").replace(".py", "")
+            module_path = (
+                file.path.replace("/", ".").replace("\\", ".").replace(".py", "")
+            )
 
         module_map[file.path] = module_path
         modules[module_path] = file.content
@@ -87,7 +93,7 @@ def analyze_files(files: list[FileInput], project_name: str = "project") -> Depe
         len(modules),
         sum(len(deps) for deps in dependencies.values()),
         len(errors),
-        cache_stats["cache_size"]
+        cache_stats["cache_size"],
     )
 
     return DependencyAnalysis(

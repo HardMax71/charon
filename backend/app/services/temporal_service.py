@@ -21,11 +21,11 @@ class TemporalAnalysisService:
         self.snapshots_cache: Dict[str, List[Dict]] = {}
 
     async def analyze_repository_history_streaming(
-            self,
-            repo_url: str,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            sample_strategy: str = "all",
+        self,
+        repo_url: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        sample_strategy: str = "all",
     ):
         """
         Analyze repository history with SSE progress updates.
@@ -37,7 +37,12 @@ class TemporalAnalysisService:
             f"{repo_url}_{start_date}_{end_date}_{sample_strategy}".encode()
         ).hexdigest()
 
-        yield {"type": "progress", "message": "Fetching commit history...", "step": 1, "total": 6}
+        yield {
+            "type": "progress",
+            "message": "Fetching commit history...",
+            "step": 1,
+            "total": 6,
+        }
 
         # Fetch commit history
         commits = await self.github_service.fetch_commit_history(
@@ -45,10 +50,18 @@ class TemporalAnalysisService:
         )
 
         if not commits:
-            yield {"type": "error", "message": "No commits found in the specified range"}
+            yield {
+                "type": "error",
+                "message": "No commits found in the specified range",
+            }
             return
 
-        yield {"type": "progress", "message": f"Found {len(commits)} commits", "step": 2, "total": 6}
+        yield {
+            "type": "progress",
+            "message": f"Found {len(commits)} commits",
+            "step": 2,
+            "total": 6,
+        }
 
         # Sample commits
         sampled_commits = self._sample_commits(commits, sample_strategy)
@@ -62,7 +75,7 @@ class TemporalAnalysisService:
             "type": "progress",
             "message": f"Analyzing {len(sampled_commits)} commits...",
             "step": 3,
-            "total": 6
+            "total": 6,
         }
 
         # Analyze each commit with progress updates
@@ -76,7 +89,7 @@ class TemporalAnalysisService:
                 "step": 3,
                 "total": 6,
                 "current": idx + 1,
-                "total_commits": len(sampled_commits)
+                "total_commits": len(sampled_commits),
             }
 
             snapshot = await self._analyze_commit(repo_url, commit, previous_snapshot)
@@ -84,12 +97,22 @@ class TemporalAnalysisService:
                 snapshots.append(snapshot)
                 previous_snapshot = snapshot
 
-        yield {"type": "progress", "message": "Calculating dependency churn...", "step": 4, "total": 6}
+        yield {
+            "type": "progress",
+            "message": "Calculating dependency churn...",
+            "step": 4,
+            "total": 6,
+        }
 
         # Calculate churn metrics
         churn_data = self._calculate_churn(snapshots)
 
-        yield {"type": "progress", "message": "Tracking circular dependencies...", "step": 5, "total": 6}
+        yield {
+            "type": "progress",
+            "message": "Tracking circular dependencies...",
+            "step": 5,
+            "total": 6,
+        }
 
         # Track circular dependency introduction
         circular_deps_timeline = self._track_circular_dependencies(snapshots)
@@ -111,15 +134,20 @@ class TemporalAnalysisService:
         # Cache results
         self.snapshots_cache[analysis_id] = result
 
-        yield {"type": "progress", "message": "Analysis complete!", "step": 6, "total": 6}
+        yield {
+            "type": "progress",
+            "message": "Analysis complete!",
+            "step": 6,
+            "total": 6,
+        }
         yield {"type": "result", "data": result}
 
     async def analyze_repository_history(
-            self,
-            repo_url: str,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            sample_strategy: str = "all"  # "all", "daily", "weekly", "monthly"
+        self,
+        repo_url: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        sample_strategy: str = "all",  # "all", "daily", "weekly", "monthly"
     ) -> Dict:
         """
         Analyze dependency evolution over git history.
@@ -161,12 +189,18 @@ class TemporalAnalysisService:
 
         # Sample commits based on strategy
         sampled_commits = self._sample_commits(commits, sample_strategy)
-        logger.info("Sampled to %d commits using '%s' strategy", len(sampled_commits), sample_strategy)
+        logger.info(
+            "Sampled to %d commits using '%s' strategy",
+            len(sampled_commits),
+            sample_strategy,
+        )
 
         # Limit to reasonable number to prevent timeouts
         max_analysis_commits = 20
         if len(sampled_commits) > max_analysis_commits:
-            logger.info("Limiting analysis to most recent %d commits", max_analysis_commits)
+            logger.info(
+                "Limiting analysis to most recent %d commits", max_analysis_commits
+            )
             sampled_commits = sampled_commits[-max_analysis_commits:]
 
         # Analyze each commit
@@ -174,14 +208,21 @@ class TemporalAnalysisService:
         previous_snapshot = None
 
         for idx, commit in enumerate(sampled_commits):
-            logger.info("Analyzing commit %d/%d: %s", idx + 1, len(sampled_commits), commit['sha'][:7])
-            snapshot = await self._analyze_commit(
-                repo_url, commit, previous_snapshot
+            logger.info(
+                "Analyzing commit %d/%d: %s",
+                idx + 1,
+                len(sampled_commits),
+                commit["sha"][:7],
             )
+            snapshot = await self._analyze_commit(repo_url, commit, previous_snapshot)
             if snapshot:
                 snapshots.append(snapshot)
                 previous_snapshot = snapshot
-                logger.info("  ✓ Success: %d nodes, %d edges", snapshot['node_count'], snapshot['edge_count'])
+                logger.info(
+                    "  ✓ Success: %d nodes, %d edges",
+                    snapshot["node_count"],
+                    snapshot["edge_count"],
+                )
             else:
                 logger.warning("  ✗ Failed to analyze commit")
 
@@ -211,9 +252,7 @@ class TemporalAnalysisService:
 
         return result
 
-    def _sample_commits(
-            self, commits: List[Dict], strategy: str
-    ) -> List[Dict]:
+    def _sample_commits(self, commits: List[Dict], strategy: str) -> List[Dict]:
         """Sample commits based on strategy."""
         if strategy == "all":
             return commits
@@ -225,9 +264,7 @@ class TemporalAnalysisService:
         grouped = defaultdict(list)
 
         for commit in commits:
-            commit_date = datetime.fromisoformat(
-                commit["date"].replace("Z", "+00:00")
-            )
+            commit_date = datetime.fromisoformat(commit["date"].replace("Z", "+00:00"))
 
             if strategy == "daily":
                 key = commit_date.date()
@@ -245,15 +282,13 @@ class TemporalAnalysisService:
         sampled = []
         for group in sorted(grouped.keys()):
             # Take the earliest commit in the group
-            group_commits = sorted(
-                grouped[group], key=lambda c: c["date"]
-            )
+            group_commits = sorted(grouped[group], key=lambda c: c["date"])
             sampled.append(group_commits[0])
 
         return sampled
 
     async def _analyze_commit(
-            self, repo_url: str, commit: Dict, previous_snapshot: Optional[Dict]
+        self, repo_url: str, commit: Dict, previous_snapshot: Optional[Dict]
     ) -> Optional[Dict]:
         """Analyze dependencies at a specific commit."""
         try:
@@ -301,7 +336,11 @@ class TemporalAnalysisService:
             changes = None
             if previous_snapshot:
                 changes = self._calculate_changes(
-                    previous_snapshot, dependencies, node_count, edge_count, len(circular_nodes)
+                    previous_snapshot,
+                    dependencies,
+                    node_count,
+                    edge_count,
+                    len(circular_nodes),
                 )
 
             return {
@@ -328,7 +367,9 @@ class TemporalAnalysisService:
                             "type": graph.nodes[node_id].get("type", "internal"),
                             "label": graph.nodes[node_id].get("label", node_id),
                             "module": graph.nodes[node_id].get("module", ""),
-                            "position": graph.nodes[node_id].get("position", {"x": 0, "y": 0, "z": 0}),
+                            "position": graph.nodes[node_id].get(
+                                "position", {"x": 0, "y": 0, "z": 0}
+                            ),
                             "metrics": graph.nodes[node_id].get("metrics", {}),
                         }
                         for node_id in graph.nodes
@@ -346,16 +387,18 @@ class TemporalAnalysisService:
             }
 
         except Exception as e:
-            logger.error("Error analyzing commit %s: %s", commit['sha'], str(e), exc_info=True)
+            logger.error(
+                "Error analyzing commit %s: %s", commit["sha"], str(e), exc_info=True
+            )
             return None
 
     def _calculate_changes(
-            self,
-            previous_snapshot: Dict,
-            current_dependencies: Dict,
-            current_nodes: int,
-            current_edges: int,
-            current_circular_count: int,
+        self,
+        previous_snapshot: Dict,
+        current_dependencies: Dict,
+        current_nodes: int,
+        current_edges: int,
+        current_circular_count: int,
     ) -> Dict:
         """Calculate changes between snapshots."""
         prev_deps = previous_snapshot.get("dependencies", {})
@@ -383,7 +426,8 @@ class TemporalAnalysisService:
             "modified_dependencies": modified_deps,
             "node_count_delta": current_nodes - previous_snapshot["node_count"],
             "edge_count_delta": current_edges - previous_snapshot["edge_count"],
-            "circular_count_delta": current_circular_count - previous_snapshot["circular_count"],
+            "circular_count_delta": current_circular_count
+            - previous_snapshot["circular_count"],
         }
 
     def _calculate_churn(self, snapshots: List[Dict]) -> Dict:
@@ -401,9 +445,7 @@ class TemporalAnalysisService:
                     node_churn[mod["node"]] += 1
 
         # Sort by churn frequency
-        churn_ranking = sorted(
-            node_churn.items(), key=lambda x: x[1], reverse=True
-        )
+        churn_ranking = sorted(node_churn.items(), key=lambda x: x[1], reverse=True)
 
         # Calculate aggregated metrics
         if snapshots:
@@ -420,7 +462,7 @@ class TemporalAnalysisService:
         }
 
     def _generate_churn_heatmap(
-            self, snapshots: List[Dict], node_churn: Dict[str, int]
+        self, snapshots: List[Dict], node_churn: Dict[str, int]
     ) -> List[Dict]:
         """Generate heatmap data for visualization."""
         heatmap_data = []

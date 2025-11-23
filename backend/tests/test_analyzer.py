@@ -1,4 +1,3 @@
-import pytest
 from app.services import analyze_files
 from app.core.models import FileInput
 
@@ -7,13 +6,9 @@ def test_basic_import_analysis():
     """Test basic import detection."""
     files = [
         FileInput(
-            path="module_a.py",
-            content="import os\nfrom module_b import something"
+            path="module_a.py", content="import os\nfrom module_b import something"
         ),
-        FileInput(
-            path="module_b.py",
-            content="def something(): pass"
-        ),
+        FileInput(path="module_b.py", content="def something(): pass"),
     ]
 
     result = analyze_files(files, "test_project")
@@ -26,14 +21,8 @@ def test_basic_import_analysis():
 def test_relative_imports():
     """Test relative import resolution."""
     files = [
-        FileInput(
-            path="package/module_a.py",
-            content="from . import module_b"
-        ),
-        FileInput(
-            path="package/module_b.py",
-            content="x = 1"
-        ),
+        FileInput(path="package/module_a.py", content="from . import module_b"),
+        FileInput(path="package/module_b.py", content="x = 1"),
     ]
 
     result = analyze_files(files, "test_project")
@@ -43,10 +32,7 @@ def test_relative_imports():
 def test_syntax_error_handling():
     """Test that syntax errors are captured."""
     files = [
-        FileInput(
-            path="bad.py",
-            content="this is not valid python syntax @#$%"
-        ),
+        FileInput(path="bad.py", content="this is not valid python syntax @#$%"),
     ]
 
     result = analyze_files(files, "test_project")

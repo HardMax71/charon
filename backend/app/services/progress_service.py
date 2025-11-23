@@ -41,7 +41,9 @@ class ProgressTracker:
         """
         if 0 <= step_index < len(self.steps):
             message, percentage = self.steps[step_index]
-            return f"data: {json.dumps({'message': message, 'progress': percentage})}\n\n"
+            return (
+                f"data: {json.dumps({'message': message, 'progress': percentage})}\n\n"
+            )
         return ""
 
     async def emit_result(self, result: dict) -> str:

@@ -16,7 +16,9 @@ class DiffService:
         return await github_service.fetch_repository(repo_url, ref)
 
     @staticmethod
-    def analyze_and_build_graph(files: list[FileInput], project_name: str) -> nx.DiGraph:
+    def analyze_and_build_graph(
+        files: list[FileInput], project_name: str
+    ) -> nx.DiGraph:
         """Analyze files and build dependency graph."""
         dependency_data = analyze_files(files, project_name)
         return build_graph(dependency_data)
@@ -33,12 +35,8 @@ class DiffService:
         edges1 = set(graph1.edges)
         edges2 = set(graph2.edges)
 
-        added_edges = [
-            {"source": e[0], "target": e[1]} for e in (edges2 - edges1)
-        ]
-        removed_edges = [
-            {"source": e[0], "target": e[1]} for e in (edges1 - edges2)
-        ]
+        added_edges = [{"source": e[0], "target": e[1]} for e in (edges2 - edges1)]
+        removed_edges = [{"source": e[0], "target": e[1]} for e in (edges1 - edges2)]
 
         common_edges = edges1 & edges2
         changed_edges = []
@@ -47,12 +45,14 @@ class DiffService:
             imports2 = set(graph2.edges[edge].get("imports", []))
 
             if imports1 != imports2:
-                changed_edges.append({
-                    "source": edge[0],
-                    "target": edge[1],
-                    "added_imports": list(imports2 - imports1),
-                    "removed_imports": list(imports1 - imports2),
-                })
+                changed_edges.append(
+                    {
+                        "source": edge[0],
+                        "target": edge[1],
+                        "added_imports": list(imports2 - imports1),
+                        "removed_imports": list(imports1 - imports2),
+                    }
+                )
 
         return DiffResult(
             added_nodes=added_nodes,

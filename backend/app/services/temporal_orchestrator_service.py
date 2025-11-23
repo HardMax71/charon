@@ -26,10 +26,7 @@ class TemporalOrchestratorService:
             end_date=request.end_date,
             sample_strategy=request.sample_strategy,
         ):
-            yield {
-                "event": "message",
-                "data": json.dumps(event)
-            }
+            yield {"event": "message", "data": json.dumps(event)}
 
     def get_temporal_analysis(self, analysis_id: str) -> TemporalAnalysisResponse:
         """

@@ -47,7 +47,9 @@ def create_error_response(
     )
 
 
-async def charon_exception_handler(request: Request, exc: CharonException) -> JSONResponse:
+async def charon_exception_handler(
+    request: Request, exc: CharonException
+) -> JSONResponse:
     """Handle custom Charon exceptions."""
     # Map exception types to status codes
     status_map = {

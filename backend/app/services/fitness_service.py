@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 import networkx as nx
 
 from app.core.models import (
@@ -9,7 +9,6 @@ from app.core.models import (
     FitnessValidationResult,
     DependencyGraph,
     GlobalMetrics,
-    Node,
 )
 
 
@@ -136,7 +135,7 @@ class FitnessService:
             if source_match and target_match:
                 message = params.get(
                     "message_template",
-                    f"Module '{edge.source}' violates import restriction by importing from '{edge.target}'"
+                    f"Module '{edge.source}' violates import restriction by importing from '{edge.target}'",
                 )
 
                 violations.append(
@@ -217,7 +216,8 @@ class FitnessService:
                             "module": node.id,
                             "afferent_coupling": metrics.afferent_coupling,
                             "efferent_coupling": metrics.efferent_coupling,
-                            "total_coupling": metrics.afferent_coupling + metrics.efferent_coupling,
+                            "total_coupling": metrics.afferent_coupling
+                            + metrics.efferent_coupling,
                         },
                         affected_modules=[node.id],
                     )
@@ -250,7 +250,9 @@ class FitnessService:
 
         return violations
 
-    def _evaluate_max_third_party_percent(self, rule: FitnessRule) -> List[FitnessViolation]:
+    def _evaluate_max_third_party_percent(
+        self, rule: FitnessRule
+    ) -> List[FitnessViolation]:
         """Evaluate maximum third-party dependency percentage.
 
         Parameters:
@@ -366,13 +368,19 @@ class FitnessService:
             violated = False
             reasons = []
 
-            if max_cyclomatic is not None and metrics.cyclomatic_complexity > max_cyclomatic:
+            if (
+                max_cyclomatic is not None
+                and metrics.cyclomatic_complexity > max_cyclomatic
+            ):
                 violated = True
                 reasons.append(
                     f"Cyclomatic complexity ({metrics.cyclomatic_complexity:.1f}) exceeds maximum ({max_cyclomatic})"
                 )
 
-            if min_maintainability is not None and metrics.maintainability_index < min_maintainability:
+            if (
+                min_maintainability is not None
+                and metrics.maintainability_index < min_maintainability
+            ):
                 violated = True
                 reasons.append(
                     f"Maintainability index ({metrics.maintainability_index:.1f}) below minimum ({min_maintainability})"

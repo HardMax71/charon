@@ -1,6 +1,5 @@
 import networkx as nx
 from typing import Dict, List, Set
-from collections import defaultdict
 
 
 class ClusteringService:
@@ -35,8 +34,7 @@ class ClusteringService:
 
         # Only cluster internal nodes
         internal_nodes = [
-            n for n in self.graph.nodes
-            if self.graph.nodes[n].get("type") == "internal"
+            n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "internal"
         ]
 
         # Create subgraph with only internal nodes
@@ -47,7 +45,7 @@ class ClusteringService:
             communities = nx.community.louvain_communities(
                 internal_subgraph,
                 resolution=resolution,
-                seed=42  # For reproducibility
+                seed=42,  # For reproducibility
             )
 
             # Convert to dictionary format
@@ -59,7 +57,7 @@ class ClusteringService:
                 for node in nodes:
                     self.node_to_cluster[node] = cluster_id
 
-        except Exception as e:
+        except Exception:
             # Fallback: each node is its own cluster
             self.clusters = {i: {node} for i, node in enumerate(internal_nodes)}
             self.node_to_cluster = {node: i for i, node in enumerate(internal_nodes)}
@@ -123,17 +121,19 @@ class ClusteringService:
             # High cohesion + low external coupling = good package candidate
             is_package_candidate = cohesion > 0.7 and external_edges < internal_edges
 
-            metrics.append({
-                "cluster_id": cluster_id,
-                "size": len(nodes),
-                "internal_edges": internal_edges,
-                "external_edges": external_edges,
-                "cohesion": round(cohesion, 3),
-                "modularity_contribution": round(modularity_contribution, 3),
-                "avg_internal_coupling": round(avg_internal_coupling, 2),
-                "is_package_candidate": is_package_candidate,
-                "nodes": list(nodes),
-            })
+            metrics.append(
+                {
+                    "cluster_id": cluster_id,
+                    "size": len(nodes),
+                    "internal_edges": internal_edges,
+                    "external_edges": external_edges,
+                    "cohesion": round(cohesion, 3),
+                    "modularity_contribution": round(modularity_contribution, 3),
+                    "avg_internal_coupling": round(avg_internal_coupling, 2),
+                    "is_package_candidate": is_package_candidate,
+                    "nodes": list(nodes),
+                }
+            )
 
         # Sort by size (descending)
         metrics.sort(key=lambda x: x["size"], reverse=True)
@@ -167,7 +167,7 @@ class ClusteringService:
 
         # Expected edges if random (based on degree)
         degree_sum = sum(self.graph.degree(node) for node in cluster_nodes)
-        expected_edges = (degree_sum ** 2) / (4 * total_edges)
+        expected_edges = (degree_sum**2) / (4 * total_edges)
 
         # Modularity contribution
         modularity = (internal_edges - expected_edges) / total_edges
@@ -193,23 +193,30 @@ class ClusteringService:
 
             # Get cluster metrics
             metrics = next(
-                (m for m in self._calculate_cluster_metrics() if m["cluster_id"] == cluster_id),
-                None
+                (
+                    m
+                    for m in self._calculate_cluster_metrics()
+                    if m["cluster_id"] == cluster_id
+                ),
+                None,
             )
 
             if metrics and metrics["is_package_candidate"]:
-                suggestions.append({
-                    "cluster_id": cluster_id,
-                    "suggested_package_name": common_prefix or f"cluster_{cluster_id}",
-                    "modules": list(nodes),
-                    "size": len(nodes),
-                    "cohesion": metrics["cohesion"],
-                    "reason": (
-                        f"High cohesion ({metrics['cohesion']:.2f}) with "
-                        f"{metrics['internal_edges']} internal connections and "
-                        f"only {metrics['external_edges']} external dependencies"
-                    ),
-                })
+                suggestions.append(
+                    {
+                        "cluster_id": cluster_id,
+                        "suggested_package_name": common_prefix
+                        or f"cluster_{cluster_id}",
+                        "modules": list(nodes),
+                        "size": len(nodes),
+                        "cohesion": metrics["cohesion"],
+                        "reason": (
+                            f"High cohesion ({metrics['cohesion']:.2f}) with "
+                            f"{metrics['internal_edges']} internal connections and "
+                            f"only {metrics['external_edges']} external dependencies"
+                        ),
+                    }
+                )
 
         return suggestions
 

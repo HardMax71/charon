@@ -78,13 +78,15 @@ class ComplexityService:
 
             avg_complexity = total_complexity / len(cc_results) if cc_results else 0
             complexity_grade = cc_rank(avg_complexity)
-            maintainability_grade = ComplexityService._get_maintainability_grade(mi_score)
+            maintainability_grade = ComplexityService._get_maintainability_grade(
+                mi_score
+            )
 
             logger.debug(
                 "Analyzed %s: avg_complexity=%.2f, mi=%.2f",
                 file_path,
                 avg_complexity,
-                mi_score
+                mi_score,
             )
 
             return ComplexityMetrics(
@@ -123,7 +125,7 @@ class ComplexityService:
         complexity: float,
         coupling: int,
         complexity_threshold: float = 10.0,
-        coupling_threshold: int = 5
+        coupling_threshold: int = 5,
     ) -> dict:
         """
         Calculate hot zone score based on complexity and coupling.
@@ -152,7 +154,9 @@ class ComplexityService:
         score = (complexity_normalized * 0.6 + coupling_normalized * 0.4) * 100
 
         # Determine severity
-        is_hot_zone = complexity >= complexity_threshold and coupling >= coupling_threshold
+        is_hot_zone = (
+            complexity >= complexity_threshold and coupling >= coupling_threshold
+        )
 
         if is_hot_zone and score >= 75:
             severity = "critical"

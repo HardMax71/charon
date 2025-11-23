@@ -1,5 +1,4 @@
 import networkx as nx
-from typing import List
 
 
 def detect_cycles(graph: nx.DiGraph) -> list[list[str]]:

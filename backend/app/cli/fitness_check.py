@@ -25,13 +25,11 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Optional
 import yaml
 
 from app.core import get_logger
 from app.core.models import (
     FitnessRuleConfig,
-    FitnessValidationRequest,
     DependencyGraph,
     GlobalMetrics,
     AnalysisResult,
@@ -74,7 +72,9 @@ def load_graph_data(graph_path: str) -> tuple[DependencyGraph, GlobalMetrics]:
     """Load dependency graph data from a JSON file."""
     path = Path(graph_path)
     if not path.exists():
-        print(f"{Colors.RED}Error: Graph data file not found: {graph_path}{Colors.RESET}")
+        print(
+            f"{Colors.RED}Error: Graph data file not found: {graph_path}{Colors.RESET}"
+        )
         sys.exit(2)
 
     with open(path, "r") as f:
@@ -100,7 +100,9 @@ def print_violation(violation, index: int, total: int):
     }
     color = severity_colors.get(violation.severity, Colors.RESET)
 
-    print(f"\n{Colors.BOLD}[{index}/{total}] {violation.severity.upper()}: {violation.rule_name}{Colors.RESET}")
+    print(
+        f"\n{Colors.BOLD}[{index}/{total}] {violation.severity.upper()}: {violation.rule_name}{Colors.RESET}"
+    )
     print(f"{color}{violation.message}{Colors.RESET}")
 
     if violation.affected_modules:
@@ -109,7 +111,7 @@ def print_violation(violation, index: int, total: int):
             print(f"    ... and {len(violation.affected_modules) - 5} more")
 
     if violation.details:
-        print(f"  Details:")
+        print("  Details:")
         for key, value in violation.details.items():
             if isinstance(value, (list, dict)) and len(str(value)) > 100:
                 print(f"    {key}: <complex value>")
@@ -228,16 +230,22 @@ Exit Codes:
     try:
         # Load configuration
         if not args.quiet:
-            print(f"{Colors.BOLD}Loading fitness rules from: {args.rules}{Colors.RESET}")
+            print(
+                f"{Colors.BOLD}Loading fitness rules from: {args.rules}{Colors.RESET}"
+            )
         rules_config = load_rules(args.rules)
 
         if not args.quiet:
-            print(f"{Colors.BOLD}Loading dependency graph from: {args.graph}{Colors.RESET}")
+            print(
+                f"{Colors.BOLD}Loading dependency graph from: {args.graph}{Colors.RESET}"
+            )
         graph, metrics = load_graph_data(args.graph)
 
         enabled_rules = [r for r in rules_config.rules if r.enabled]
         if not args.quiet:
-            print(f"{Colors.BOLD}Found {len(enabled_rules)} enabled rules{Colors.RESET}\n")
+            print(
+                f"{Colors.BOLD}Found {len(enabled_rules)} enabled rules{Colors.RESET}\n"
+            )
 
         # Run validation
         service = FitnessService(graph, metrics)
@@ -252,10 +260,12 @@ Exit Codes:
             print(json.dumps(result.model_dump(), indent=2))
         else:
             # Print summary
-            print(f"\n{Colors.BOLD}{'='*70}{Colors.RESET}")
+            print(f"\n{Colors.BOLD}{'=' * 70}{Colors.RESET}")
             print(f"{Colors.BOLD}VALIDATION SUMMARY{Colors.RESET}")
-            print(f"{Colors.BOLD}{'='*70}{Colors.RESET}")
-            print(f"Status: {Colors.GREEN if result.passed else Colors.RED}{result.summary}{Colors.RESET}")
+            print(f"{Colors.BOLD}{'=' * 70}{Colors.RESET}")
+            print(
+                f"Status: {Colors.GREEN if result.passed else Colors.RED}{result.summary}{Colors.RESET}"
+            )
             print(f"Total Rules Evaluated: {result.total_rules}")
             print(f"Violations Found: {len(result.violations)}")
             if result.errors > 0:
@@ -267,14 +277,14 @@ Exit Codes:
 
             # Print violations
             if result.violations and not args.quiet:
-                print(f"\n{Colors.BOLD}{'='*70}{Colors.RESET}")
+                print(f"\n{Colors.BOLD}{'=' * 70}{Colors.RESET}")
                 print(f"{Colors.BOLD}VIOLATIONS{Colors.RESET}")
-                print(f"{Colors.BOLD}{'='*70}{Colors.RESET}")
+                print(f"{Colors.BOLD}{'=' * 70}{Colors.RESET}")
 
                 for i, violation in enumerate(result.violations, 1):
                     print_violation(violation, i, len(result.violations))
 
-            print(f"\n{Colors.BOLD}{'='*70}{Colors.RESET}")
+            print(f"\n{Colors.BOLD}{'=' * 70}{Colors.RESET}")
 
         # Save output if requested
         if args.output:
@@ -287,11 +297,15 @@ Exit Codes:
         # Exit with appropriate code
         if not result.passed:
             if not args.quiet:
-                print(f"\n{Colors.RED}Validation FAILED - Exiting with code 1{Colors.RESET}")
+                print(
+                    f"\n{Colors.RED}Validation FAILED - Exiting with code 1{Colors.RESET}"
+                )
             sys.exit(1)
         else:
             if not args.quiet:
-                print(f"\n{Colors.GREEN}Validation PASSED - All rules satisfied{Colors.RESET}")
+                print(
+                    f"\n{Colors.GREEN}Validation PASSED - All rules satisfied{Colors.RESET}"
+                )
             sys.exit(0)
 
     except Exception as e:

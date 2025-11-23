@@ -131,19 +131,23 @@ def circular_layout_3d(graph: nx.DiGraph) -> nx.DiGraph:
     return graph
 
 
-def apply_layout(graph: nx.DiGraph, layout_type: LayoutType = "hierarchical") -> nx.DiGraph:
+def apply_layout(
+    graph: nx.DiGraph, layout_type: LayoutType = "hierarchical"
+) -> nx.DiGraph:
     """
     Apply a 3D layout to the graph based on the specified type.
-    
+
     Args:
         graph: NetworkX directed graph
         layout_type: Type of layout ("hierarchical", "force_directed", or "circular")
-        
+
     Returns:
         Graph with position attributes applied
     """
-    logger.debug("Applying %s layout to graph with %d nodes", layout_type, len(graph.nodes))
-    
+    logger.debug(
+        "Applying %s layout to graph with %d nodes", layout_type, len(graph.nodes)
+    )
+
     if layout_type == "hierarchical":
         return hierarchical_layout_3d(graph)
     elif layout_type == "force_directed":
@@ -151,5 +155,7 @@ def apply_layout(graph: nx.DiGraph, layout_type: LayoutType = "hierarchical") ->
     elif layout_type == "circular":
         return circular_layout_3d(graph)
     else:
-        logger.warning("Unknown layout type '%s', defaulting to hierarchical", layout_type)
+        logger.warning(
+            "Unknown layout type '%s', defaulting to hierarchical", layout_type
+        )
         return hierarchical_layout_3d(graph)

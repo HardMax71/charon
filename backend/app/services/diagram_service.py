@@ -1,5 +1,4 @@
 import networkx as nx
-from typing import Dict, List
 
 
 class DiagramExporter:
@@ -15,14 +14,23 @@ class DiagramExporter:
         Returns:
             PlantUML source code
         """
-        lines = ["@startuml", "!define LIGHTORANGE", "skinparam componentStyle rectangle", ""]
+        lines = [
+            "@startuml",
+            "!define LIGHTORANGE",
+            "skinparam componentStyle rectangle",
+            "",
+        ]
 
         # Group by module
         modules = {}
         for node_id in self.graph.nodes:
             node_data = self.graph.nodes[node_id]
             if node_data.get("type") == "internal":
-                module = node_data.get("module", "").split(".")[0] if "." in node_data.get("module", "") else "root"
+                module = (
+                    node_data.get("module", "").split(".")[0]
+                    if "." in node_data.get("module", "")
+                    else "root"
+                )
                 if module not in modules:
                     modules[module] = []
                 modules[module].append(node_id)
@@ -30,7 +38,7 @@ class DiagramExporter:
         # Create packages
         for module, nodes in modules.items():
             if module and module != "root":
-                lines.append(f"package \"{module}\" {{")
+                lines.append(f'package "{module}" {{')
                 for node_id in nodes:
                     label = self.graph.nodes[node_id].get("label", node_id)
                     # Escape quotes
@@ -40,9 +48,13 @@ class DiagramExporter:
                 lines.append("")
 
         # Add third-party as external
-        third_party_nodes = [n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "third_party"]
+        third_party_nodes = [
+            n
+            for n in self.graph.nodes
+            if self.graph.nodes[n].get("type") == "third_party"
+        ]
         if third_party_nodes:
-            lines.append("package \"Third Party\" <<External>> {")
+            lines.append('package "Third Party" <<External>> {')
             for node_id in third_party_nodes:
                 label = self.graph.nodes[node_id].get("label", node_id)
                 safe_id = node_id.replace(".", "_").replace("-", "_")
@@ -75,13 +87,13 @@ class DiagramExporter:
             "@startuml",
             "!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml",
             "",
-            f"LAYOUT_WITH_LEGEND()",
+            "LAYOUT_WITH_LEGEND()",
             "",
             f"title Container Diagram for {system_name}",
             "",
-            "Person(user, \"Developer\", \"Uses the system\")",
+            'Person(user, "Developer", "Uses the system")',
             "",
-            f"System_Boundary(system, \"{system_name}\") {{",
+            f'System_Boundary(system, "{system_name}") {{',
         ]
 
         # Group containers by module
@@ -89,7 +101,11 @@ class DiagramExporter:
         for node_id in self.graph.nodes:
             node_data = self.graph.nodes[node_id]
             if node_data.get("type") == "internal":
-                module = node_data.get("module", "").split(".")[0] if "." in node_data.get("module", "") else "core"
+                module = (
+                    node_data.get("module", "").split(".")[0]
+                    if "." in node_data.get("module", "")
+                    else "core"
+                )
                 if module not in modules:
                     modules[module] = []
                 modules[module].append(node_id)
@@ -98,7 +114,9 @@ class DiagramExporter:
         for module, nodes in modules.items():
             container_desc = f"{len(nodes)} modules"
             safe_module = module.replace(".", "_").replace("-", "_")
-            lines.append(f"  Container({safe_module}, \"{module}\", \"Python\", \"{container_desc}\")")
+            lines.append(
+                f'  Container({safe_module}, "{module}", "Python", "{container_desc}")'
+            )
 
         lines.append("}")
         lines.append("")
@@ -112,29 +130,41 @@ class DiagramExporter:
 
         for lib in third_party_libs:
             safe_lib = lib.replace(".", "_").replace("-", "_")
-            lines.append(f"System_Ext({safe_lib}, \"{lib}\", \"External library\")")
+            lines.append(f'System_Ext({safe_lib}, "{lib}", "External library")')
 
         lines.append("")
 
         # Add relationships
-        lines.append("Rel(user, core, \"Uses\")")
+        lines.append('Rel(user, core, "Uses")')
 
         # Add inter-module dependencies
         module_deps = set()
         for source, target in self.graph.edges:
-            source_module = self.graph.nodes[source].get("module", "").split(".")[0] if "." in self.graph.nodes[source].get("module", "") else "core"
-            target_module = self.graph.nodes[target].get("module", "").split(".")[0] if "." in self.graph.nodes[target].get("module", "") else "core"
+            source_module = (
+                self.graph.nodes[source].get("module", "").split(".")[0]
+                if "." in self.graph.nodes[source].get("module", "")
+                else "core"
+            )
+            target_module = (
+                self.graph.nodes[target].get("module", "").split(".")[0]
+                if "." in self.graph.nodes[target].get("module", "")
+                else "core"
+            )
 
             source_type = self.graph.nodes[source].get("type")
             target_type = self.graph.nodes[target].get("type")
 
-            if source_type == "internal" and target_type == "internal" and source_module != target_module:
+            if (
+                source_type == "internal"
+                and target_type == "internal"
+                and source_module != target_module
+            ):
                 safe_source = source_module.replace(".", "_").replace("-", "_")
                 safe_target = target_module.replace(".", "_").replace("-", "_")
                 dep = (safe_source, safe_target)
                 if dep not in module_deps:
                     module_deps.add(dep)
-                    lines.append(f"Rel({safe_source}, {safe_target}, \"Depends on\")")
+                    lines.append(f'Rel({safe_source}, {safe_target}, "Depends on")')
 
         lines.append("")
         lines.append("@enduml")
@@ -161,17 +191,17 @@ class DiagramExporter:
 
             # Different shapes for different types
             if node_type == "third_party":
-                lines.append(f"  {safe_id}[(\"{label}\")]")
+                lines.append(f'  {safe_id}[("{label}")]')
             else:
                 metrics = node_data.get("metrics", {})
                 if metrics.get("is_circular"):
-                    lines.append(f"  {safe_id}[\"{label}\"]")
+                    lines.append(f'  {safe_id}["{label}"]')
                     lines.append(f"  style {safe_id} fill:#fee")
                 elif metrics.get("is_high_coupling"):
-                    lines.append(f"  {safe_id}[\"{label}\"]")
+                    lines.append(f'  {safe_id}["{label}"]')
                     lines.append(f"  style {safe_id} fill:#ffa")
                 else:
-                    lines.append(f"  {safe_id}[\"{label}\"]")
+                    lines.append(f'  {safe_id}["{label}"]')
 
         lines.append("")
 
@@ -212,18 +242,21 @@ class DiagramExporter:
         # Create packages with modules
         for package, items in modules.items():
             if package != "root":
-                lines.append(f"package \"{package}\" {{")
+                lines.append(f'package "{package}" {{')
                 for module, node_id in items:
                     safe_id = node_id.replace(".", "_").replace("-", "_")
                     lines.append(f"  class {safe_id} <<module>> {{")
                     lines.append(f"    {module}")
-                    lines.append(f"  }}")
+                    lines.append("  }")
                 lines.append("}")
                 lines.append("")
 
         # Add dependencies
         for source, target in self.graph.edges:
-            if self.graph.nodes[source].get("type") == "internal" and self.graph.nodes[target].get("type") == "internal":
+            if (
+                self.graph.nodes[source].get("type") == "internal"
+                and self.graph.nodes[target].get("type") == "internal"
+            ):
                 safe_source = source.replace(".", "_").replace("-", "_")
                 safe_target = target.replace(".", "_").replace("-", "_")
                 lines.append(f"{safe_source} ..> {safe_target}")
@@ -246,7 +279,7 @@ class DiagramExporter:
             '<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="Charon" version="21.0.0">',
             '  <diagram name="Dependency Graph" id="dependency-graph">',
             '    <mxGraphModel dx="1434" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">',
-            '      <root>',
+            "      <root>",
             '        <mxCell id="0"/>',
             '        <mxCell id="1" parent="0"/>',
         ]
@@ -287,7 +320,7 @@ class DiagramExporter:
             xml_lines.append(
                 f'          <mxGeometry x="{x}" y="{y}" width="{cell_width}" height="{cell_height}" as="geometry"/>'
             )
-            xml_lines.append('        </mxCell>')
+            xml_lines.append("        </mxCell>")
 
         # Add edges
         edge_id = 0
@@ -303,14 +336,16 @@ class DiagramExporter:
                     f'edge="1" parent="1" source="{source_cell}" target="{target_cell}">'
                 )
                 xml_lines.append('          <mxGeometry relative="1" as="geometry"/>')
-                xml_lines.append('        </mxCell>')
+                xml_lines.append("        </mxCell>")
                 edge_id += 1
 
-        xml_lines.extend([
-            '      </root>',
-            '    </mxGraphModel>',
-            '  </diagram>',
-            '</mxfile>',
-        ])
+        xml_lines.extend(
+            [
+                "      </root>",
+                "    </mxGraphModel>",
+                "  </diagram>",
+                "</mxfile>",
+            ]
+        )
 
         return "\n".join(xml_lines)

@@ -1,6 +1,5 @@
 import aiohttp
 from typing import List, Optional
-from datetime import datetime
 from app.core.models import FileInput
 from app.core.config import settings
 
@@ -31,7 +30,9 @@ class GitHubService:
 
         # Filter Python files
         python_files = [
-            item for item in tree if item["path"].endswith(".py") and item["type"] == "blob"
+            item
+            for item in tree
+            if item["path"].endswith(".py") and item["type"] == "blob"
         ]
 
         # Fetch file contents
@@ -51,7 +52,7 @@ class GitHubService:
         url: str,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        max_commits: int = 50
+        max_commits: int = 50,
     ) -> List[dict]:
         """
         Fetch commit history from a GitHub repository.
@@ -88,12 +89,16 @@ class GitHubService:
                 data = await response.json()
 
                 for commit_data in data[:max_commits]:
-                    commits.append({
-                        "sha": commit_data["sha"],
-                        "message": commit_data["commit"]["message"].split("\n")[0],  # First line only
-                        "author": commit_data["commit"]["author"]["name"],
-                        "date": commit_data["commit"]["author"]["date"],
-                    })
+                    commits.append(
+                        {
+                            "sha": commit_data["sha"],
+                            "message": commit_data["commit"]["message"].split("\n")[
+                                0
+                            ],  # First line only
+                            "author": commit_data["commit"]["author"]["name"],
+                            "date": commit_data["commit"]["author"]["date"],
+                        }
+                    )
 
         return commits
 
@@ -133,9 +138,7 @@ class GitHubService:
 
         raise ValueError(f"Invalid GitHub URL: {url}")
 
-    async def _get_repository_tree(
-        self, owner: str, repo: str, ref: str
-    ) -> List[dict]:
+    async def _get_repository_tree(self, owner: str, repo: str, ref: str) -> List[dict]:
         """
         Get the repository file tree recursively.
 

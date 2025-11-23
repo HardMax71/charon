@@ -240,7 +240,9 @@ def test_no_circular_dependencies_violation(sample_graph, sample_metrics):
     """Test no circular dependencies rule detects cycles."""
     # Add circular dependency
     sample_metrics.circular_dependencies = [
-        CircularDependency(cycle=["app.api.users", "app.services.user_service", "app.api.users"])
+        CircularDependency(
+            cycle=["app.api.users", "app.services.user_service", "app.api.users"]
+        )
     ]
 
     rule = FitnessRule(

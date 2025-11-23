@@ -1,4 +1,12 @@
-from app.api.routes import analyze, export, diff, diagram, temporal, documentation, fitness
+from app.api.routes import (
+    analyze,
+    export,
+    diff,
+    diagram,
+    temporal,
+    documentation,
+    fitness,
+)
 from app.core import setup_logging
 from app.core.config import settings
 from app.core.exceptions import CharonException
@@ -39,7 +47,9 @@ app.include_router(export.router, prefix=settings.api_prefix, tags=["export"])
 app.include_router(diff.router, prefix=settings.api_prefix, tags=["diff"])
 app.include_router(diagram.router, prefix=settings.api_prefix, tags=["diagram"])
 app.include_router(temporal.router, prefix=settings.api_prefix, tags=["temporal"])
-app.include_router(documentation.router, prefix=settings.api_prefix, tags=["documentation"])
+app.include_router(
+    documentation.router, prefix=settings.api_prefix, tags=["documentation"]
+)
 app.include_router(fitness.router, prefix=settings.api_prefix, tags=["fitness"])
 
 

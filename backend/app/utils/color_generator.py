@@ -2,14 +2,14 @@ import colorsys
 import hashlib
 
 
-def hsl_to_hex(h: float, s: float, l: float) -> str:
+def hsl_to_hex(h: float, s: float, lightness: float) -> str:
     """
     Convert HSL color to hex.
 
     Args:
         h: Hue (0-360)
         s: Saturation (0-100)
-        l: Lightness (0-100)
+        lightness: Lightness (0-100)
 
     Returns:
         Hex color string (e.g., '#FF5733')
@@ -17,7 +17,7 @@ def hsl_to_hex(h: float, s: float, l: float) -> str:
     # Convert to 0-1 range
     h_norm = h / 360.0
     s_norm = s / 100.0
-    l_norm = l / 100.0
+    l_norm = lightness / 100.0
 
     r, g, b = colorsys.hls_to_rgb(h_norm, l_norm, s_norm)
 
@@ -37,7 +37,7 @@ def generate_module_color(module_name: str, depth: int = 0) -> str:
     """
     # Hash the module name to get a consistent hue
     hash_value = int(hashlib.md5(module_name.encode()).hexdigest(), 16)
-    hue = (hash_value % 360)
+    hue = hash_value % 360
 
     # Vary lightness based on depth (submodules get lighter)
     base_lightness = 50

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, Any
 import networkx as nx
 from collections import defaultdict
 
@@ -7,7 +7,12 @@ from collections import defaultdict
 class DocumentationService:
     """Service for generating architectural documentation."""
 
-    def __init__(self, graph: nx.DiGraph, global_metrics: Dict[str, Any], project_name: str = "Project"):
+    def __init__(
+        self,
+        graph: nx.DiGraph,
+        global_metrics: Dict[str, Any],
+        project_name: str = "Project",
+    ):
         self.graph = graph
         self.global_metrics = global_metrics
         self.project_name = project_name
@@ -261,7 +266,11 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     def _generate_module_dependency_table(self) -> str:
         """Generate module dependency table."""
-        lines = ["## Module Dependencies", "", "| Module | Imports | Imported By | Coupling |"]
+        lines = [
+            "## Module Dependencies",
+            "",
+            "| Module | Imports | Imported By | Coupling |",
+        ]
         lines.append("|--------|---------|-------------|----------|")
 
         for node_id in sorted(self.graph.nodes):
@@ -270,7 +279,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
             imports = list(self.graph.successors(node_id))
             imported_by = list(self.graph.predecessors(node_id))
-            coupling = metrics.get("afferent_coupling", 0) + metrics.get("efferent_coupling", 0)
+            coupling = metrics.get("afferent_coupling", 0) + metrics.get(
+                "efferent_coupling", 0
+            )
 
             lines.append(
                 f"| `{node_id}` | {len(imports)} | {len(imported_by)} | {coupling} |"
@@ -288,12 +299,14 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             node_data = self.graph.nodes[node_id]
             metrics = node_data.get("metrics", {})
             if metrics.get("is_high_coupling", False):
-                high_coupling_modules.append((
-                    node_id,
-                    metrics.get("afferent_coupling", 0),
-                    metrics.get("efferent_coupling", 0),
-                    metrics.get("instability", 0)
-                ))
+                high_coupling_modules.append(
+                    (
+                        node_id,
+                        metrics.get("afferent_coupling", 0),
+                        metrics.get("efferent_coupling", 0),
+                        metrics.get("instability", 0),
+                    )
+                )
 
         if high_coupling_modules:
             lines.append("### High Coupling Modules")
@@ -304,7 +317,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             for module, afferent, efferent, instability in sorted(
                 high_coupling_modules, key=lambda x: x[1] + x[2], reverse=True
             ):
-                lines.append(f"| `{module}` | {afferent} | {efferent} | {instability:.2f} |")
+                lines.append(
+                    f"| `{module}` | {afferent} | {efferent} | {instability:.2f} |"
+                )
         else:
             lines.append("[OK] No high coupling modules detected.")
 
@@ -317,7 +332,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         for node_id in self.graph.nodes:
             node_data = self.graph.nodes[node_id]
             metrics = node_data.get("metrics", {})
-            coupling = metrics.get("afferent_coupling", 0) + metrics.get("efferent_coupling", 0)
+            coupling = metrics.get("afferent_coupling", 0) + metrics.get(
+                "efferent_coupling", 0
+            )
 
             if coupling == 0:
                 coupling_counts["0"] += 1
@@ -349,7 +366,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                 circular_nodes.append(node_id)
 
         if circular_nodes:
-            lines.append(f"[WARNING] Found {len(circular_nodes)} modules involved in circular dependencies:")
+            lines.append(
+                f"[WARNING] Found {len(circular_nodes)} modules involved in circular dependencies:"
+            )
             lines.append("")
 
             for node_id in sorted(circular_nodes):
@@ -369,7 +388,8 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         lines = ["## Third-Party Library Usage", ""]
 
         third_party_nodes = [
-            node_id for node_id in self.graph.nodes
+            node_id
+            for node_id in self.graph.nodes
             if self.graph.nodes[node_id].get("type") == "third_party"
         ]
 
@@ -387,9 +407,13 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
             lines.append("| Library | Used By | Usage Count |")
             lines.append("|---------|---------|-------------|")
 
-            for lib in sorted(library_usage.keys(), key=lambda x: len(library_usage[x]), reverse=True):
+            for lib in sorted(
+                library_usage.keys(), key=lambda x: len(library_usage[x]), reverse=True
+            ):
                 usage_count = len(library_usage[lib])
-                using_modules = ", ".join([f"`{m}`" for m in sorted(library_usage[lib])[:3]])
+                using_modules = ", ".join(
+                    [f"`{m}`" for m in sorted(library_usage[lib])[:3]]
+                )
                 if len(library_usage[lib]) > 3:
                     using_modules += f", ... ({usage_count - 3} more)"
                 lines.append(f"| `{lib}` | {using_modules} | {usage_count} |")
@@ -405,12 +429,16 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         hot_zone_files = self.global_metrics.get("hot_zone_files", [])
 
         if hot_zone_files:
-            lines.append(f"[WARNING] Found {len(hot_zone_files)} hot zones requiring attention:")
+            lines.append(
+                f"[WARNING] Found {len(hot_zone_files)} hot zones requiring attention:"
+            )
             lines.append("")
             lines.append("| File | Severity | Score | Reason |")
             lines.append("|------|----------|-------|--------|")
 
-            for hot_zone in sorted(hot_zone_files, key=lambda x: x.get("score", 0), reverse=True):
+            for hot_zone in sorted(
+                hot_zone_files, key=lambda x: x.get("score", 0), reverse=True
+            ):
                 file_path = hot_zone.get("file", "")
                 severity = hot_zone.get("severity", "info")
                 score = hot_zone.get("score", 0)
@@ -418,7 +446,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
                 severity_label = severity.upper()
 
-                lines.append(f"| `{file_path}` | {severity_label} | {score:.1f} | {reason} |")
+                lines.append(
+                    f"| `{file_path}` | {severity_label} | {score:.1f} | {reason} |"
+                )
         else:
             lines.append("[OK] No hot zones detected.")
 
@@ -433,7 +463,6 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     def _markdown_to_html(self, markdown: str) -> str:
         """Convert markdown to HTML (improved implementation)."""
-        import re
 
         lines = markdown.split("\n")
         result_lines = []
@@ -504,7 +533,9 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                     in_list = True
                 content = self._process_inline_markdown(line.strip()[2:])
                 result_lines.append(f"<li>{content}</li>")
-            elif in_list and not (line.strip().startswith("- ") or line.strip().startswith("* ")):
+            elif in_list and not (
+                line.strip().startswith("- ") or line.strip().startswith("* ")
+            ):
                 result_lines.append("</ul>")
                 in_list = False
                 if line.strip():
@@ -533,15 +564,19 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         import re
 
         # Status badges
-        text = re.sub(r'\[OK\]', r'<span class="badge badge-ok">OK</span>', text)
-        text = re.sub(r'\[WARNING\]', r'<span class="badge badge-warning">WARNING</span>', text)
-        text = re.sub(r'\[CRITICAL\]', r'<span class="badge badge-critical">CRITICAL</span>', text)
-        text = re.sub(r'\[INFO\]', r'<span class="badge badge-info">INFO</span>', text)
+        text = re.sub(r"\[OK\]", r'<span class="badge badge-ok">OK</span>', text)
+        text = re.sub(
+            r"\[WARNING\]", r'<span class="badge badge-warning">WARNING</span>', text
+        )
+        text = re.sub(
+            r"\[CRITICAL\]", r'<span class="badge badge-critical">CRITICAL</span>', text
+        )
+        text = re.sub(r"\[INFO\]", r'<span class="badge badge-info">INFO</span>', text)
 
         # Code (backticks)
-        text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+        text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
 
         # Bold - handle all cases including at start of line
-        text = re.sub(r'\*\*([^\*]+)\*\*', r'<strong>\1</strong>', text)
+        text = re.sub(r"\*\*([^\*]+)\*\*", r"<strong>\1</strong>", text)
 
         return text

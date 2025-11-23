@@ -18,10 +18,14 @@ async def export_analysis(request: ExportRequest) -> Response:
         File download response
     """
     if request.format == "json":
-        content = export_to_json(request.graph, request.global_metrics, request.project_name)
+        content = export_to_json(
+            request.graph, request.global_metrics, request.project_name
+        )
         media_type = "application/json"
     elif request.format == "toml":
-        content = export_to_toml(request.graph, request.global_metrics, request.project_name)
+        content = export_to_toml(
+            request.graph, request.global_metrics, request.project_name
+        )
         media_type = "application/toml"
     else:
         return Response(content="Invalid format", status_code=400)

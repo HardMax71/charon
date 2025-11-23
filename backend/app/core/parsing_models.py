@@ -23,7 +23,9 @@ class ParseResult(BaseModel):
     Replaces tuple[list[ImportInfo], list[str]] with clearer semantics.
     """
 
-    imports: list[ImportInfo] = Field(default_factory=list, description="Extracted imports")
+    imports: list[ImportInfo] = Field(
+        default_factory=list, description="Extracted imports"
+    )
     errors: list[str] = Field(default_factory=list, description="Parse errors")
 
     @property
@@ -53,7 +55,9 @@ class ComplexityMetrics(BaseModel):
     Replaces plain dict returns from ComplexityService.
     """
 
-    cyclomatic_complexity: float = Field(ge=0, description="Average cyclomatic complexity")
+    cyclomatic_complexity: float = Field(
+        ge=0, description="Average cyclomatic complexity"
+    )
     max_complexity: int = Field(ge=0, description="Highest complexity in file")
     maintainability_index: float = Field(ge=0, le=100, description="MI score (0-100)")
     lines_of_code: int = Field(ge=0, description="Total lines of code")
@@ -62,9 +66,13 @@ class ComplexityMetrics(BaseModel):
     comments: int = Field(ge=0, description="Comment lines")
     complexity_grade: str = Field(description="Overall complexity grade (A-F)")
     maintainability_grade: str = Field(description="Maintainability grade (A-F)")
-    functions: list[FunctionComplexity] = Field(default_factory=list, description="Function-level metrics")
+    functions: list[FunctionComplexity] = Field(
+        default_factory=list, description="Function-level metrics"
+    )
     function_count: int = Field(ge=0, description="Number of functions/methods")
-    error: str | None = Field(default=None, description="Error message if analysis failed")
+    error: str | None = Field(
+        default=None, description="Error message if analysis failed"
+    )
 
 
 class DependencyAnalysis(BaseModel):
@@ -74,28 +82,22 @@ class DependencyAnalysis(BaseModel):
     """
 
     modules: dict[str, str] = Field(
-        default_factory=dict,
-        description="Module path -> file content"
+        default_factory=dict, description="Module path -> file content"
     )
     imports: dict[str, list[ImportInfo]] = Field(
-        default_factory=dict,
-        description="Module path -> list of imports"
+        default_factory=dict, description="Module path -> list of imports"
     )
     dependencies: dict[str, set[str]] = Field(
-        default_factory=dict,
-        description="From module -> set of to modules"
+        default_factory=dict, description="From module -> set of to modules"
     )
     import_details: dict[tuple[str, str], list[str]] = Field(
-        default_factory=dict,
-        description="(from, to) -> list of imported names"
+        default_factory=dict, description="(from, to) -> list of imported names"
     )
     complexity: dict[str, ComplexityMetrics] = Field(
-        default_factory=dict,
-        description="Module path -> complexity metrics"
+        default_factory=dict, description="Module path -> complexity metrics"
     )
     errors: list[str] = Field(
-        default_factory=list,
-        description="All errors encountered during analysis"
+        default_factory=list, description="All errors encountered during analysis"
     )
 
     model_config = ConfigDict(

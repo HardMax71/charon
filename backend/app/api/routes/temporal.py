@@ -8,7 +8,9 @@ temporal_orchestrator = TemporalOrchestratorService()
 
 
 @router.post("/temporal-analysis")
-async def start_temporal_analysis(request: TemporalAnalysisRequest) -> EventSourceResponse:
+async def start_temporal_analysis(
+    request: TemporalAnalysisRequest,
+) -> EventSourceResponse:
     """
     Start temporal analysis for a GitHub repository with SSE progress updates.
 

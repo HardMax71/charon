@@ -64,15 +64,19 @@ class ImpactAnalysisService:
         # Calculate metrics
         total_nodes = len(self.nodes)
         total_affected = len(affected_nodes)
-        impact_percentage = (total_affected / total_nodes * 100) if total_nodes > 0 else 0
+        impact_percentage = (
+            (total_affected / total_nodes * 100) if total_nodes > 0 else 0
+        )
 
         # Count by distance
         distance_breakdown = {}
         for distance, nodes in impact_levels.items():
             distance_breakdown[distance] = {
                 "count": len(nodes),
-                "percentage": (len(nodes) / total_nodes * 100) if total_nodes > 0 else 0,
-                "label": self._get_distance_label(distance)
+                "percentage": (len(nodes) / total_nodes * 100)
+                if total_nodes > 0
+                else 0,
+                "label": self._get_distance_label(distance),
             }
 
         metrics = {
@@ -87,14 +91,16 @@ class ImpactAnalysisService:
         affected_node_details = []
         for nid, distance in affected_nodes.items():
             node = self.nodes.get(nid, {})
-            affected_node_details.append({
-                "id": nid,
-                "label": node.get("label", nid),
-                "module": node.get("module", ""),
-                "type": node.get("type", "internal"),
-                "distance": distance,
-                "color": self._get_impact_color(distance),
-            })
+            affected_node_details.append(
+                {
+                    "id": nid,
+                    "label": node.get("label", nid),
+                    "module": node.get("module", ""),
+                    "type": node.get("type", "internal"),
+                    "distance": distance,
+                    "color": self._get_impact_color(distance),
+                }
+            )
 
         return {
             "selected_node": {

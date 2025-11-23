@@ -32,7 +32,9 @@ async def analyze_code(request: AnalyzeRequest) -> EventSourceResponse:
     async def generate():
         tracker = ProgressTracker()
         try:
-            async for event in AnalysisOrchestratorService.perform_analysis(request, tracker):
+            async for event in AnalysisOrchestratorService.perform_analysis(
+                request, tracker
+            ):
                 yield event
         except Exception as e:
             yield await tracker.emit_error(str(e))
@@ -56,7 +58,7 @@ async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisRespon
 
 @router.post("/health-score", response_model=HealthScoreResponse)
 async def calculate_health_score(
-        graph: DependencyGraph, global_metrics: GlobalMetrics
+    graph: DependencyGraph, global_metrics: GlobalMetrics
 ) -> HealthScoreResponse:
     """
     Calculate comprehensive health score for the project.

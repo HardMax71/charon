@@ -9,7 +9,9 @@ logger = get_logger(__name__)
 MAX_AST_DEPTH = 100
 
 
-def parse_file(content: str, filepath: str, max_depth: int = MAX_AST_DEPTH) -> ParseResult:
+def parse_file(
+    content: str, filepath: str, max_depth: int = MAX_AST_DEPTH
+) -> ParseResult:
     """
     Parse Python file and extract imports using functional list comprehensions.
 
@@ -20,12 +22,16 @@ def parse_file(content: str, filepath: str, max_depth: int = MAX_AST_DEPTH) -> P
 
         module_path = extract_module_path(filepath, "")
         if not module_path:
-            module_path = filepath.replace("/", ".").replace("\\", ".").replace(".py", "")
+            module_path = (
+                filepath.replace("/", ".").replace("\\", ".").replace(".py", "")
+            )
 
         # Check depth to prevent stack overflow
         if (depth := _get_ast_depth(tree)) > max_depth:
             logger.warning("AST depth %d exceeds limit for %s", depth, filepath)
-            return ParseResult(imports=[], errors=[f"AST too deep ({depth} > {max_depth})"])
+            return ParseResult(
+                imports=[], errors=[f"AST too deep ({depth} > {max_depth})"]
+            )
 
         # Extract all imports in functional style with list comprehensions
         imports = [
@@ -34,7 +40,7 @@ def parse_file(content: str, filepath: str, max_depth: int = MAX_AST_DEPTH) -> P
                 module=alias.name,
                 names=[alias.name.split(".")[0]],
                 level=0,
-                lineno=node.lineno
+                lineno=node.lineno,
             )
             for node in ast.walk(tree)
             if isinstance(node, ast.Import)
@@ -45,10 +51,11 @@ def parse_file(content: str, filepath: str, max_depth: int = MAX_AST_DEPTH) -> P
                 module=node.module or _resolve_relative_base(module_path, node.level),
                 names=[a.name for a in node.names],
                 level=node.level,
-                lineno=node.lineno
+                lineno=node.lineno,
             )
             for node in ast.walk(tree)
-            if isinstance(node, ast.ImportFrom) and not (node.module is None and node.level == 0)
+            if isinstance(node, ast.ImportFrom)
+            and not (node.module is None and node.level == 0)
         ]
 
         logger.debug("Parsed %s: %d imports", filepath, len(imports))
@@ -110,7 +117,7 @@ def extract_module_path(filepath: str, project_root: str) -> str:
     Example: 'src/package/module.py' -> 'package.module'
     """
     # Normalize filepath by stripping leading slashes to handle both absolute and relative paths
-    normalized_filepath = filepath.lstrip('/')
+    normalized_filepath = filepath.lstrip("/")
 
     file_path = Path(normalized_filepath)
     root_path = Path(project_root) if project_root else Path(".")

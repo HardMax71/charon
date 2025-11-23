@@ -1,6 +1,6 @@
-from app.core.models import DependencyGraph, ExportDiagramRequest
+from app.core.models import ExportDiagramRequest
 from app.services import DiagramExporter, AnalysisOrchestratorService
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import Response
 
 router = APIRouter()
@@ -47,7 +47,5 @@ async def export_diagram(request: ExportDiagramRequest) -> Response:
     return Response(
         content=content,
         media_type=media_type,
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"'
-        }
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

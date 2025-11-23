@@ -64,7 +64,7 @@ def build_graph(data: DependencyAnalysis) -> nx.DiGraph:
         graph.number_of_nodes(),
         len(data.modules),
         len(third_party_modules),
-        edge_count
+        edge_count,
     )
 
     return graph

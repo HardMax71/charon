@@ -21,7 +21,9 @@ class FitnessOrchestratorService:
     """Orchestrates fitness validation and result storage operations."""
 
     @staticmethod
-    def validate_fitness_functions(request: FitnessValidationRequest) -> FitnessValidationResult:
+    def validate_fitness_functions(
+        request: FitnessValidationRequest,
+    ) -> FitnessValidationResult:
         """Validate architectural fitness functions against a dependency graph."""
         service = FitnessService(request.graph, request.global_metrics)
         return service.validate_rules(
@@ -123,9 +125,15 @@ class FitnessOrchestratorService:
                     filtered_violations = [
                         v for v in result["violations"] if v["rule_id"] == rule_id
                     ]
-                    errors = sum(1 for v in filtered_violations if v["severity"] == "error")
-                    warnings = sum(1 for v in filtered_violations if v["severity"] == "warning")
-                    infos = sum(1 for v in filtered_violations if v["severity"] == "info")
+                    errors = sum(
+                        1 for v in filtered_violations if v["severity"] == "error"
+                    )
+                    warnings = sum(
+                        1 for v in filtered_violations if v["severity"] == "warning"
+                    )
+                    infos = sum(
+                        1 for v in filtered_violations if v["severity"] == "info"
+                    )
                 else:
                     errors = result["errors"]
                     warnings = result["warnings"]
