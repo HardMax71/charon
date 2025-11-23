@@ -1,15 +1,13 @@
-import networkx as nx
+from app.core.models import DependencyGraph, ExportDiagramRequest
+from app.services import DiagramExporter, AnalysisOrchestratorService
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
-
-from app.core.models import DependencyGraph, ExportDiagramRequest
-from app.services.diagram_service import DiagramExporter
 
 router = APIRouter()
 
 
 @router.post("/export-diagram")
-async def export_diagram(request: ExportDiagramRequest):
+async def export_diagram(request: ExportDiagramRequest) -> Response:
     """
     Export dependency graph to various diagram formats.
 
@@ -21,24 +19,7 @@ async def export_diagram(request: ExportDiagramRequest):
     Returns:
         Diagram source code or XML
     """
-    # Rebuild NetworkX graph from graph data
-    graph = nx.DiGraph()
-
-    # Add nodes
-    for node in request.graph_data.nodes:
-        graph.add_node(
-            node.id,
-            type=node.type,
-            module=node.module,
-            label=node.label,
-            metrics=node.metrics.model_dump() if node.metrics else {}
-        )
-
-    # Add edges
-    for edge in request.graph_data.edges:
-        graph.add_edge(edge.source, edge.target)
-
-    # Create exporter
+    graph = AnalysisOrchestratorService.build_networkx_graph(request.graph_data)
     exporter = DiagramExporter(graph)
 
     # Generate diagram based on format

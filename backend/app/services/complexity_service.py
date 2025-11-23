@@ -1,7 +1,11 @@
-from typing import Dict, List, Optional
 from radon.complexity import cc_visit, cc_rank
-from radon.metrics import mi_visit, mi_rank
+from radon.metrics import mi_visit
 from radon.raw import analyze
+
+from app.core import get_logger
+from app.core.parsing_models import ComplexityMetrics, FunctionComplexity
+
+logger = get_logger(__name__)
 
 
 class ComplexityService:
@@ -37,7 +41,7 @@ class ComplexityService:
             return "F"
 
     @staticmethod
-    def analyze_file(file_path: str, content: str) -> Dict:
+    def analyze_file(file_path: str, content: str) -> ComplexityMetrics:
         """
         Analyze complexity metrics for a Python file.
 
@@ -46,27 +50,13 @@ class ComplexityService:
             content: File content as string
 
         Returns:
-            Dict with complexity metrics including:
-                - cyclomatic_complexity: Average CC across all functions/classes
-                - maintainability_index: MI score (0-100)
-                - lines_of_code: Total LOC
-                - logical_lines: LLOC
-                - complexity_grade: Letter grade (A-F)
-                - maintainability_grade: Letter grade (A-F)
-                - functions: List of function-level metrics
-                - max_complexity: Highest CC in file
+            ComplexityMetrics with validated complexity data
         """
         try:
-            # Calculate cyclomatic complexity
             cc_results = cc_visit(content)
-
-            # Calculate maintainability index
             mi_score = mi_visit(content, multi=True)
-
-            # Calculate raw metrics (LOC, LLOC, etc.)
             raw_metrics = analyze(content)
 
-            # Extract function/method level complexity
             functions = []
             total_complexity = 0
             max_complexity = 0
@@ -76,51 +66,57 @@ class ComplexityService:
                 total_complexity += complexity
                 max_complexity = max(max_complexity, complexity)
 
-                functions.append({
-                    "name": item.name,
-                    "complexity": complexity,
-                    "rank": cc_rank(complexity),
-                    "lineno": item.lineno,
-                    "col_offset": item.col_offset,
-                })
+                functions.append(
+                    FunctionComplexity(
+                        name=item.name,
+                        complexity=complexity,
+                        rank=cc_rank(complexity),
+                        lineno=item.lineno,
+                        col_offset=item.col_offset,
+                    )
+                )
 
-            # Calculate average complexity
             avg_complexity = total_complexity / len(cc_results) if cc_results else 0
-
-            # Get overall grades
             complexity_grade = cc_rank(avg_complexity)
             maintainability_grade = ComplexityService._get_maintainability_grade(mi_score)
 
-            return {
-                "cyclomatic_complexity": round(avg_complexity, 2),
-                "max_complexity": max_complexity,
-                "maintainability_index": round(mi_score, 2),
-                "lines_of_code": raw_metrics.loc,
-                "logical_lines": raw_metrics.lloc,
-                "source_lines": raw_metrics.sloc,
-                "comments": raw_metrics.comments,
-                "complexity_grade": complexity_grade,
-                "maintainability_grade": maintainability_grade,
-                "functions": functions,
-                "function_count": len(cc_results),
-            }
+            logger.debug(
+                "Analyzed %s: avg_complexity=%.2f, mi=%.2f",
+                file_path,
+                avg_complexity,
+                mi_score
+            )
+
+            return ComplexityMetrics(
+                cyclomatic_complexity=round(avg_complexity, 2),
+                max_complexity=max_complexity,
+                maintainability_index=round(mi_score, 2),
+                lines_of_code=raw_metrics.loc,
+                logical_lines=raw_metrics.lloc,
+                source_lines=raw_metrics.sloc,
+                comments=raw_metrics.comments,
+                complexity_grade=complexity_grade,
+                maintainability_grade=maintainability_grade,
+                functions=functions,
+                function_count=len(cc_results),
+            )
 
         except Exception as e:
-            # Return minimal metrics if analysis fails
-            return {
-                "cyclomatic_complexity": 0,
-                "max_complexity": 0,
-                "maintainability_index": 0,
-                "lines_of_code": 0,
-                "logical_lines": 0,
-                "source_lines": 0,
-                "comments": 0,
-                "complexity_grade": "A",
-                "maintainability_grade": "A",
-                "functions": [],
-                "function_count": 0,
-                "error": str(e),
-            }
+            logger.error("Error analyzing %s: %s", file_path, str(e), exc_info=True)
+            return ComplexityMetrics(
+                cyclomatic_complexity=0,
+                max_complexity=0,
+                maintainability_index=0,
+                lines_of_code=0,
+                logical_lines=0,
+                source_lines=0,
+                comments=0,
+                complexity_grade="A",
+                maintainability_grade="A",
+                functions=[],
+                function_count=0,
+                error=str(e),
+            )
 
     @staticmethod
     def calculate_hot_zone_score(
@@ -128,7 +124,7 @@ class ComplexityService:
         coupling: int,
         complexity_threshold: float = 10.0,
         coupling_threshold: int = 5
-    ) -> Dict:
+    ) -> dict:
         """
         Calculate hot zone score based on complexity and coupling.
 

@@ -1,32 +1,16 @@
-from typing import List, Dict, Optional, Tuple
-from datetime import datetime, timedelta
 import hashlib
 from collections import defaultdict
-import json
-import numpy as np
+from datetime import datetime
+from typing import List, Dict, Optional
 
+from app.core import get_logger
 from app.services.analyzer_service import analyze_files
-from app.services.graph_service import build_graph
-from app.services.metrics_service import MetricsCalculator
 from app.services.github_service import GitHubService
+from app.services.graph_service import build_graph
 from app.services.layout_service import apply_layout
+from app.services.metrics_service import MetricsCalculator
 
-
-def convert_numpy_types(obj):
-    """Convert numpy types to native Python types for JSON serialization."""
-    if isinstance(obj, np.bool_):
-        return bool(obj)
-    elif isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, dict):
-        return {key: convert_numpy_types(value) for key, value in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_numpy_types(item) for item in obj]
-    return obj
+logger = get_logger(__name__)
 
 
 class TemporalAnalysisService:
@@ -37,11 +21,11 @@ class TemporalAnalysisService:
         self.snapshots_cache: Dict[str, List[Dict]] = {}
 
     async def analyze_repository_history_streaming(
-        self,
-        repo_url: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        sample_strategy: str = "all",
+            self,
+            repo_url: str,
+            start_date: Optional[str] = None,
+            end_date: Optional[str] = None,
+            sample_strategy: str = "all",
     ):
         """
         Analyze repository history with SSE progress updates.
@@ -131,11 +115,11 @@ class TemporalAnalysisService:
         yield {"type": "result", "data": result}
 
     async def analyze_repository_history(
-        self,
-        repo_url: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        sample_strategy: str = "all"  # "all", "daily", "weekly", "monthly"
+            self,
+            repo_url: str,
+            start_date: Optional[str] = None,
+            end_date: Optional[str] = None,
+            sample_strategy: str = "all"  # "all", "daily", "weekly", "monthly"
     ) -> Dict:
         """
         Analyze dependency evolution over git history.
@@ -153,9 +137,9 @@ class TemporalAnalysisService:
                 - churn_data: Dependency churn metrics
                 - circular_deps_timeline: When circular dependencies appeared
         """
-        print(f"Starting temporal analysis for {repo_url}")
-        print(f"Date range: {start_date} to {end_date}")
-        print(f"Sample strategy: {sample_strategy}")
+        logger.info("Starting temporal analysis for %s", repo_url)
+        logger.info("Date range: %s to %s", start_date, end_date)
+        logger.info("Sample strategy: %s", sample_strategy)
 
         # Generate analysis ID
         analysis_id = hashlib.md5(
@@ -163,11 +147,11 @@ class TemporalAnalysisService:
         ).hexdigest()
 
         # Fetch commit history from GitHub
-        print(f"Fetching commit history...")
+        logger.info("Fetching commit history...")
         commits = await self.github_service.fetch_commit_history(
             repo_url, start_date, end_date
         )
-        print(f"Fetched {len(commits)} commits")
+        logger.info("Fetched %d commits", len(commits))
 
         if not commits:
             return {
@@ -177,12 +161,12 @@ class TemporalAnalysisService:
 
         # Sample commits based on strategy
         sampled_commits = self._sample_commits(commits, sample_strategy)
-        print(f"Sampled to {len(sampled_commits)} commits using '{sample_strategy}' strategy")
+        logger.info("Sampled to %d commits using '%s' strategy", len(sampled_commits), sample_strategy)
 
         # Limit to reasonable number to prevent timeouts
         max_analysis_commits = 20
         if len(sampled_commits) > max_analysis_commits:
-            print(f"Limiting analysis to most recent {max_analysis_commits} commits")
+            logger.info("Limiting analysis to most recent %d commits", max_analysis_commits)
             sampled_commits = sampled_commits[-max_analysis_commits:]
 
         # Analyze each commit
@@ -190,18 +174,18 @@ class TemporalAnalysisService:
         previous_snapshot = None
 
         for idx, commit in enumerate(sampled_commits):
-            print(f"Analyzing commit {idx + 1}/{len(sampled_commits)}: {commit['sha'][:7]}")
+            logger.info("Analyzing commit %d/%d: %s", idx + 1, len(sampled_commits), commit['sha'][:7])
             snapshot = await self._analyze_commit(
                 repo_url, commit, previous_snapshot
             )
             if snapshot:
                 snapshots.append(snapshot)
                 previous_snapshot = snapshot
-                print(f"  ✓ Success: {snapshot['node_count']} nodes, {snapshot['edge_count']} edges")
+                logger.info("  ✓ Success: %d nodes, %d edges", snapshot['node_count'], snapshot['edge_count'])
             else:
-                print(f"  ✗ Failed to analyze commit")
+                logger.warning("  ✗ Failed to analyze commit")
 
-        print(f"Analysis complete: {len(snapshots)} snapshots created")
+        logger.info("Analysis complete: %d snapshots created", len(snapshots))
 
         # Calculate churn metrics
         churn_data = self._calculate_churn(snapshots)
@@ -228,7 +212,7 @@ class TemporalAnalysisService:
         return result
 
     def _sample_commits(
-        self, commits: List[Dict], strategy: str
+            self, commits: List[Dict], strategy: str
     ) -> List[Dict]:
         """Sample commits based on strategy."""
         if strategy == "all":
@@ -269,7 +253,7 @@ class TemporalAnalysisService:
         return sampled
 
     async def _analyze_commit(
-        self, repo_url: str, commit: Dict, previous_snapshot: Optional[Dict]
+            self, repo_url: str, commit: Dict, previous_snapshot: Optional[Dict]
     ) -> Optional[Dict]:
         """Analyze dependencies at a specific commit."""
         try:
@@ -345,7 +329,7 @@ class TemporalAnalysisService:
                             "label": graph.nodes[node_id].get("label", node_id),
                             "module": graph.nodes[node_id].get("module", ""),
                             "position": graph.nodes[node_id].get("position", {"x": 0, "y": 0, "z": 0}),
-                            "metrics": convert_numpy_types(graph.nodes[node_id].get("metrics", {})),
+                            "metrics": graph.nodes[node_id].get("metrics", {}),
                         }
                         for node_id in graph.nodes
                     ],
@@ -362,18 +346,16 @@ class TemporalAnalysisService:
             }
 
         except Exception as e:
-            import traceback
-            print(f"Error analyzing commit {commit['sha']}: {str(e)}")
-            print(traceback.format_exc())
+            logger.error("Error analyzing commit %s: %s", commit['sha'], str(e), exc_info=True)
             return None
 
     def _calculate_changes(
-        self,
-        previous_snapshot: Dict,
-        current_dependencies: Dict,
-        current_nodes: int,
-        current_edges: int,
-        current_circular_count: int,
+            self,
+            previous_snapshot: Dict,
+            current_dependencies: Dict,
+            current_nodes: int,
+            current_edges: int,
+            current_circular_count: int,
     ) -> Dict:
         """Calculate changes between snapshots."""
         prev_deps = previous_snapshot.get("dependencies", {})
@@ -438,7 +420,7 @@ class TemporalAnalysisService:
         }
 
     def _generate_churn_heatmap(
-        self, snapshots: List[Dict], node_churn: Dict[str, int]
+            self, snapshots: List[Dict], node_churn: Dict[str, int]
     ) -> List[Dict]:
         """Generate heatmap data for visualization."""
         heatmap_data = []

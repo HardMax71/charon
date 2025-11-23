@@ -1,14 +1,13 @@
+from app.core.models import ExportRequest
+from app.services import export_to_json, export_to_toml, generate_filename
 from fastapi import APIRouter
 from fastapi.responses import Response
-
-from app.core.models import ExportRequest
-from app.services.export_service import export_to_json, export_to_toml, generate_filename
 
 router = APIRouter()
 
 
 @router.post("/export")
-async def export_analysis(request: ExportRequest):
+async def export_analysis(request: ExportRequest) -> Response:
     """
     Export analysis results to JSON or TOML.
 

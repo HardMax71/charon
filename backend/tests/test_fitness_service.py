@@ -9,7 +9,7 @@ from app.core.models import (
     FitnessRule,
     CircularDependency,
 )
-from app.services.fitness_service import FitnessService
+from app.services import FitnessService
 
 
 @pytest.fixture

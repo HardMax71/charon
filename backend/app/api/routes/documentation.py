@@ -1,17 +1,17 @@
-import networkx as nx
+import io
+
+from app.core.exceptions import DocumentationException
+from app.core.models import ExportDocumentationRequest
+from app.services import DocumentationService, AnalysisOrchestratorService
 from fastapi import APIRouter
 from fastapi.responses import Response
-
-from app.core.models import ExportDocumentationRequest
-from app.core.exceptions import DocumentationException
-from app.services.documentation_service import DocumentationService
 from weasyprint import HTML
-import io
+
 router = APIRouter()
 
 
 @router.post("/export-documentation")
-async def export_documentation(request: ExportDocumentationRequest):
+async def export_documentation(request: ExportDocumentationRequest) -> Response:
     """
     Export architectural documentation in specified format.
 
@@ -21,32 +21,11 @@ async def export_documentation(request: ExportDocumentationRequest):
     Returns:
         Documentation file in requested format
     """
-    # Rebuild graph from node/edge data
-    graph = nx.DiGraph()
+    graph = AnalysisOrchestratorService.build_networkx_graph(request.graph)
 
-    # Add nodes
-    for node in request.graph.nodes:
-        graph.add_node(
-            node.id,
-            type=node.type,
-            module=node.module,
-            label=node.label,
-            metrics=node.metrics.model_dump() if node.metrics else {},
-        )
-
-    # Add edges
-    for edge in request.graph.edges:
-        graph.add_edge(
-            edge.source,
-            edge.target,
-            imports=edge.imports,
-            weight=edge.weight,
-        )
-
-    # Create documentation service
     doc_service = DocumentationService(
         graph=graph,
-        global_metrics=request.global_metrics,
+        global_metrics=request.global_metrics.model_dump(),
         project_name=request.project_name,
     )
 

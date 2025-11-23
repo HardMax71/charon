@@ -1,10 +1,25 @@
 import networkx as nx
-import numpy as np
 from typing import Dict, List, Set
+import statistics
 
 from app.core.config import settings
 from app.utils.cycle_detector import detect_cycles, get_nodes_in_cycles
 from app.services.complexity_service import ComplexityService
+
+
+def percentile(values: List[float], percent: float) -> float:
+    """Calculate percentile of a list of values."""
+    if not values:
+        return 0.0
+    sorted_values = sorted(values)
+    k = (len(sorted_values) - 1) * (percent / 100.0)
+    f = int(k)
+    c = f + 1
+    if c >= len(sorted_values):
+        return sorted_values[-1]
+    d0 = sorted_values[f] * (c - k)
+    d1 = sorted_values[c] * (k - f)
+    return d0 + d1
 
 
 class MetricsCalculator:
@@ -31,7 +46,7 @@ class MetricsCalculator:
 
         # Determine high coupling threshold (80th percentile = top 20%)
         if coupling_values:
-            self.high_coupling_threshold = np.percentile(
+            self.high_coupling_threshold = percentile(
                 coupling_values, settings.high_coupling_percentile
             )
         else:
@@ -108,10 +123,10 @@ class MetricsCalculator:
 
         # Calculate averages
         if internal_nodes:
-            avg_afferent = np.mean(
+            avg_afferent = statistics.mean(
                 [self.graph.nodes[n]["metrics"]["afferent_coupling"] for n in internal_nodes]
             )
-            avg_efferent = np.mean(
+            avg_efferent = statistics.mean(
                 [self.graph.nodes[n]["metrics"]["efferent_coupling"] for n in internal_nodes]
             )
         else:
@@ -130,10 +145,10 @@ class MetricsCalculator:
 
         # Calculate complexity averages
         if internal_nodes:
-            avg_complexity = np.mean(
+            avg_complexity = statistics.mean(
                 [self.graph.nodes[n]["metrics"]["cyclomatic_complexity"] for n in internal_nodes]
             )
-            avg_maintainability = np.mean(
+            avg_maintainability = statistics.mean(
                 [self.graph.nodes[n]["metrics"]["maintainability_index"] for n in internal_nodes]
             )
         else:

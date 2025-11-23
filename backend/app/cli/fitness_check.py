@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Optional
 import yaml
 
+from app.core import get_logger
 from app.core.models import (
     FitnessRuleConfig,
     FitnessValidationRequest,
@@ -36,6 +37,8 @@ from app.core.models import (
     AnalysisResult,
 )
 from app.services.fitness_service import FitnessService
+
+logger = get_logger(__name__)
 
 
 class Colors:
@@ -292,9 +295,8 @@ Exit Codes:
             sys.exit(0)
 
     except Exception as e:
+        logger.error("Error running validation: %s", str(e), exc_info=True)
         print(f"\n{Colors.RED}Error running validation: {str(e)}{Colors.RESET}")
-        import traceback
-        traceback.print_exc()
         sys.exit(2)
 
 

@@ -1,31 +1,12 @@
 import math
 import networkx as nx
-import numpy as np
-from typing import Dict, Literal
+from typing import Literal
 
+from app.core import get_logger
 
-def apply_layout(
-    graph: nx.DiGraph,
-    algorithm: Literal["hierarchical", "force", "circular"] = "hierarchical"
-) -> nx.DiGraph:
-    """
-    Apply a 3D layout algorithm to the graph.
+logger = get_logger(__name__)
 
-    Args:
-        graph: NetworkX directed graph
-        algorithm: Layout algorithm to use
-
-    Returns:
-        Graph with position attributes added to nodes
-    """
-    if algorithm == "hierarchical":
-        return hierarchical_layout_3d(graph)
-    elif algorithm == "force":
-        return force_directed_layout_3d(graph)
-    elif algorithm == "circular":
-        return circular_layout_3d(graph)
-    else:
-        raise ValueError(f"Unknown layout algorithm: {algorithm}")
+LayoutType = Literal["hierarchical", "force_directed", "circular"]
 
 
 def hierarchical_layout_3d(graph: nx.DiGraph) -> nx.DiGraph:
@@ -148,3 +129,27 @@ def circular_layout_3d(graph: nx.DiGraph) -> nx.DiGraph:
         graph.nodes[node]["position"] = {"x": x, "y": y, "z": z}
 
     return graph
+
+
+def apply_layout(graph: nx.DiGraph, layout_type: LayoutType = "hierarchical") -> nx.DiGraph:
+    """
+    Apply a 3D layout to the graph based on the specified type.
+    
+    Args:
+        graph: NetworkX directed graph
+        layout_type: Type of layout ("hierarchical", "force_directed", or "circular")
+        
+    Returns:
+        Graph with position attributes applied
+    """
+    logger.debug("Applying %s layout to graph with %d nodes", layout_type, len(graph.nodes))
+    
+    if layout_type == "hierarchical":
+        return hierarchical_layout_3d(graph)
+    elif layout_type == "force_directed":
+        return force_directed_layout_3d(graph)
+    elif layout_type == "circular":
+        return circular_layout_3d(graph)
+    else:
+        logger.warning("Unknown layout type '%s', defaulting to hierarchical", layout_type)
+        return hierarchical_layout_3d(graph)

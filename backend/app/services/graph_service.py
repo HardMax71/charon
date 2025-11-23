@@ -1,43 +1,42 @@
 import networkx as nx
-from typing import Dict, Set, List
 
-from app.services.analyzer_service import DependencyData
+from app.core import get_logger
+from app.core.parsing_models import DependencyAnalysis
+
+logger = get_logger(__name__)
 
 
-def build_graph(data: DependencyData) -> nx.DiGraph:
+def build_graph(data: DependencyAnalysis) -> nx.DiGraph:
     """
-    Build a NetworkX directed graph from dependency data.
+    Build a NetworkX directed graph from dependency analysis.
 
     Args:
-        data: Dependency analysis data
+        data: Dependency analysis data (Pydantic model)
 
     Returns:
-        NetworkX DiGraph
+        NetworkX DiGraph with nodes and edges
     """
+    logger.debug("Building graph from %d modules", data.module_count)
     graph = nx.DiGraph()
 
-    # Add nodes for all modules
     for module_path in data.modules.keys():
-        # Get complexity metrics for this module
-        complexity_metrics = data.complexity.get(module_path, {})
+        complexity_metrics = data.complexity.get(module_path)
 
         graph.add_node(
             module_path,
             type="internal",
             module=module_path,
             label=module_path.split(".")[-1] if "." in module_path else module_path,
-            complexity=complexity_metrics,
+            complexity=complexity_metrics.model_dump() if complexity_metrics else {},
         )
 
-    # Add nodes for third-party libraries
-    third_party_modules: Set[str] = set()
+    third_party_modules: set[str] = set()
     for deps in data.dependencies.values():
         for dep in deps:
             if dep.startswith("third_party."):
                 third_party_modules.add(dep)
 
     for tp_module in third_party_modules:
-        # Extract library name (remove 'third_party.' prefix)
         lib_name = tp_module.replace("third_party.", "")
         graph.add_node(
             tp_module,
@@ -46,7 +45,7 @@ def build_graph(data: DependencyData) -> nx.DiGraph:
             label=lib_name,
         )
 
-    # Add edges for dependencies
+    edge_count = 0
     for from_module, to_modules in data.dependencies.items():
         for to_module in to_modules:
             imports = data.import_details.get((from_module, to_module), [])
@@ -58,5 +57,14 @@ def build_graph(data: DependencyData) -> nx.DiGraph:
                 imports=imports,
                 weight=weight,
             )
+            edge_count += 1
+
+    logger.debug(
+        "Graph built: %d nodes (%d internal, %d third-party), %d edges",
+        graph.number_of_nodes(),
+        len(data.modules),
+        len(third_party_modules),
+        edge_count
+    )
 
     return graph

@@ -1,5 +1,3 @@
-"""Application configuration."""
-
 from pydantic_settings import BaseSettings
 
 
@@ -8,6 +6,9 @@ class Settings(BaseSettings):
 
     app_name: str = "Charon"
     version: str = "0.1.0"
+
+    # Logging
+    log_level: str = "INFO"
 
     # API settings
     api_prefix: str = "/api"

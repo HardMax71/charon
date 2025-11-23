@@ -1,8 +1,9 @@
-import sys
-from pathlib import Path
-from typing import Literal
+from functools import lru_cache
 
-from app.utils.ast_parser import ImportInfo
+from app.core import get_logger
+from app.core.parsing_models import ImportInfo, ImportType
+
+logger = get_logger(__name__)
 
 
 def is_standard_library(module_name: str) -> bool:
@@ -51,146 +52,140 @@ def is_standard_library(module_name: str) -> bool:
     return top_level in stdlib_modules
 
 
-def resolve_relative_import(
-    import_info: ImportInfo,
-    current_module: str,
-) -> str:
-    """Resolve a relative import to an absolute module path."""
-    if import_info.level == 0:
-        return import_info.module
-
-    parts = current_module.split(".")
-    if import_info.level > len(parts):
-        return import_info.module
-
-    base_parts = parts[: -import_info.level] if import_info.level > 0 else parts
-    if import_info.module:
-        base_parts.append(import_info.module)
-
-    return ".".join(base_parts)
-
-
-def classify_import(
-    import_info: ImportInfo,
-    current_module: str,
-    project_modules: set[str],
-) -> tuple[Literal["internal", "third_party", "stdlib"], str]:
-    """
-    Classify an import as internal, third_party, or stdlib.
-
-    Resolution strategies (in order):
-    1. Resolve relative imports to absolute
-    2. Check if it's stdlib
-    3. Find matching internal module
-    4. Default to third-party
-    """
-    # Step 1: Resolve relative imports
-    resolved = resolve_relative_import(import_info, current_module)
-
-    # Step 2: Check stdlib
-    if is_standard_library(resolved):
-        return "stdlib", resolved
-
-    # Step 3: Find internal module
-    internal = _find_internal_module(resolved, current_module, project_modules)
-    if internal:
-        return "internal", internal
-
-    # Step 4: Default to third-party
-    return "third_party", resolved
-
-
-def _find_internal_module(
-    resolved: str,
-    current_module: str,
-    project_modules: set[str],
-) -> str | None:
-    """
-    Find the internal project module that this import refers to.
-
-    Strategies:
-    1. Exact match
-    2. Resolved is a parent (import 'pkg' when we have 'pkg.mod')
-    3. Project module is a parent (import 'pkg.mod.x' when we have 'pkg.mod')
-    4. Context-aware resolution (prepend parent packages)
-    """
-    # Strategy 1: Exact match
-    if resolved in project_modules:
-        return resolved
-
-    # Strategy 2: Resolved is a parent of project modules
-    match = _find_as_parent(resolved, project_modules)
-    if match:
-        return match
-
-    # Strategy 3: A project module is a parent of resolved
-    match = _find_as_child(resolved, project_modules)
-    if match:
-        return match
-
-    # Strategy 4: Context-aware resolution
-    match = _resolve_with_context(resolved, current_module, project_modules)
-    if match:
-        return match
-
-    return None
-
-
-def _find_as_parent(resolved: str, project_modules: set[str]) -> str | None:
-    """
-    Check if resolved is a parent package of project modules.
-    Returns resolved only if it exists as an actual module.
-    """
-    # Only return if the parent package itself exists (has __init__.py)
-    if resolved in project_modules:
-        return resolved
-    return None
-
-
-def _find_as_child(resolved: str, project_modules: set[str]) -> str | None:
-    """Check if any project module is a parent of resolved."""
-    for pm in project_modules:
-        if resolved.startswith(pm + "."):
-            return pm
-    return None
-
-
-def _resolve_with_context(
-    resolved: str,
-    current_module: str,
-    project_modules: set[str],
-) -> str | None:
-    """
-    Resolve imports by prepending parent packages of current module.
-
-    Example:
-        current_module: 'chat_service.app.api.auth'
-        resolved: 'app.config'
-        tries: 'chat_service.app.config' -> found!
-    """
-    parts = current_module.split(".")
-
-    # Try prepending each level of parent packages
-    for depth in range(1, len(parts)):
-        parent = ".".join(parts[:depth])
-        candidate = f"{parent}.{resolved}"
-
-        # Check if this candidate exists exactly
-        if candidate in project_modules:
-            return candidate
-
-        # Check if any project module is a child of this candidate
-        # e.g., import 'app' when we have 'chat_service.app.config'
-        prefix = candidate + "."
-        matches = [pm for pm in project_modules if pm.startswith(prefix)]
-        if matches:
-            # Candidate is a package with submodules - return it
-            # even if __init__.py doesn't exist
-            return candidate
-
-    return None
-
-
 def extract_top_level_module(module_path: str) -> str:
     """Extract the top-level module from a module path."""
     return module_path.split(".")[0] if module_path else module_path
+
+
+class ImportResolver:
+    """Stateful import resolver with caching for better performance.
+
+    This class consolidates all import resolution strategies and provides
+    caching to avoid repeated string operations and lookups.
+
+    Usage:
+        resolver = ImportResolver(project_modules)
+        import_type, resolved = resolver.classify(import_info, current_module)
+    """
+
+    def __init__(self, project_modules: set[str]):
+        """
+        Initialize resolver with project modules.
+
+        Args:
+            project_modules: Set of all module paths in the project
+        """
+        self.project_modules = project_modules
+        self._cache: dict[tuple[str, str, int], tuple[ImportType, str]] = {}
+        logger.debug("ImportResolver initialized with %d project modules", len(project_modules))
+
+    def classify(
+        self,
+        import_info: ImportInfo,
+        current_module: str
+    ) -> tuple[ImportType, str]:
+        """
+        Classify import with caching for performance.
+
+        Args:
+            import_info: Import information
+            current_module: Current module path
+
+        Returns:
+            Tuple of (import_type, resolved_module)
+        """
+        cache_key = (import_info.module, current_module, import_info.level)
+
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        result = self._classify_uncached(import_info, current_module)
+        self._cache[cache_key] = result
+        return result
+
+    def _classify_uncached(
+        self,
+        import_info: ImportInfo,
+        current_module: str
+    ) -> tuple[ImportType, str]:
+        """Classify import without caching."""
+        resolved = self._resolve_relative(import_info, current_module)
+
+        if self._is_stdlib(resolved):
+            return "stdlib", resolved
+
+        internal = self._find_internal(resolved, current_module)
+        if internal:
+            return "internal", internal
+
+        return "third_party", resolved
+
+    def _resolve_relative(self, import_info: ImportInfo, current_module: str) -> str:
+        """Resolve relative import to absolute module path."""
+        if import_info.level == 0:
+            return import_info.module
+
+        parts = current_module.split(".")
+        if import_info.level > len(parts):
+            logger.warning(
+                "Invalid relative import level %d in %s",
+                import_info.level,
+                current_module
+            )
+            return import_info.module
+
+        base = parts[:-import_info.level] if import_info.level > 0 else parts
+        if import_info.module:
+            base.append(import_info.module)
+
+        return ".".join(base)
+
+    @lru_cache(maxsize=512)
+    def _is_stdlib(self, module: str) -> bool:
+        """Check if module is stdlib (cached)."""
+        return is_standard_library(module)
+
+    def _find_internal(self, resolved: str, current_module: str) -> str | None:
+        """
+        Find internal module using all resolution strategies.
+
+        Strategies (in order):
+        1. Exact match
+        2. Resolved is parent of project modules
+        3. Project module is parent of resolved
+        4. Context-aware resolution
+        """
+        if resolved in self.project_modules:
+            return resolved
+
+        if any(pm.startswith(resolved + ".") for pm in self.project_modules):
+            return resolved
+
+        for pm in self.project_modules:
+            if resolved.startswith(pm + "."):
+                return pm
+
+        parts = current_module.split(".")
+        for depth in range(1, len(parts)):
+            parent = ".".join(parts[:depth])
+            candidate = f"{parent}.{resolved}"
+
+            if candidate in self.project_modules:
+                return candidate
+
+            if any(pm.startswith(candidate + ".") for pm in self.project_modules):
+                return candidate
+
+        return None
+
+    def clear_cache(self) -> None:
+        """Clear the classification cache."""
+        self._cache.clear()
+        logger.debug("ImportResolver cache cleared")
+
+    def get_cache_stats(self) -> dict[str, int]:
+        """Get cache statistics."""
+        return {
+            "cache_size": len(self._cache),
+            "project_modules": len(self.project_modules),
+        }

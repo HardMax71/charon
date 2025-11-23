@@ -1,17 +1,14 @@
-import json
+from app.core.models import TemporalAnalysisRequest, TemporalAnalysisResponse
+from app.services import TemporalOrchestratorService
 from fastapi import APIRouter
 from sse_starlette.sse import EventSourceResponse
 
-from app.core.models import TemporalAnalysisRequest
-from app.core.exceptions import NotFoundException
-from app.services.temporal_service import TemporalAnalysisService
-
 router = APIRouter()
-temporal_service = TemporalAnalysisService()
+temporal_orchestrator = TemporalOrchestratorService()
 
 
 @router.post("/temporal-analysis")
-async def start_temporal_analysis(request: TemporalAnalysisRequest):
+async def start_temporal_analysis(request: TemporalAnalysisRequest) -> EventSourceResponse:
     """
     Start temporal analysis for a GitHub repository with SSE progress updates.
 
@@ -24,23 +21,16 @@ async def start_temporal_analysis(request: TemporalAnalysisRequest):
     Returns:
         Server-Sent Events stream with progress updates
     """
+
     async def generate():
-        async for event in temporal_service.analyze_repository_history_streaming(
-            repo_url=request.repository_url,
-            start_date=request.start_date,
-            end_date=request.end_date,
-            sample_strategy=request.sample_strategy,
-        ):
-            yield {
-                "event": "message",
-                "data": json.dumps(event)
-            }
+        async for event in temporal_orchestrator.start_temporal_analysis(request):
+            yield event
 
     return EventSourceResponse(generate())
 
 
-@router.get("/temporal-analysis/{analysis_id}")
-async def get_temporal_analysis(analysis_id: str):
+@router.get("/temporal-analysis/{analysis_id}", response_model=TemporalAnalysisResponse)
+async def get_temporal_analysis(analysis_id: str) -> TemporalAnalysisResponse:
     """
     Retrieve cached temporal analysis results.
 
@@ -50,9 +40,4 @@ async def get_temporal_analysis(analysis_id: str):
     Returns:
         Cached temporal analysis results
     """
-    result = temporal_service.get_cached_analysis(analysis_id)
-
-    if not result:
-        raise NotFoundException(f"Temporal analysis '{analysis_id}' not found or expired")
-
-    return result
+    return temporal_orchestrator.get_temporal_analysis(analysis_id)

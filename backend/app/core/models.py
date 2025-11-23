@@ -76,6 +76,14 @@ class ClusterMetrics(BaseModel):
     nodes: list[str] = Field(description="Node IDs in this cluster")
 
 
+class ClusteringResult(BaseModel):
+    """Result from community detection."""
+
+    communities: dict[int, set[str]] = Field(description="Cluster ID to set of node IDs")
+    node_to_community: dict[str, int] = Field(description="Node ID to cluster ID mapping")
+    metrics: list[ClusterMetrics] = Field(description="Metrics for each cluster")
+
+
 class PackageSuggestion(BaseModel):
     """Package reorganization suggestion."""
 
@@ -164,6 +172,15 @@ class FileInput(BaseModel):
     content: str
 
 
+class SourceFilesResult(BaseModel):
+    """Result from fetching source files."""
+
+    success: bool = Field(description="Whether file fetching succeeded")
+    files: list[FileInput] | None = Field(default=None, description="Fetched files if successful")
+    project_name: str | None = Field(default=None, description="Project name if successful")
+    error_message: str | None = Field(default=None, description="Error message if failed")
+
+
 class AnalyzeRequest(BaseModel):
     """Request to analyze code."""
 
@@ -194,7 +211,7 @@ class ExportDocumentationRequest(BaseModel):
     """Request model for documentation export."""
 
     graph: DependencyGraph
-    global_metrics: dict
+    global_metrics: GlobalMetrics
     format: Literal["md", "html", "pdf"]
     project_name: str = "Project"
 
@@ -399,3 +416,55 @@ class FitnessTrendResponse(BaseModel):
     rule_id: str | None = Field(default=None, description="Optional filter by rule")
     data_points: list[FitnessTrendPoint]
     summary: dict
+
+
+class SaveResultResponse(BaseModel):
+    """Response from saving fitness validation result."""
+
+    success: bool = Field(description="Whether the save was successful")
+    message: str = Field(description="Status message")
+    file_path: str = Field(description="Path to the saved file")
+
+
+class TemporalSnapshotData(BaseModel):
+    """Snapshot data for a single commit in temporal analysis."""
+
+    commit_hash: str
+    timestamp: str
+    author: str
+    message: str
+    files_analyzed: int
+    dependencies_count: int
+    circular_dependencies: int
+    avg_coupling: float
+    metrics: dict = Field(default_factory=dict)
+
+
+class ChurnData(BaseModel):
+    """Code churn data for files."""
+
+    file_path: str
+    churn_count: int
+
+
+class CircularDependencyEvent(BaseModel):
+    """Event tracking when circular dependencies were introduced."""
+
+    commit_hash: str
+    timestamp: str
+    cycle: list[str]
+
+
+class TemporalAnalysisResponse(BaseModel):
+    """Response from temporal analysis."""
+
+    analysis_id: str = Field(description="Unique identifier for this analysis")
+    repository: str = Field(description="Repository URL")
+    start_date: str | None = Field(default=None, description="Analysis start date")
+    end_date: str | None = Field(default=None, description="Analysis end date")
+    total_commits: int = Field(description="Total commits in range")
+    analyzed_commits: int = Field(description="Number of commits analyzed")
+    sample_strategy: str = Field(description="Sampling strategy used")
+    snapshots: list[dict] = Field(description="Snapshot data for each analyzed commit")
+    churn_data: dict = Field(description="Code churn data")
+    circular_deps_timeline: list[dict] = Field(description="Timeline of circular dependency events")

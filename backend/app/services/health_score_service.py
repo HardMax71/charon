@@ -1,5 +1,3 @@
-"""Health score calculation service for dependency analysis."""
-
 import math
 from typing import Dict, List, Any
 import networkx as nx

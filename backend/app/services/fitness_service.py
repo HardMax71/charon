@@ -1,5 +1,3 @@
-"""Fitness function service for architectural rule validation."""
-
 import re
 from datetime import datetime
 from typing import List, Dict, Any

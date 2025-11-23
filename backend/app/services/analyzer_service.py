@@ -1,39 +1,31 @@
 from collections import defaultdict
-from typing import Dict, List, Set
 
+from app.core import get_logger
 from app.core.models import FileInput
-from app.utils.ast_parser import parse_file, extract_module_path, ImportInfo
-from app.utils.import_resolver import classify_import
+from app.core.parsing_models import DependencyAnalysis
+from app.utils.ast_parser import parse_file, extract_module_path
+from app.utils.import_resolver import ImportResolver
 from app.services.complexity_service import ComplexityService
 
-
-class DependencyData:
-    """Container for dependency analysis data."""
-
-    def __init__(self):
-        self.modules: Dict[str, str] = {}  # module_path -> file_content
-        self.imports: Dict[str, List[ImportInfo]] = {}  # module_path -> imports
-        self.dependencies: Dict[str, Set[str]] = defaultdict(set)  # from_module -> set(to_modules)
-        self.import_details: Dict[tuple[str, str], List[str]] = {}  # (from, to) -> imported_names
-        self.complexity: Dict[str, Dict] = {}  # module_path -> complexity metrics
-        self.errors: List[str] = []
+logger = get_logger(__name__)
 
 
-def analyze_files(files: List[FileInput], project_name: str = "project") -> DependencyData:
+def analyze_files(files: list[FileInput], project_name: str = "project") -> DependencyAnalysis:
     """
-    Analyze a list of Python files and extract dependencies.
+    Analyze Python files and extract dependencies.
 
     Args:
         files: List of file inputs
         project_name: Name of the project (used as root)
 
     Returns:
-        DependencyData object with analysis results
+        DependencyAnalysis with validated, type-safe data
     """
-    data = DependencyData()
+    logger.info("Starting analysis of %d files for project '%s'", len(files), project_name)
 
-    # First pass: collect all modules
-    module_map: Dict[str, str] = {}  # filepath -> module_path
+    module_map: dict[str, str] = {}
+    modules: dict[str, str] = {}
+
     for file in files:
         if not file.path.endswith(".py"):
             continue
@@ -43,12 +35,18 @@ def analyze_files(files: List[FileInput], project_name: str = "project") -> Depe
             module_path = file.path.replace("/", ".").replace("\\", ".").replace(".py", "")
 
         module_map[file.path] = module_path
-        data.modules[module_path] = file.content
+        modules[module_path] = file.content
 
-    project_modules = set(data.modules.keys())
+    logger.debug("Found %d Python modules", len(modules))
 
-    # Second pass: parse imports and analyze complexity
+    resolver = ImportResolver(set(modules.keys()))
     complexity_service = ComplexityService()
+
+    imports = {}
+    dependencies = defaultdict(set)
+    import_details = {}
+    complexity = {}
+    errors = []
 
     for file in files:
         if not file.path.endswith(".py"):
@@ -56,40 +54,47 @@ def analyze_files(files: List[FileInput], project_name: str = "project") -> Depe
 
         module_path = module_map[file.path]
 
-        # Analyze code complexity
         complexity_metrics = complexity_service.analyze_file(file.path, file.content)
-        data.complexity[module_path] = complexity_metrics
+        complexity[module_path] = complexity_metrics
 
-        # Parse imports
-        imports, errors = parse_file(file.content, file.path)
+        parse_result = parse_file(file.content, file.path)
 
-        if errors:
-            data.errors.extend(errors)
+        if not parse_result.is_valid:
+            errors.extend(parse_result.errors)
 
-        data.imports[module_path] = imports
+        imports[module_path] = parse_result.imports
 
-        # Process each import
-        for import_info in imports:
-            import_type, resolved_module = classify_import(
-                import_info, module_path, project_modules
-            )
+        for import_info in parse_result.imports:
+            import_type, resolved_module = resolver.classify(import_info, module_path)
 
-            # Skip standard library
             if import_type == "stdlib":
                 continue
 
-            # For third-party, use top-level package name
             if import_type == "third_party":
                 top_level = resolved_module.split(".")[0]
                 resolved_module = f"third_party.{top_level}"
 
-            # Add dependency
-            data.dependencies[module_path].add(resolved_module)
+            dependencies[module_path].add(resolved_module)
 
-            # Track import details
             key = (module_path, resolved_module)
-            if key not in data.import_details:
-                data.import_details[key] = []
-            data.import_details[key].extend(import_info.names)
+            if key not in import_details:
+                import_details[key] = []
+            import_details[key].extend(import_info.names)
 
-    return data
+    cache_stats = resolver.get_cache_stats()
+    logger.info(
+        "Analysis complete: %d modules, %d dependencies, %d errors, cache: %d entries",
+        len(modules),
+        sum(len(deps) for deps in dependencies.values()),
+        len(errors),
+        cache_stats["cache_size"]
+    )
+
+    return DependencyAnalysis(
+        modules=modules,
+        imports=imports,
+        dependencies=dict(dependencies),
+        import_details=import_details,
+        complexity=complexity,
+        errors=errors,
+    )

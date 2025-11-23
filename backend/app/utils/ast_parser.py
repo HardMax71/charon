@@ -1,43 +1,57 @@
 import ast
 from pathlib import Path
-from typing import NamedTuple
+
+from app.core import get_logger
+from app.core.parsing_models import ImportInfo, ParseResult
+
+logger = get_logger(__name__)
+
+MAX_AST_DEPTH = 100
 
 
-class ImportInfo(NamedTuple):
-    """Information about a single import statement."""
-
-    module: str  # The module being imported from
-    names: list[str]  # The names being imported
-    level: int  # Relative import level (0 for absolute)
-    lineno: int  # Line number in source
-
-
-def parse_file(content: str, filepath: str) -> tuple[list[ImportInfo], list[str]]:
+def parse_file(
+    content: str,
+    filepath: str,
+    max_depth: int = MAX_AST_DEPTH
+) -> ParseResult:
     """
-    Parse a Python file and extract all imports.
+    Parse a Python file and extract all imports safely.
 
     Args:
         content: File content as string
         filepath: Path to the file (for error reporting)
+        max_depth: Maximum AST depth to prevent stack overflow (default: 100)
 
     Returns:
-        Tuple of (imports, errors)
+        ParseResult with imports and errors
     """
     imports: list[ImportInfo] = []
     errors: list[str] = []
 
     try:
         tree = ast.parse(content, filename=filepath)
+
+        depth = _get_ast_depth(tree)
+        if depth > max_depth:
+            logger.warning("AST depth %d exceeds limit %d for %s", depth, max_depth, filepath)
+            errors.append(f"AST too deep ({depth} > {max_depth}), skipping detailed analysis")
+            return ParseResult(imports=[], errors=errors)
+
     except SyntaxError as e:
+        logger.error("Syntax error in %s:%d: %s", filepath, e.lineno, e.msg)
         errors.append(f"Syntax error in {filepath}:{e.lineno}: {e.msg}")
-        return imports, errors
+        return ParseResult(imports=imports, errors=errors)
+    except RecursionError:
+        logger.error("Recursion limit hit parsing %s", filepath, exc_info=True)
+        errors.append(f"File too complex to parse: {filepath}")
+        return ParseResult(imports=imports, errors=errors)
     except Exception as e:
+        logger.error("Failed to parse %s: %s", filepath, str(e), exc_info=True)
         errors.append(f"Failed to parse {filepath}: {str(e)}")
-        return imports, errors
+        return ParseResult(imports=imports, errors=errors)
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            # import foo, bar
             for alias in node.names:
                 imports.append(
                     ImportInfo(
@@ -49,10 +63,7 @@ def parse_file(content: str, filepath: str) -> tuple[list[ImportInfo], list[str]
                 )
 
         elif isinstance(node, ast.ImportFrom):
-            # from foo import bar, baz
-            # from .relative import something
             if node.module is None and node.level == 0:
-                # Weird edge case: `from __future__ import ...`
                 continue
 
             module = node.module or ""
@@ -67,7 +78,33 @@ def parse_file(content: str, filepath: str) -> tuple[list[ImportInfo], list[str]
                 )
             )
 
-    return imports, errors
+    logger.debug("Parsed %s: %d imports, %d errors", filepath, len(imports), len(errors))
+    return ParseResult(imports=imports, errors=errors)
+
+
+def _get_ast_depth(node: ast.AST) -> int:
+    """
+    Calculate maximum depth of AST tree iteratively.
+
+    Uses iterative approach instead of recursion to avoid stack overflow.
+
+    Args:
+        node: Root AST node
+
+    Returns:
+        Maximum depth of the tree
+    """
+    max_depth = 0
+    stack = [(node, 0)]
+
+    while stack:
+        current_node, depth = stack.pop()
+        max_depth = max(max_depth, depth)
+
+        for child in ast.iter_child_nodes(current_node):
+            stack.append((child, depth + 1))
+
+    return max_depth
 
 
 def extract_module_path(filepath: str, project_root: str) -> str:
