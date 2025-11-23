@@ -25,4 +25,4 @@ jobs:
 
       - name: Run ty type checker
         working-directory: backend
-        run: uvx ty check app
+        run: uv run --with ty ty check app
