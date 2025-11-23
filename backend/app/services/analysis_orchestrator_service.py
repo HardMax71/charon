@@ -220,7 +220,7 @@ class AnalysisOrchestratorService:
         )
 
         yield await tracker.emit_step(1)
-        dependency_data = analyze_files(files, project_name)
+        dependency_data = await analyze_files(files, project_name)
 
         yield await tracker.emit_step(2)
 

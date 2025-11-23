@@ -16,11 +16,11 @@ class DiffService:
         return await github_service.fetch_repository(repo_url, ref)
 
     @staticmethod
-    def analyze_and_build_graph(
+    async def analyze_and_build_graph(
         files: list[FileInput], project_name: str
     ) -> nx.DiGraph:
         """Analyze files and build dependency graph."""
-        dependency_data = analyze_files(files, project_name)
+        dependency_data = await analyze_files(files, project_name)
         return build_graph(dependency_data)
 
     @staticmethod
@@ -82,10 +82,10 @@ class DiffService:
             )
 
             yield await tracker.emit_step(2)
-            graph1 = DiffService.analyze_and_build_graph(files1, request.repo)
+            graph1 = await DiffService.analyze_and_build_graph(files1, request.repo)
 
             yield await tracker.emit_step(3)
-            graph2 = DiffService.analyze_and_build_graph(files2, request.repo)
+            graph2 = await DiffService.analyze_and_build_graph(files2, request.repo)
 
             yield await tracker.emit_step(4)
             diff_result = DiffService.compare_graphs(graph1, graph2)

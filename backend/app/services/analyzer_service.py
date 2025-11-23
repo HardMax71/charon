@@ -10,7 +10,7 @@ from app.services.complexity_service import ComplexityService
 logger = get_logger(__name__)
 
 
-def analyze_files(
+async def analyze_files(
     files: list[FileInput], project_name: str = "project"
 ) -> DependencyAnalysis:
     """
@@ -57,7 +57,6 @@ def analyze_files(
     for file in files:
         if not file.path.endswith(".py"):
             continue
-
         module_path = module_map[file.path]
 
         complexity_metrics = complexity_service.analyze_file(file.path, file.content)

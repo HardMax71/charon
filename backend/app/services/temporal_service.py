@@ -301,7 +301,7 @@ class TemporalAnalysisService:
 
             # Analyze dependencies
             project_name = repo_url.split("/")[-1]
-            dependency_data = analyze_files(files, project_name)
+            dependency_data = await analyze_files(files, project_name)
 
             # Build graph
             graph = build_graph(dependency_data)
