@@ -4,8 +4,10 @@
 
   [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
   [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+<br/>
   [![Docker Publish](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml)
   [![Release](https://github.com/HardMax71/charon/actions/workflows/release.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/release.yml)
+<br/>
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
 
