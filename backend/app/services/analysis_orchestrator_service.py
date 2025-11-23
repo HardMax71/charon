@@ -4,6 +4,9 @@ import networkx as nx
 from app.core import get_logger
 from app.core.models import (
     AnalyzeRequest,
+    GitHubAnalyzeRequest,
+    LocalAnalyzeRequest,
+    ImportAnalyzeRequest,
     AnalysisResult,
     Node,
     Edge,
@@ -40,47 +43,44 @@ class AnalysisOrchestratorService:
 
     @staticmethod
     async def fetch_source_files(request: AnalyzeRequest) -> SourceFilesResult:
-        """Fetch source files based on request source type."""
+        """Fetch source files based on request source type.
+
+        Uses discriminated union with pattern matching - Pydantic ensures correct fields are present.
+        """
         logger.debug("Fetching source files for source type: %s", request.source)
 
-        if request.source == "github":
-            if not request.url:
-                logger.warning("GitHub source requested but no URL provided")
-                return SourceFilesResult(success=False, error_message="GitHub URL is required")
+        match request:
+            case GitHubAnalyzeRequest(url=url):
+                try:
+                    github_service = GitHubService()
+                    files = await github_service.fetch_repository(url)
+                    project_name = url.split("/")[-1]
 
-            try:
-                github_service = GitHubService()
-                files = await github_service.fetch_repository(request.url)
-                project_name = request.url.split("/")[-1]
+                    if not files:
+                        logger.warning("No Python files found in repository: %s", url)
+                        return SourceFilesResult(
+                            success=False, error_message="No Python files found in repository"
+                        )
 
-                if not files:
-                    logger.warning("No Python files found in repository: %s", request.url)
-                    return SourceFilesResult(
-                        success=False, error_message="No Python files found in repository"
-                    )
+                    logger.info("Successfully fetched %d files from GitHub repo: %s", len(files), project_name)
+                    return SourceFilesResult(success=True, files=files, project_name=project_name)
 
-                logger.info("Successfully fetched %d files from GitHub repo: %s", len(files), project_name)
-                return SourceFilesResult(success=True, files=files, project_name=project_name)
+                except Exception as e:
+                    logger.error("GitHub fetch error for %s: %s", url, str(e), exc_info=True)
+                    return SourceFilesResult(success=False, error_message=f"GitHub error: {str(e)}")
 
-            except Exception as e:
-                logger.error("GitHub fetch error for %s: %s", request.url, str(e), exc_info=True)
-                return SourceFilesResult(success=False, error_message=f"GitHub error: {str(e)}")
+            case LocalAnalyzeRequest(files=files):
+                logger.info("Using %d local files for analysis", len(files))
+                return SourceFilesResult(success=True, files=files, project_name="local_project")
 
-        elif request.source == "local":
-            if not request.files:
-                logger.warning("Local source requested but no files provided")
-                return SourceFilesResult(success=False, error_message="Files are required")
+            case ImportAnalyzeRequest():
+                logger.debug("Import source requested (no file fetching needed)")
+                return SourceFilesResult(success=True, files=[], project_name="imported_project")
 
-            logger.info("Using %d local files for analysis", len(request.files))
-            return SourceFilesResult(success=True, files=request.files, project_name="local_project")
-
-        elif request.source == "import":
-            logger.debug("Import source requested (no file fetching needed)")
-            return SourceFilesResult(success=True, files=[], project_name="imported_project")
-
-        else:
-            logger.error("Unknown source type: %s", request.source)
-            return SourceFilesResult(success=False, error_message=f"Unknown source: {request.source}")
+            case _:
+                # This should never happen due to discriminated union validation
+                logger.error("Unexpected request type: %s", type(request))
+                return SourceFilesResult(success=False, error_message="Invalid request type")
 
     @staticmethod
     def build_nodes_and_edges(
@@ -169,13 +169,15 @@ class AnalysisOrchestratorService:
         """Perform code analysis and yield progress updates."""
         yield await tracker.emit_step(0)
 
-        if request.source == "import":
-            if not request.data:
-                yield await tracker.emit_error("Import data is required")
+        # Handle import case - data field is guaranteed to exist by discriminated union
+        match request:
+            case ImportAnalyzeRequest(data=data):
+                logger.info("Importing previously analyzed data")
+                result = data.model_dump()
+                yield await tracker.emit_result(result)
                 return
-            result = request.data.model_dump()
-            yield await tracker.emit_result(result)
-            return
+            case _:
+                pass  # Continue with normal analysis flow
 
         source_result = await AnalysisOrchestratorService.fetch_source_files(request)
         if not source_result.success:

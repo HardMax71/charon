@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Union, Annotated
 from pydantic import BaseModel, Field
 
 
@@ -181,13 +181,30 @@ class SourceFilesResult(BaseModel):
     error_message: str | None = Field(default=None, description="Error message if failed")
 
 
-class AnalyzeRequest(BaseModel):
-    """Request to analyze code."""
+class GitHubAnalyzeRequest(BaseModel):
+    """Request to analyze code from GitHub."""
 
-    source: Literal["github", "local", "import"]
-    url: str | None = None
-    files: list[FileInput] | None = None
-    data: AnalysisResult | None = None
+    source: Literal["github"]
+    url: str = Field(description="GitHub repository URL")
+
+
+class LocalAnalyzeRequest(BaseModel):
+    """Request to analyze local code files."""
+
+    source: Literal["local"]
+    files: list[FileInput] = Field(description="List of files to analyze")
+
+
+class ImportAnalyzeRequest(BaseModel):
+    """Request to import previously analyzed data."""
+
+    source: Literal["import"]
+    data: AnalysisResult = Field(description="Previously analyzed data to import")
+
+
+# Discriminated union - Pydantic V2 will automatically validate based on 'source' Literal field
+# Order matters: more specific models first
+AnalyzeRequest = Union[GitHubAnalyzeRequest, LocalAnalyzeRequest, ImportAnalyzeRequest]
 
 
 class ExportRequest(BaseModel):
