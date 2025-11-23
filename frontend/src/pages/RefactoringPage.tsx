@@ -12,7 +12,9 @@ import { LayoutSelector } from '@/components/Graph3D/LayoutSelector'; // Import 
 import { Github, Folder, FileJson, GitBranch, ArrowRight, AlertCircle, X, Circle } from 'lucide-react';
 
 export const RefactoringPage = () => {
-  const { graph: originalGraph, globalMetrics: originalMetrics, analysisSource } = useGraphStore();
+  const originalGraph = useGraphStore(state => state.graph);
+  const originalMetrics = useGraphStore(state => state.globalMetrics);
+  const analysisSource = useGraphStore(state => state.analysisSource);
   const navigate = useNavigate();
 
   const [modifiedGraph, setModifiedGraph] = useState<DependencyGraph | null>(null);
@@ -344,8 +346,9 @@ export const RefactoringPage = () => {
                         </div>
                         <button
                           onClick={() => handleUndoChange(change.id)}
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded p-1 transition-colors opacity-0 group-hover:opacity-100"
+                          aria-label="Undo this change"
                           title="Undo this change"
+                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded p-1 transition-colors opacity-0 group-hover:opacity-100"
                         >
                           <X className="w-3 h-3" />
                         </button>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import { Vector3 } from 'three';
@@ -8,6 +8,7 @@ import { ClusterBoundingBoxes } from './ClusterBoundingBoxes';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { analyzeImpact } from '@/services/api';
+import { logger } from '@/utils/logger';
 import { DependencyGraph } from '@/types/graph';
 
 interface SceneProps {
@@ -24,7 +25,8 @@ interface SceneProps {
 }
 
 // Helper component to handle camera focus
-const CameraFocus = ({ focusNodeId, graph }: { focusNodeId: string | null, graph: DependencyGraph }) => {
+// Memoized to prevent re-renders when props haven't changed
+const CameraFocus = memo(({ focusNodeId, graph }: { focusNodeId: string | null, graph: DependencyGraph }) => {
   const { camera, controls } = useThree();
   const lastFocusedIdRef = useRef<string | null>(null);
 
@@ -65,9 +67,11 @@ const CameraFocus = ({ focusNodeId, graph }: { focusNodeId: string | null, graph
   }, [focusNodeId, camera, controls]);
 
   return null;
-};
+});
 
-export const Scene = ({
+// Memoized to prevent re-renders when props haven't changed
+// This is critical for performance with 100+ Node and 200+ Edge children
+export const Scene = memo(({
   customGraph,
   disableImpactAnalysis = false,
   hideClusterBoxes = false,
@@ -79,8 +83,11 @@ export const Scene = ({
   focusNodeId = null,
   onNodeDragEnd
 }: SceneProps = {}) => {
-  const { graph: storeGraph, selectedNode, setSelectedNode, setImpactAnalysis } = useGraphStore();
-  const { isDraggingNode } = useUIStore();
+  const storeGraph = useGraphStore(state => state.graph);
+  const selectedNode = useGraphStore(state => state.selectedNode);
+  const setSelectedNode = useGraphStore(state => state.setSelectedNode);
+  const setImpactAnalysis = useGraphStore(state => state.setImpactAnalysis);
+  const isDraggingNode = useUIStore(state => state.isDraggingNode);
 
   // Use custom graph if provided, otherwise use store graph
   const graph = customGraph || storeGraph;
@@ -94,12 +101,7 @@ export const Scene = ({
       setImpactAnalysis(null);
       return;
     }
-    analyzeImpact(selectedNode.id, graph)
-      .then(setImpactAnalysis)
-      .catch((error) => {
-        console.error('Impact analysis failed:', error);
-        setImpactAnalysis(null);
-      });
+    analyzeImpact(selectedNode.id, graph).then(setImpactAnalysis);
   }, [selectedNode, graph, setImpactAnalysis, disableImpactAnalysis, customGraph]);
 
   if (!graph) {
@@ -176,4 +178,4 @@ export const Scene = ({
       </group>
     </Canvas>
   );
-};
+});

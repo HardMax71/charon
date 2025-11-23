@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Scene } from './Scene';
 import { LayoutSelector } from '../Graph3D/LayoutSelector';
 import { NodeMetricsModal } from '../NodeMetricsModal/NodeMetricsModal';
@@ -45,8 +45,9 @@ export const Graph3D = ({
   focusNodeId,
   onNodeDragEnd,
 }: Graph3DProps) => {
-  const { graph: storeGraph, setGraph } = useGraphStore();
-  const { currentLayout: storeLayout } = useUIStore();
+  const storeGraph = useGraphStore(state => state.graph);
+  const setGraph = useGraphStore(state => state.setGraph);
+  const storeLayout = useUIStore(state => state.currentLayout);
 
   // Use prop layout if provided (for RefactoringPage), otherwise store layout
   const activeLayout = propLayout || storeLayout;
@@ -127,7 +128,8 @@ export const Graph3D = ({
   }, [activeLayout]); // Only re-run when layout type changes
 
   // 3. Handle node drag - update activeGraph directly
-  const handleNodeDrag = (nodeId: string, position: { x: number; y: number; z: number }) => {
+  // Memoized to prevent Scene re-renders when Graph3D re-renders
+  const handleNodeDrag = useCallback((nodeId: string, position: { x: number; y: number; z: number }) => {
     // Update activeGraph immediately
     setActiveGraph(prev => {
       if (!prev) return prev;
@@ -143,7 +145,7 @@ export const Graph3D = ({
     if (onNodeDragEnd) {
       onNodeDragEnd(nodeId, position);
     }
-  };
+  }, [onNodeDragEnd]);
 
   return (
     <div className="relative w-full h-full bg-slate-50">

@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { Calendar, GitCommit, ExternalLink } from 'lucide-react';
 import { buildGitHubCommitUrl } from '@/utils/githubUtils';
+import { TemporalSnapshotData } from '@/types/temporal';
 
 interface TimelineSliderProps {
-  snapshots: any[];
+  snapshots: TemporalSnapshotData[];
   currentIndex: number;
   onIndexChange: (index: number) => void;
   repositoryUrl: string;

@@ -19,11 +19,16 @@ export type RefactoringChangeType =
   | 'add_edge'
   | 'merge_nodes';
 
+export type RefactoringChangeData =
+  | { nodeId: string }
+  | { edgeId: string; source: string; target: string }
+  | { sourceNodeId: string; targetNodeId: string; newNodeId: string };
+
 export interface RefactoringChange {
   id: string;
   type: RefactoringChangeType;
   description: string;
-  data: any;
+  data: RefactoringChangeData;
   timestamp: string;
 }
 

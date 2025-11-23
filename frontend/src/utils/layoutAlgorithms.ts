@@ -1,4 +1,4 @@
-import { Node } from '@/types/graph';
+import { Node, Edge } from '@/types/graph';
 
 export const applyCircularLayout = (nodes: Node[]): Node[] => {
   const radius = 70;
@@ -17,7 +17,7 @@ export const applyCircularLayout = (nodes: Node[]): Node[] => {
   });
 };
 
-export const applyForceDirectedLayout = (nodes: Node[], edges: any[]): Node[] => {
+export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] => {
   const iterations = 50;
   const repulsion = 500;
   const attraction = 0.01;

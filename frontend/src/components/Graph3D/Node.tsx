@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useCallback, memo } from 'react';
 import { Mesh, Vector3, Vector2, Plane, Raycaster } from 'three';
 import { useThree } from '@react-three/fiber';
 import { Html, Outlines } from '@react-three/drei';
@@ -14,10 +14,18 @@ interface NodeProps {
   onNodeDragEnd?: (nodeId: string, position: { x: number; y: number; z: number }) => void;
 }
 
-export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted = false, onNodeDragEnd }: NodeProps) => {
+// Memoized to prevent unnecessary re-renders when parent re-renders
+// Critical for performance with 100+ node instances
+export const Node = memo(({ node, isAdded = false, isRemoved = false, isHighlighted = false, onNodeDragEnd }: NodeProps) => {
   const meshRef = useRef<Mesh>(null);
-  const { selectedNode, setSelectedNode, setHoveredNode, updateNodePosition, impactAnalysis } = useGraphStore();
-  const { selectedModule, isDraggingNode, setIsDraggingNode } = useUIStore();
+  const selectedNode = useGraphStore(state => state.selectedNode);
+  const setSelectedNode = useGraphStore(state => state.setSelectedNode);
+  const setHoveredNode = useGraphStore(state => state.setHoveredNode);
+  const updateNodePosition = useGraphStore(state => state.updateNodePosition);
+  const impactAnalysis = useGraphStore(state => state.impactAnalysis);
+  const selectedModule = useUIStore(state => state.selectedModule);
+  const isDraggingNode = useUIStore(state => state.isDraggingNode);
+  const setIsDraggingNode = useUIStore(state => state.setIsDraggingNode);
   const { camera, gl, controls } = useThree();
 
   // Interaction refs
@@ -26,6 +34,9 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
   const raycaster = useRef(new Raycaster());
 
   const isSelected = selectedNode?.id === node.id;
+
+  // Memoize sphere geometry to prevent recreation on every render (R3F best practice)
+  const sphereGeometry = useMemo(() => [3, 32, 32] as const, []);
 
   // --- VISUAL LOGIC ---
   const impactDistance = impactAnalysis?.affected_nodes?.[node.id];
@@ -79,15 +90,15 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
   }, [node, impactAnalysis, isAffected, selectedModule, isInSelectedModule, isAdded, isRemoved]);
 
   // Click handler for selecting node
-  const handleClick = (e: any) => {
+  // Memoized to maintain stable reference for React Three Fiber
+  const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedNode(node);
-  };
+  }, [node, setSelectedNode]);
 
   // --- DRAG HANDLERS ---
-  // (Kept drag logic identical for stability)
-  // --- DRAG HANDLERS ---
-  const handlePointerDown = (e: any) => {
+  // Memoized to maintain stable references and prevent unnecessary re-renders
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!isSelected) return;
     e.stopPropagation();
     setIsDraggingNode(true);
@@ -101,9 +112,9 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
     raycaster.current.ray.intersectPlane(dragPlane.current, intersectPoint);
     dragOffset.current.subVectors(node.position as any, intersectPoint);
     gl.domElement.style.cursor = 'grabbing';
-  };
+  }, [isSelected, setIsDraggingNode, node.position, gl, camera]);
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDraggingNode) return;
     e.stopPropagation();
     const intersectPoint = new Vector3();
@@ -124,9 +135,9 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
         updateNodePosition(node.id, { x: newPos.x, y: newPos.y, z: newPos.z });
       }
     }
-  };
+  }, [isDraggingNode, gl, camera, onNodeDragEnd, node.id, updateNodePosition]);
 
-  const handlePointerUp = (e: any) => {
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
     if (isDraggingNode && meshRef.current) {
       // Commit final position
       const { x, y, z } = meshRef.current.position;
@@ -145,20 +156,20 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
     }
     setIsDraggingNode(false);
     gl.domElement.style.cursor = 'pointer';
-  };
+  }, [isDraggingNode, onNodeDragEnd, node.id, updateNodePosition, controls, setIsDraggingNode, gl]);
 
   useEffect(() => {
     if (!isDraggingNode || !isSelected) return;
     const canvas = gl.domElement;
-    const move = (e: PointerEvent) => handlePointerMove(e);
-    const up = (e: PointerEvent) => handlePointerUp(e);
+    const move = (e: PointerEvent) => handlePointerMove(e as any);
+    const up = (e: PointerEvent) => handlePointerUp(e as any);
     canvas.addEventListener('pointermove', move);
     canvas.addEventListener('pointerup', up);
     return () => {
       canvas.removeEventListener('pointermove', move);
       canvas.removeEventListener('pointerup', up);
     };
-  }, [isDraggingNode, isSelected, node.id, updateNodePosition]); // Added dependencies
+  }, [isDraggingNode, isSelected, handlePointerMove, handlePointerUp, gl.domElement]);
 
 
   return (
@@ -171,7 +182,7 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
       onPointerOver={() => { setHoveredNode(node); gl.domElement.style.cursor = 'pointer'; }}
       onPointerOut={() => { setHoveredNode(null); if (!isDraggingNode) gl.domElement.style.cursor = 'default'; }}
     >
-      <sphereGeometry args={[3, 32, 32]} />
+      <sphereGeometry args={sphereGeometry} />
 
       <meshStandardMaterial
         color={displayColor}
@@ -186,7 +197,7 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
 
       {isSelected && (
         <mesh scale={1.2}>
-          <sphereGeometry args={[3, 32, 32]} />
+          <sphereGeometry args={sphereGeometry} />
           <meshBasicMaterial color={displayColor} transparent opacity={0.2} wireframe />
         </mesh>
       )}
@@ -194,7 +205,7 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
       {/* Hover Glow Effect */}
       {isHighlighted && (
         <mesh scale={1.4}>
-          <sphereGeometry args={[3, 32, 32]} />
+          <sphereGeometry args={sphereGeometry} />
           <meshBasicMaterial color="#10b981" transparent opacity={0.4} />
         </mesh>
       )}
@@ -246,4 +257,4 @@ export const Node = ({ node, isAdded = false, isRemoved = false, isHighlighted =
       )}
     </mesh>
   );
-};
+});

@@ -9,9 +9,11 @@ import {
   Layers,
   Clock
 } from 'lucide-react';
+import { TemporalAnalysisResponse } from '@/types/temporal';
+import { logger } from '@/utils/logger';
 
 interface TemporalInputProps {
-  onAnalysisComplete: (data: any) => void;
+  onAnalysisComplete: (data: TemporalAnalysisResponse) => void;
   isAnalyzing: boolean;
   setIsAnalyzing: (analyzing: boolean) => void;
 }
@@ -51,63 +53,56 @@ export const TemporalInput = ({
     setIsAnalyzing(true);
     abortControllerRef.current = new AbortController();
 
-    try {
-      const response = await fetch('/api/temporal-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-        body: JSON.stringify({
-          repository_url: repoUrl,
-          start_date: startDate || null,
-          end_date: endDate || null,
-          sample_strategy: sampleStrategy,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
+    const response = await fetch('/api/temporal-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+      body: JSON.stringify({
+        repository_url: repoUrl,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        sample_strategy: sampleStrategy,
+      }),
+      signal: abortControllerRef.current.signal,
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`System Error (${response.status}): ${errorText}`);
-      }
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`System Error (${response.status}): ${errorText}`);
+    }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      if (!reader) throw new Error('Stream connection failed');
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    if (!reader) throw new Error('Stream connection failed');
 
-      let buffer = '';
-      const processLine = (line: string) => {
-        if (!line || !line.startsWith('data:')) return;
-        const payload = line.replace(/^(?:data:\s*)+/, '');
-        if (!payload) return;
+    let buffer = '';
+    const processLine = (line: string) => {
+      if (!line || !line.startsWith('data:')) return;
+      const payload = line.replace(/^(?:data:\s*)+/, '');
+      if (!payload) return;
 
-        try {
-          const data = JSON.parse(payload);
-          if (data.type === 'result') {
-            onAnalysisComplete(data.data);
-            setIsAnalyzing(false);
-          } else if (data.type === 'error') {
-            setError(data.message);
-            setIsAnalyzing(false);
-          } else if (data.type === 'progress') {
-            setProgressMessage(data.message);
-            if (data.step && data.total) setProgress((data.step / data.total) * 100);
-          }
-        } catch (e) { console.error('Parse error:', e); }
-      };
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let idx;
-        while ((idx = buffer.indexOf('\n')) !== -1) {
-          processLine(buffer.slice(0, idx));
-          buffer = buffer.slice(idx + 1);
+      try {
+        const data = JSON.parse(payload);
+        if (data.type === 'result') {
+          onAnalysisComplete(data.data);
+          setIsAnalyzing(false);
+        } else if (data.type === 'error') {
+          setError(data.message);
+          setIsAnalyzing(false);
+        } else if (data.type === 'progress') {
+          setProgressMessage(data.message);
+          if (data.step && data.total) setProgress((data.step / data.total) * 100);
         }
-      }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Analysis sequence failed.');
-        setIsAnalyzing(false);
+      } catch (e) { logger.error('Parse error:', e); }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let idx;
+      while ((idx = buffer.indexOf('\n')) !== -1) {
+        processLine(buffer.slice(0, idx));
+        buffer = buffer.slice(idx + 1);
       }
     }
   };

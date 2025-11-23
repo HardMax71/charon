@@ -3,7 +3,9 @@ import { useUIStore } from '@/stores/uiStore';
 import { Network, Timer, Cpu } from 'lucide-react';
 
 export const ProgressIndicator = () => {
-  const { isLoading, loadingProgress, loadingMessage } = useUIStore();
+  const isLoading = useUIStore(state => state.isLoading);
+  const loadingProgress = useUIStore(state => state.loadingProgress);
+  const loadingMessage = useUIStore(state => state.loadingMessage);
   const [elapsed, setElapsed] = useState(0);
 
   // Precision Timer

@@ -1,4 +1,5 @@
 import { useGraphStore } from '@/stores/graphStore';
+import { IconComponent } from '@/types/common';
 import {
   Flame,
   Activity,
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 
 export const GlobalMetrics = () => {
-  const { globalMetrics } = useGraphStore();
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
 
   // Helper to safely format numbers
   const fmt = (val: number | undefined | null, decimals = 2) => {
@@ -181,7 +182,7 @@ export const GlobalMetrics = () => {
 
 interface MetricCardProps {
   title: string;
-  icon: any; // LucideIcon
+  icon: IconComponent;
   children: React.ReactNode;
   tooltip?: string;
   alert?: boolean;

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { Activity, Package, ExternalLink } from 'lucide-react';
 import { buildGitHubCommitUrl } from '@/utils/githubUtils';
+import { ChurnHeatmapData, TemporalSnapshotData } from '@/types/temporal';
 
 interface ChurnHeatmapProps {
-  data: any;
-  currentSnapshot?: any;
+  data: ChurnHeatmapData;
+  currentSnapshot?: TemporalSnapshotData;
   repositoryUrl: string;
 }
 

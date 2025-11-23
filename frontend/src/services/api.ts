@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { AnalyzeRequest, SSEEvent } from '@/types/api';
-import { AnalysisResult, ImpactAnalysis, HealthScore } from '@/types/metrics';
+import { AnalysisResult, ImpactAnalysis, HealthScore, GlobalMetrics } from '@/types/metrics';
 import { DependencyGraph } from '@/types/graph';
 import { FitnessRule, FitnessValidationResult, FitnessRuleConfig } from '@/types/fitness';
+import { logger } from '@/utils/logger';
+import { handleError } from '@/utils/errorHandler';
 
 const API_BASE = '/api';
 
@@ -12,7 +14,7 @@ export const analyzeCode = (
   onComplete: (result: AnalysisResult) => void,
   onError: (error: string) => void
 ) => {
-  console.log('Sending analyze request:', request);
+  logger.debug('Sending analyze request:', request);
 
   fetch(`${API_BASE}/analyze`, {
     method: 'POST',
@@ -22,11 +24,11 @@ export const analyzeCode = (
     },
     body: JSON.stringify(request),
   }).then(async (response) => {
-    console.log('Response status:', response.status);
+    logger.debug('Response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Response error:', errorText);
+      logger.error('Response error:', errorText);
       onError(`Server error (${response.status}): ${errorText}`);
       return;
     }
@@ -64,7 +66,7 @@ export const analyzeCode = (
           onProgress(data);
         }
       } catch (e) {
-        console.error('Failed to parse SSE event:', {
+        logger.error('Failed to parse SSE event:', {
           raw: line,
           parsed: payload,
           error: e instanceof Error ? e.message : String(e)
@@ -91,14 +93,14 @@ export const analyzeCode = (
 
     // Leave any partial line in buffer; it will be discarded when stream ends
   }).catch((error) => {
-    console.error('Fetch error:', error);
+    logger.error('Fetch error:', error);
     onError(error.message || 'Network error');
   });
 };
 
 export const exportAnalysis = async (
-  graph: any,
-  globalMetrics: any,
+  graph: DependencyGraph,
+  globalMetrics: GlobalMetrics,
   projectName: string,
   format: 'json' | 'toml'
 ) => {
@@ -145,7 +147,7 @@ export const analyzeImpact = async (
 
 export const calculateHealthScore = async (
   graph: DependencyGraph,
-  globalMetrics: any
+  globalMetrics: GlobalMetrics
 ): Promise<HealthScore> => {
   const response = await axios.post<HealthScore>(
     `${API_BASE}/health-score`,
@@ -165,7 +167,7 @@ export const calculateHealthScore = async (
 
 export const validateFitnessRules = async (
   graph: DependencyGraph,
-  globalMetrics: any,
+  globalMetrics: GlobalMetrics,
   rules: FitnessRule[],
   failOnError: boolean = true,
   failOnWarning: boolean = false

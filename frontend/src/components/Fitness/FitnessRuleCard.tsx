@@ -149,14 +149,15 @@ const ActionButton = ({
 }: ActionButtonProps) => (
   <button
     onClick={(e) => { e.stopPropagation(); onClick(); }}
+    aria-label={title}
+    title={title}
     className={`
       p-1.5 rounded-md transition-all duration-200
-      ${active 
-        ? activeColor 
+      ${active
+        ? activeColor
         : `text-slate-400 ${hoverColor}`
       }
     `}
-    title={title}
   >
     <Icon className="w-3.5 h-3.5" />
   </button>

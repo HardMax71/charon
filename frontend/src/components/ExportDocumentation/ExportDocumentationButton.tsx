@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { FileText, FileJson, FileCode, Loader2 } from 'lucide-react';
 import { useGraphStore } from '@/stores/graphStore';
+import { FormatOptionProps } from '@/types/common';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 
 export const ExportDocumentationButton = () => {
-  const { graph, globalMetrics } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
   const [isOpen, setIsOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async (format: 'md' | 'html' | 'pdf') => {
-    if (!graph) return;
-    setIsExporting(true);
-    try {
+  const { loading: isExporting, execute: exportDocumentation } = useAsyncOperation(
+    async (format: 'md' | 'html' | 'pdf') => {
+      if (!graph) return;
+
       const response = await fetch('/api/export-documentation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,13 +34,13 @@ export const ExportDocumentationButton = () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Export failed:', error);
-    } finally {
-      setIsExporting(false);
+    },
+    {
+      onComplete: () => setIsOpen(false)
     }
-  };
+  );
+
+  const handleExport = (format: 'md' | 'html' | 'pdf') => exportDocumentation(format);
 
   return (
     <div className="relative">
@@ -84,7 +86,7 @@ export const ExportDocumentationButton = () => {
   );
 };
 
-const FormatOption = ({ label, icon: Icon, onClick }: any) => (
+const FormatOption = ({ label, icon: Icon, onClick }: FormatOptionProps) => (
   <button
     onClick={onClick}
     className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 rounded transition-colors text-left group"

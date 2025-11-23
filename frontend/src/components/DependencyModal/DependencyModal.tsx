@@ -1,7 +1,9 @@
 import { useGraphStore } from '@/stores/graphStore';
 
 export const DependencyModal = () => {
-  const { selectedEdge, setSelectedEdge, graph } = useGraphStore();
+  const selectedEdge = useGraphStore(state => state.selectedEdge);
+  const setSelectedEdge = useGraphStore(state => state.setSelectedEdge);
+  const graph = useGraphStore(state => state.graph);
 
   if (!selectedEdge || !graph) return null;
 

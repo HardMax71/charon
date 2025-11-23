@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { processDroppedFiles } from '@/services/fileHandler';
 import { FileInput } from '@/types/api';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 
 interface DragDropZoneProps {
   onFilesProcessed: (files: FileInput[]) => void;
@@ -8,8 +9,21 @@ interface DragDropZoneProps {
 
 export const DragDropZone = ({ onFilesProcessed }: DragDropZoneProps) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { loading: isProcessing, execute: processFiles } = useAsyncOperation(
+    async (items: DataTransferItemList) => {
+      setError(null);
+      const files = await processDroppedFiles(items);
+
+      if (files.length === 0) {
+        setError('No Python files found');
+        return;
+      }
+
+      onFilesProcessed(files);
+    }
+  );
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -21,27 +35,10 @@ export const DragDropZone = ({ onFilesProcessed }: DragDropZoneProps) => {
     setIsDragging(false);
   };
 
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    setError(null);
-    setIsProcessing(true);
-
-    try {
-      const files = await processDroppedFiles(e.dataTransfer.items);
-
-      if (files.length === 0) {
-        setError('No Python files found');
-        setIsProcessing(false);
-        return;
-      }
-
-      onFilesProcessed(files);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsProcessing(false);
-    }
+    processFiles(e.dataTransfer.items);
   };
 
   return (

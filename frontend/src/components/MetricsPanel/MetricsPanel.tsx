@@ -20,8 +20,9 @@ const MAX_HEIGHT = 800;
 export const MetricsPanel = () => {
   const [activeTab, setActiveTab] = useState<TabType>('global');
   const [isResizing, setIsResizing] = useState(false);
-  const { globalMetrics } = useGraphStore();
-  const { metricsPanelHeight, setMetricsPanelHeight } = useUIStore();
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
+  const metricsPanelHeight = useUIStore(state => state.metricsPanelHeight);
+  const setMetricsPanelHeight = useUIStore(state => state.setMetricsPanelHeight);
   const startYRef = useRef<number>(0);
   const startHeightRef = useRef<number>(0);
 

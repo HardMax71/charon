@@ -1,13 +1,15 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, memo } from 'react';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import * as THREE from 'three';
 
 const CLUSTER_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-export const ClusterBoundingBoxes = () => {
-  const { graph, globalMetrics } = useGraphStore();
-  const { showClusters } = useUIStore();
+// Memoized to prevent unnecessary re-renders
+export const ClusterBoundingBoxes = memo(() => {
+  const graph = useGraphStore(state => state.graph);
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
+  const showClusters = useUIStore(state => state.showClusters);
 
   // Force recalculation by tracking a version counter
   const [updateTrigger, setUpdateTrigger] = useState(0);
@@ -67,4 +69,4 @@ export const ClusterBoundingBoxes = () => {
       ))}
     </group>
   );
-};
+});

@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 
 export const ImpactAnalysisModal = () => {
-  const { impactAnalysis } = useGraphStore();
-  const { showImpactModal, setShowImpactModal } = useUIStore();
+  const impactAnalysis = useGraphStore(state => state.impactAnalysis);
+  const showImpactModal = useUIStore(state => state.showImpactModal);
+  const setShowImpactModal = useUIStore(state => state.setShowImpactModal);
 
   if (!showImpactModal || !impactAnalysis) return null;
 
@@ -52,6 +53,8 @@ export const ImpactAnalysisModal = () => {
           </div>
           <button
             onClick={handleClose}
+            aria-label="Close impact analysis"
+            title="Close"
             className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 p-1.5 rounded transition-colors"
           >
             <X className="w-5 h-5" />

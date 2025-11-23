@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { QuadraticBezierLine } from '@react-three/drei';
 import { Vector3, Euler, Quaternion } from 'three';
 import { Edge as EdgeType, Node } from '@/types/graph';
@@ -12,9 +12,12 @@ interface EdgeProps {
   addedEdgeIds?: string[];
 }
 
-export const Edge = ({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: EdgeProps) => {
-  const { setSelectedEdge } = useGraphStore();
-  const { setShowDependencyModal, selectedModule } = useUIStore();
+// Memoized to prevent unnecessary re-renders when parent re-renders
+// Critical for performance with 200+ edge instances
+export const Edge = memo(({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: EdgeProps) => {
+  const setSelectedEdge = useGraphStore(state => state.setSelectedEdge);
+  const setShowDependencyModal = useUIStore(state => state.setShowDependencyModal);
+  const selectedModule = useUIStore(state => state.selectedModule);
 
   // 1. Calculate data (returns null if invalid)
   const edgeData = useMemo(() => {
@@ -122,4 +125,4 @@ export const Edge = ({ edge, nodes, removedEdgeIds = [], addedEdgeIds = [] }: Ed
       )}
     </group>
   );
-};
+});

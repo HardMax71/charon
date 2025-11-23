@@ -1,8 +1,9 @@
 import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { buildGitHubCommitUrl } from '@/utils/githubUtils';
+import { CircularDependencyTimelineEvent } from '@/types/temporal';
 
 interface CircularDepsTimelineProps {
-  timeline: any[];
+  timeline: CircularDependencyTimelineEvent[];
   currentCommitSha?: string;
   repositoryUrl: string;
 }

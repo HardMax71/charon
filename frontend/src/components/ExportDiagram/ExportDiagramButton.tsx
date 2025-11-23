@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { Network, Boxes, GitGraph, Workflow, Package, PenTool } from 'lucide-react';
 import { useGraphStore } from '@/stores/graphStore';
+import { FormatOptionProps } from '@/types/common';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 
 type DiagramFormat = 'plantuml' | 'c4' | 'mermaid' | 'uml' | 'drawio';
 
 export const ExportDiagramButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const { graph } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
 
-  const handleExport = async (format: DiagramFormat) => {
-    if (!graph) return;
-    setIsExporting(true);
-    try {
+  const { loading: isExporting, execute: exportDiagram } = useAsyncOperation(
+    async (format: DiagramFormat) => {
+      if (!graph) return;
+
       const response = await fetch('/api/export-diagram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,13 +30,13 @@ export const ExportDiagramButton = () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Export failed:', error);
-    } finally {
-      setIsExporting(false);
+    },
+    {
+      onComplete: () => setIsOpen(false)
     }
-  };
+  );
+
+  const handleExport = (format: DiagramFormat) => exportDiagram(format);
 
   return (
     <div className="relative">
@@ -96,7 +97,7 @@ export const ExportDiagramButton = () => {
   );
 };
 
-const FormatOption = ({ label, icon: Icon, onClick, loading }: any) => (
+const FormatOption = ({ label, icon: Icon, onClick, loading }: FormatOptionProps) => (
   <button
     onClick={onClick}
     disabled={loading}

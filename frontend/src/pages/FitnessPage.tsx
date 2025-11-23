@@ -6,6 +6,7 @@ import { validateFitnessRules, getExampleFitnessConfig } from '@/services/api';
 import { FitnessRuleCard } from '@/components/Fitness/FitnessRuleCard';
 import { FitnessValidationResults } from '@/components/Fitness/FitnessValidationResults';
 import { FitnessRuleModal } from '@/components/Fitness/FitnessRuleModal';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 import {
   Play,
   Plus,
@@ -23,57 +24,43 @@ import {
 } from 'lucide-react';
 
 export const FitnessPage = () => {
-  const { graph, globalMetrics, analysisSource } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
+  const analysisSource = useGraphStore(state => state.analysisSource);
   const navigate = useNavigate();
 
   const [rules, setRules] = useState<FitnessRule[]>([]);
   const [validationResult, setValidationResult] = useState<FitnessValidationResult | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-  const [isLoadingExample, setIsLoadingExample] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<FitnessRule | null>(null);
 
-  // Load example rules on mount
+  const { loading: isLoadingExample, execute: loadExampleRules } = useAsyncOperation(
+    async () => {
+      setError(null);
+      return getExampleFitnessConfig();
+    },
+    {
+      onSuccess: (config) => setRules(config.rules)
+    }
+  );
+
+  const { loading: isValidating, execute: handleValidate } = useAsyncOperation(
+    async () => {
+      if (!graph || !globalMetrics) return;
+      setError(null);
+      return validateFitnessRules(graph, globalMetrics, rules, true, false);
+    },
+    {
+      onSuccess: (result) => {
+        if (result) setValidationResult(result);
+      }
+    }
+  );
+
   useEffect(() => {
     loadExampleRules();
   }, []);
-
-  const loadExampleRules = async () => {
-    setIsLoadingExample(true);
-    setError(null);
-    try {
-      const config = await getExampleFitnessConfig();
-      setRules(config.rules);
-    } catch (err) {
-      setError('Failed to load example rules');
-      console.error('Error loading example rules:', err);
-    } finally {
-      setIsLoadingExample(false);
-    }
-  };
-
-  const handleValidate = async () => {
-    if (!graph || !globalMetrics) return;
-
-    setIsValidating(true);
-    setError(null);
-    try {
-      const result = await validateFitnessRules(
-        graph,
-        globalMetrics,
-        rules,
-        true,
-        false
-      );
-      setValidationResult(result);
-    } catch (err) {
-      setError('Validation failed: ' + (err as Error).message);
-      console.error('Validation error:', err);
-    } finally {
-      setIsValidating(false);
-    }
-  };
 
   const handleToggleRule = (id: string) => {
     setRules((prev) =>
@@ -111,7 +98,7 @@ export const FitnessPage = () => {
   };
 
   const handleViolationClick = (violation: FitnessViolation) => {
-    console.log('Violation clicked:', violation);
+    logger.debug('Violation clicked:', violation);
     // TODO: Implement highlighting affected nodes
   };
 
@@ -133,15 +120,11 @@ export const FitnessPage = () => {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      try {
-        const text = await file.text();
-        const config = JSON.parse(text);
-        setRules(config.rules || []);
-        setValidationResult(null);
-      } catch (err) {
-        setError('Failed to load config file');
-        console.error('Error loading config:', err);
-      }
+
+      const text = await file.text();
+      const config = JSON.parse(text);
+      setRules(config.rules || []);
+      setValidationResult(null);
     };
     input.click();
   };

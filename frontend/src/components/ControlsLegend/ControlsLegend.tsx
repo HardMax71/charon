@@ -4,8 +4,9 @@ import { useGraphStore } from '@/stores/graphStore';
 import { Minimize2, Command, MousePointer2 } from 'lucide-react';
 
 export const ControlsLegend = () => {
-  const { controlsLegendExpanded, setControlsLegendExpanded } = useUIStore();
-  const { selectedNode } = useGraphStore();
+  const controlsLegendExpanded = useUIStore(state => state.controlsLegendExpanded);
+  const setControlsLegendExpanded = useUIStore(state => state.setControlsLegendExpanded);
+  const selectedNode = useGraphStore(state => state.selectedNode);
 
   // Auto-retract when a node is selected to clear view
   useEffect(() => {
@@ -19,8 +20,9 @@ export const ControlsLegend = () => {
     return (
       <button
         onClick={() => setControlsLegendExpanded(true)}
-        className="group bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-3 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-slate-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
+        aria-label="Show controls"
         title="Show controls"
+        className="group bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-3 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-slate-200 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
       >
         <Command className="w-5 h-5" />
       </button>
@@ -39,8 +41,9 @@ export const ControlsLegend = () => {
         </div>
         <button
           onClick={() => setControlsLegendExpanded(false)}
-          className="text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded p-1 transition-colors"
+          aria-label="Minimize controls"
           title="Minimize"
+          className="text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded p-1 transition-colors"
         >
           <Minimize2 className="w-3.5 h-3.5" />
         </button>

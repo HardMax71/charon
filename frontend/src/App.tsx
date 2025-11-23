@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Header } from './components/Layout/Header.tsx';
-import { Footer } from './components/Layout/Footer.tsx';
+import { Header } from './components/Layout/Header';
+import { Footer } from './components/Layout/Footer';
 import { HomePage } from './pages/HomePage';
 import { ResultsPage } from './pages/ResultsPage';
 import { TemporalAnalysisPage } from './pages/TemporalAnalysisPage';
@@ -10,32 +11,38 @@ import { ProgressIndicator } from './components/ProgressIndicator/ProgressIndica
 import { DependencyModal } from './components/DependencyModal/DependencyModal';
 import { ClusterModal } from './components/ClusterModal/ClusterModal';
 import { ImpactAnalysisModal } from './components/ImpactAnalysisModal/ImpactAnalysisModal';
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
+import { ToastContainer } from './components/Toast/ToastContainer';
+import { setupGlobalErrorHandler } from './utils/globalErrorHandler';
 
 function App() {
+  useEffect(() => {
+    setupGlobalErrorHandler();
+  }, []);
   return (
-    <BrowserRouter>
-      <div className="w-full h-full flex flex-col bg-background">
-        {/* Header */}
-        <Header />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <div className="w-full h-full flex flex-col bg-background">
+          <Header />
 
-        {/* Main Content */}
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/results" element={<ResultsPage />} />
-          <Route path="/fitness" element={<FitnessPage />} />
-          <Route path="/refactoring" element={<RefactoringPage />} />
-          <Route path="/temporal" element={<TemporalAnalysisPage />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/results" element={<ResultsPage />} />
+            <Route path="/fitness" element={<FitnessPage />} />
+            <Route path="/refactoring" element={<RefactoringPage />} />
+            <Route path="/temporal" element={<TemporalAnalysisPage />} />
+          </Routes>
 
-        {/* Modals & Overlays */}
-        <ProgressIndicator />
-        <DependencyModal />
-        <ClusterModal />
-        <ImpactAnalysisModal />
+          <ProgressIndicator />
+          <DependencyModal />
+          <ClusterModal />
+          <ImpactAnalysisModal />
+          <ToastContainer />
 
           <Footer />
-      </div>
-    </BrowserRouter>
+        </div>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

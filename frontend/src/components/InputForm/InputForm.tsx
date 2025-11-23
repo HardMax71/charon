@@ -5,13 +5,19 @@ import { DragDropZone } from './DragDropZone';
 import { analyzeCode } from '@/services/api';
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useToast } from '@/stores/toastStore';
 import { FileInput } from '@/types/api';
 import { Github, FolderOpen, Upload } from 'lucide-react';
 
 export const InputForm = () => {
   const [activeTab, setActiveTab] = useState<'github' | 'local' | 'import'>('github');
-  const { setGraph, setGlobalMetrics, setWarnings, setAnalysisSource } = useGraphStore();
-  const { setLoading, setLoadingProgress } = useUIStore();
+  const setGraph = useGraphStore(state => state.setGraph);
+  const setGlobalMetrics = useGraphStore(state => state.setGlobalMetrics);
+  const setWarnings = useGraphStore(state => state.setWarnings);
+  const setAnalysisSource = useGraphStore(state => state.setAnalysisSource);
+  const setLoading = useUIStore(state => state.setLoading);
+  const setLoadingProgress = useUIStore(state => state.setLoadingProgress);
+  const toast = useToast();
   const navigate = useNavigate();
 
   const handleGitHubSubmit = (url: string) => {
@@ -33,7 +39,7 @@ export const InputForm = () => {
         navigate('/results');
       },
       (error) => {
-        alert(`Error: ${error}`);
+        toast.error(`Failed to analyze repository: ${error}`);
         setLoading(false);
       }
     );
@@ -58,7 +64,7 @@ export const InputForm = () => {
         navigate('/results');
       },
       (error) => {
-        alert(`Error: ${error}`);
+        toast.error(`Failed to analyze files: ${error}`);
         setLoading(false);
       }
     );
@@ -68,18 +74,14 @@ export const InputForm = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
+    const text = await file.text();
+    const data = JSON.parse(text);
 
-      setGraph(data.graph);
-      setGlobalMetrics(data.global_metrics);
-      setWarnings([]);
-      setAnalysisSource({ type: 'import', fileName: file.name, timestamp: new Date().toISOString() });
-      navigate('/results');
-    } catch (err) {
-      alert('Failed to load file');
-    }
+    setGraph(data.graph);
+    setGlobalMetrics(data.global_metrics);
+    setWarnings([]);
+    setAnalysisSource({ type: 'import', fileName: file.name, timestamp: new Date().toISOString() });
+    navigate('/results');
   };
 
   return (

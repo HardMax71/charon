@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useGraphStore } from '@/stores/graphStore';
 import { calculateHealthScore } from '@/services/api';
 import { HealthScore as HealthScoreType } from '@/types/metrics';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 import {
   Heart,
   TrendingUp,
@@ -18,28 +19,26 @@ import {
 } from 'lucide-react';
 
 export const HealthScore = () => {
-  const { graph, globalMetrics } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
   const [healthScore, setHealthScore] = useState<HealthScoreType | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHealthScore = async () => {
-    if (!graph || !globalMetrics) {
-      setError('No analysis data available');
-      return;
+  const { loading, execute: fetchHealthScore } = useAsyncOperation(
+    async () => {
+      if (!graph || !globalMetrics) {
+        setError('No analysis data available');
+        return;
+      }
+      setError(null);
+      return calculateHealthScore(graph, globalMetrics);
+    },
+    {
+      onSuccess: (score) => {
+        if (score) setHealthScore(score);
+      }
     }
-    setLoading(true);
-    setError(null);
-    try {
-      const score = await calculateHealthScore(graph, globalMetrics);
-      setHealthScore(score);
-    } catch (err) {
-      setError('Failed to calculate health score');
-      console.error('Health score error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  );
 
   useEffect(() => {
     if (graph && globalMetrics) {

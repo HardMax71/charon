@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { GitBranch, TrendingUp } from 'lucide-react';
 import { TemporalInput } from '@/components/TemporalAnalysis/TemporalInput';
 import { TemporalVisualization } from '@/components/TemporalAnalysis/TemporalVisualization';
+import { TemporalAnalysisResponse } from '@/types/temporal';
 
 export const TemporalAnalysisPage = () => {
-  const [analysisData, setAnalysisData] = useState<any>(null);
+  const [analysisData, setAnalysisData] = useState<TemporalAnalysisResponse | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleStartAnalysis = (data: any) => {
+  const handleStartAnalysis = (data: TemporalAnalysisResponse) => {
     setAnalysisData(data);
   };
 

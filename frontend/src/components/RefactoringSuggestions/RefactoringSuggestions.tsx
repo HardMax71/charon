@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export const RefactoringSuggestions = () => {
-  const { globalMetrics } = useGraphStore();
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
   const [expandedSuggestion, setExpandedSuggestion] = useState<number | null>(null);
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
 

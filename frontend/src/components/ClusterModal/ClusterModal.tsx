@@ -3,8 +3,10 @@ import { useUIStore } from '@/stores/uiStore';
 import { X, Activity, Link, Link2, Boxes } from 'lucide-react';
 
 export const ClusterModal = () => {
-  const { globalMetrics, graph } = useGraphStore();
-  const { showClusterModal, setShowClusterModal } = useUIStore();
+  const globalMetrics = useGraphStore(state => state.globalMetrics);
+  const graph = useGraphStore(state => state.graph);
+  const showClusterModal = useUIStore(state => state.showClusterModal);
+  const setShowClusterModal = useUIStore(state => state.setShowClusterModal);
 
   if (!showClusterModal || !globalMetrics?.clusters || !graph) return null;
 
@@ -29,6 +31,8 @@ export const ClusterModal = () => {
           </div>
           <button
             onClick={handleClose}
+            aria-label="Close clusters"
+            title="Close"
             className="modal-close-button"
           >
             <X className="w-6 h-6" />

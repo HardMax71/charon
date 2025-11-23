@@ -28,7 +28,7 @@ export interface RefactoringSuggestion {
   severity: 'critical' | 'warning' | 'info';
   pattern: string;
   description: string;
-  metrics: Record<string, any>;
+  metrics: Record<string, number | string | boolean>;
   recommendation: string;
   details: string;
   suggested_refactoring: string;
@@ -102,7 +102,7 @@ export interface ImpactAnalysis {
 export interface HealthScoreComponent {
   score: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
-  details: Record<string, any>;
+  details: Record<string, number | string | boolean | string[] | number[]>;
 }
 
 export interface HealthScoreComponents {
@@ -130,10 +130,12 @@ export interface HealthScore {
   recommendations: string[];
 }
 
+import { Node, Edge } from './graph';
+
 export interface AnalysisResult {
   graph: {
-    nodes: any[];
-    edges: any[];
+    nodes: Node[];
+    edges: Edge[];
   };
   global_metrics: GlobalMetrics;
   warnings: string[];

@@ -1,28 +1,28 @@
 import { useState } from 'react';
 import { FileText, Download, Loader } from 'lucide-react';
 import { useGraphStore } from '@/stores/graphStore';
+import { GlobalMetrics } from '@/types/metrics';
+import { useAsyncOperation } from '@/hooks/useAsyncOperation';
 
 interface ExportDocumentationProps {
-  globalMetrics: any;
+  globalMetrics: GlobalMetrics;
   projectName?: string;
 }
 
 export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: ExportDocumentationProps) => {
-  const { graph } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
   const [format, setFormat] = useState<'md' | 'html' | 'pdf'>('md');
-  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleExport = async () => {
-    if (!graph) {
-      setError('No graph data available');
-      return;
-    }
+  const { loading: isExporting, execute: handleExport } = useAsyncOperation(
+    async () => {
+      if (!graph) {
+        setError('No graph data available');
+        return;
+      }
 
-    setIsExporting(true);
-    setError(null);
+      setError(null);
 
-    try {
       const response = await fetch('/api/export-documentation', {
         method: 'POST',
         headers: {
@@ -44,7 +44,6 @@ export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: 
         throw new Error(errorData.detail || 'Export failed');
       }
 
-      // Get filename from Content-Disposition header
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = `${projectName.replace(/\s+/g, '_')}_documentation.${format}`;
 
@@ -55,7 +54,6 @@ export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: 
         }
       }
 
-      // Download the file
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -65,13 +63,8 @@ export const ExportDocumentation = ({ globalMetrics, projectName = 'Project' }: 
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-
-    } catch (err: any) {
-      setError(err.message || 'Failed to export documentation');
-    } finally {
-      setIsExporting(false);
     }
-  };
+  );
 
   return (
     <div className="bg-surface rounded-lg p-4 border border-border-light">

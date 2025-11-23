@@ -1,5 +1,6 @@
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
+import { SectionHeaderProps, MetricBoxProps, AlertBoxProps } from '@/types/common';
 import {
   X,
   Network,
@@ -19,8 +20,10 @@ interface NodeMetricsModalProps {
 }
 
 export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) => {
-  const { selectedNode, setSelectedNode, impactAnalysis } = useGraphStore();
-  const { setShowImpactModal } = useUIStore();
+  const selectedNode = useGraphStore(state => state.selectedNode);
+  const setSelectedNode = useGraphStore(state => state.setSelectedNode);
+  const impactAnalysis = useGraphStore(state => state.impactAnalysis);
+  const setShowImpactModal = useUIStore(state => state.setShowImpactModal);
 
   if (!selectedNode) return null;
 
@@ -53,6 +56,8 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
           </div>
           <button
             onClick={() => setSelectedNode(null)}
+            aria-label="Close node metrics"
+            title="Close"
             className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded p-1 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -171,14 +176,14 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 
 /* --- SUB-COMPONENTS --- */
 
-const SectionHeader = ({ icon: Icon, label }: any) => (
+const SectionHeader = ({ icon: Icon, label }: SectionHeaderProps) => (
   <div className="flex items-center gap-2 mb-2.5 pb-1 border-b border-slate-100">
     <Icon className="w-3.5 h-3.5 text-slate-400" />
     <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</h5>
   </div>
 );
 
-const MetricBox = ({ label, value, desc }: any) => (
+const MetricBox = ({ label, value, desc }: MetricBoxProps) => (
   <div className="bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
     <div className="text-[9px] text-slate-400 font-bold uppercase mb-1">{label}</div>
     <div className="text-lg font-black text-slate-800 font-mono leading-none">{value}</div>
@@ -186,7 +191,13 @@ const MetricBox = ({ label, value, desc }: any) => (
   </div>
 );
 
-const RowMetric = ({ label, value, grade }: any) => {
+interface RowMetricProps {
+  label: string;
+  value: string | number;
+  grade?: string;
+}
+
+const RowMetric = ({ label, value, grade }: RowMetricProps) => {
   const getGradeColor = (g: string) => {
     const colors: Record<string, string> = {
       'A': 'bg-teal-100 text-teal-800',
@@ -213,7 +224,7 @@ const RowMetric = ({ label, value, grade }: any) => {
   );
 };
 
-const AlertBox = ({ type, title, desc }: any) => {
+const AlertBox = ({ type, title, desc }: AlertBoxProps) => {
   const styles = type === 'critical'
     ? 'bg-rose-50 border-rose-200 text-rose-900'
     : 'bg-amber-50 border-amber-200 text-amber-900';

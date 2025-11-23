@@ -5,7 +5,7 @@ import { MetricsPanel } from '@/components/MetricsPanel/MetricsPanel';
 import { useGraphStore } from '@/stores/graphStore';
 
 export const ResultsPage = () => {
-  const { graph } = useGraphStore();
+  const graph = useGraphStore(state => state.graph);
   const navigate = useNavigate();
 
   // Redirect to home if no graph data

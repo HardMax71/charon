@@ -24,18 +24,16 @@ interface LayoutSelectorProps {
 }
 
 export const LayoutSelector = ({ customGraph, customMetrics, className }: LayoutSelectorProps) => {
-  const {
-    currentLayout,
-    setCurrentLayout,
-    selectedModule,
-    setSelectedModule,
-    showClusters,
-    setShowClusters,
-    layoutSelectorExpanded,
-    setLayoutSelectorExpanded,
-  } = useUIStore();
-
-  const { graph: globalGraph, globalMetrics: globalMetricsStore } = useGraphStore();
+  const currentLayout = useUIStore(state => state.currentLayout);
+  const setCurrentLayout = useUIStore(state => state.setCurrentLayout);
+  const selectedModule = useUIStore(state => state.selectedModule);
+  const setSelectedModule = useUIStore(state => state.setSelectedModule);
+  const showClusters = useUIStore(state => state.showClusters);
+  const setShowClusters = useUIStore(state => state.setShowClusters);
+  const layoutSelectorExpanded = useUIStore(state => state.layoutSelectorExpanded);
+  const setLayoutSelectorExpanded = useUIStore(state => state.setLayoutSelectorExpanded);
+  const globalGraph = useGraphStore(state => state.graph);
+  const globalMetricsStore = useGraphStore(state => state.globalMetrics);
 
   // Resolve which data to display (Props > Store)
   const activeGraph = customGraph !== undefined ? customGraph : globalGraph;
@@ -65,8 +63,9 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
     return (
       <button
         onClick={() => setLayoutSelectorExpanded(true)}
-        className={`${positionClass} bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-2.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group`}
+        aria-label="Configure view"
         title="Configure View"
+        className={`${positionClass} bg-white hover:bg-slate-50 text-slate-600 hover:text-teal-600 p-2.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group`}
       >
         <Settings className="w-5 h-5 transition-transform group-hover:rotate-90" />
       </button>
@@ -85,6 +84,8 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
         </div>
         <button
           onClick={() => setLayoutSelectorExpanded(false)}
+          aria-label="Collapse view config"
+          title="Collapse"
           className="text-slate-400 hover:text-slate-700 rounded hover:bg-slate-200/50 p-0.5 transition-colors"
         >
           <Minimize2 className="w-3.5 h-3.5" />

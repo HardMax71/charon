@@ -71,7 +71,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
     onClose();
   };
 
-  const updateParameter = (key: string, value: any) => {
+  const updateParameter = (key: string, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, parameters: { ...prev.parameters, [key]: value } }));
   };
 
@@ -170,7 +170,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
               <p className="text-xs text-slate-500 mt-1">Define architectural constraints</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded p-1.5 transition-colors">
+          <button onClick={onClose} aria-label="Close rule editor" title="Close" className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded p-1.5 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
