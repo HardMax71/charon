@@ -264,7 +264,7 @@ jobs:
       - name: Install Charon
         run: |
           cd backend
-          pip install -r requirements.txt
+          uv sync --frozen
 
       - name: Analyze codebase
         run: |
@@ -290,11 +290,11 @@ jobs:
 ```yaml
 fitness-check:
   stage: test
-  image: python:3.11
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
   script:
     - cd backend
-    - pip install -r requirements.txt
-    - python -m app.cli.fitness_check
+    - uv sync --frozen
+    - uv run python -m app.cli.fitness_check
         --rules ../.charon/fitness_rules.yaml
         --graph ../analysis_result.json
         --fail-on-error
@@ -316,8 +316,8 @@ pipeline {
             steps {
                 sh '''
                     cd backend
-                    pip install -r requirements.txt
-                    python -m app.cli.fitness_check \
+                    uv sync --frozen
+                    uv run python -m app.cli.fitness_check \
                         --rules ../.charon/fitness_rules.yaml \
                         --graph ../analysis_result.json \
                         --fail-on-error \

@@ -18,12 +18,10 @@ Then open http://localhost:5173 and paste in a GitHub repo URL. Within seconds y
 If you don't want Docker, you can run the backend and frontend separately:
 
 ```bash
-# Backend (FastAPI)
+# Backend (FastAPI with uv)
 cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+uv sync
+uv run uvicorn app.main:app --reload
 
 # Frontend (React)
 cd frontend
@@ -31,7 +29,7 @@ npm install
 npm run dev
 ```
 
-Backend runs on port 8000, frontend on 5173. Both need to be running at the same time.
+Backend runs on port 8000, frontend on 5173. Both need to be running at the same time. The backend uses [uv](https://docs.astral.sh/uv/) for faster dependency management instead of pip.
 
 ## What It Does
 
