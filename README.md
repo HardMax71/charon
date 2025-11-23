@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/icon.png" width="120" alt="Charon">
+  <img src="frontend/public/icon.png" width="100" alt="Charon">
   <h1>Charon</h1>
 
   [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
