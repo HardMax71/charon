@@ -9,7 +9,6 @@ No external dependencies required.
 import ast
 import json
 import time
-from pathlib import Path
 
 
 def parse_python_files():
@@ -222,7 +221,7 @@ def generate_export_data():
     # Serialize to JSON (CPU and memory intensive)
     json_str = json.dumps(data, indent=2)
     # Parse back
-    parsed = json.loads(json_str)
+    json.loads(json_str)
 
 
 def simulate_file_io():
@@ -232,7 +231,7 @@ def simulate_file_io():
 
     # Simulate writing
     for i in range(10):
-        lines = [f"line_{j}: {temp_data[:100]}\n" for j in range(100)]
+        [f"line_{j}: {temp_data[:100]}\n" for j in range(100)]
 
 
 def main():
