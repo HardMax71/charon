@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 
 from app.core.models import DependencyGraph
 from app.core.parsing_models import (
@@ -132,7 +133,9 @@ class PerformanceAnalyzer:
                 is_hot_zone = False
 
             # Determine bottleneck type
-            bottleneck_type = self._classify_bottleneck_type(perf)
+            bottleneck_type: Literal["cpu", "memory", "io", "combined"] = (
+                self._classify_bottleneck_type(perf)
+            )
 
             # Create bottleneck object (priority_score calculated later)
             bottleneck = PerformanceBottleneck(
@@ -183,7 +186,9 @@ class PerformanceAnalyzer:
 
         return None
 
-    def _classify_bottleneck_type(self, perf: ModulePerformance) -> str:
+    def _classify_bottleneck_type(
+        self, perf: ModulePerformance
+    ) -> Literal["cpu", "memory", "io", "combined"]:
         """Classify bottleneck type based on metrics.
 
         Args:
@@ -293,7 +298,9 @@ class PerformanceAnalyzer:
 
         return bottlenecks
 
-    def _estimate_impact(self, bottleneck: PerformanceBottleneck) -> str:
+    def _estimate_impact(
+        self, bottleneck: PerformanceBottleneck
+    ) -> Literal["critical", "high", "medium", "low"]:
         """Estimate optimization impact.
 
         Args:
@@ -312,7 +319,9 @@ class PerformanceAnalyzer:
         else:
             return "low"
 
-    def _estimate_difficulty(self, bottleneck: PerformanceBottleneck) -> str:
+    def _estimate_difficulty(
+        self, bottleneck: PerformanceBottleneck
+    ) -> Literal["easy", "medium", "hard", "very_hard"]:
         """Estimate optimization difficulty.
 
         Args:

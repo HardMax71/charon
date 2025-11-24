@@ -17,7 +17,7 @@ class TemporalAnalysisService:
 
     def __init__(self):
         self.github_service = GitHubService()
-        self.snapshots_cache: dict[str, list[dict]] = {}
+        self.snapshots_cache: dict[str, dict] = {}
 
     async def analyze_repository_history_streaming(
         self,

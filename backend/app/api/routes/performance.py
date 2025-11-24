@@ -75,7 +75,9 @@ async def analyze_performance(
 
     # Save uploaded file to temporary location
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as tmp:
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=Path(file.filename).suffix
+        ) as tmp:
             content = await file.read()
             tmp.write(content)
             tmp_path = tmp.name
@@ -121,9 +123,7 @@ async def analyze_performance(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Analysis failed: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}") from e
     finally:
         # Clean up temporary file
         try:

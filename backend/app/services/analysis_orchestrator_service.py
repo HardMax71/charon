@@ -207,14 +207,15 @@ class AnalysisOrchestratorService:
 
         source_result = await AnalysisOrchestratorService.fetch_source_files(request)
         if not source_result.success:
-            logger.error(
-                "Failed to fetch source files: %s", source_result.error_message
+            error_msg = (
+                source_result.error_message or "Unknown error fetching source files"
             )
-            yield await tracker.emit_error(source_result.error_message)
+            logger.error("Failed to fetch source files: %s", error_msg)
+            yield await tracker.emit_error(error_msg)
             return
 
-        files = source_result.files
-        project_name = source_result.project_name
+        files = source_result.files or []
+        project_name = source_result.project_name or "project"
         logger.info(
             "Starting analysis for project '%s' with %d files", project_name, len(files)
         )

@@ -28,12 +28,12 @@ app = FastAPI(
     description="3D dependency visualizer for Python projects",
 )
 
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
-app.add_exception_handler(StarletteHTTPException, http_exception_handler)
-app.add_exception_handler(Exception, unhandled_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(Exception, unhandled_exception_handler)  # type: ignore[arg-type]
 
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # type: ignore[arg-type]
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST"],
@@ -54,9 +54,7 @@ app.include_router(
     documentation.router, prefix=settings.api_prefix, tags=["documentation"]
 )
 app.include_router(fitness.router, prefix=settings.api_prefix, tags=["fitness"])
-app.include_router(
-    performance.router, prefix=settings.api_prefix, tags=["performance"]
-)
+app.include_router(performance.router, prefix=settings.api_prefix, tags=["performance"])
 
 
 @app.get("/")

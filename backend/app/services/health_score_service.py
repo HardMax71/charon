@@ -1,4 +1,5 @@
 import math
+from typing import Literal
 import networkx as nx
 
 from app.core.models import (
@@ -312,7 +313,7 @@ class HealthScoreService:
             },
         )
 
-    def _get_grade(self, score: float) -> str:
+    def _get_grade(self, score: float) -> Literal["A", "B", "C", "D", "F"]:
         """Convert score to letter grade."""
         if score >= 90:
             return "A"

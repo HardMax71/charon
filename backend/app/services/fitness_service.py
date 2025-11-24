@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 import networkx as nx
 
 from app.core.models import (
@@ -77,7 +77,7 @@ class FitnessService:
             errors=errors,
             warnings=warnings,
             infos=infos,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             summary=summary,
         )
 

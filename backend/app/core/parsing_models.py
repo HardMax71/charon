@@ -135,7 +135,9 @@ class FunctionProfile(BaseModel):
     """
 
     function_name: str = Field(description="Function name (e.g., 'calculate_metrics')")
-    module: str = Field(description="Module path (e.g., 'app.services.metrics_service')")
+    module: str = Field(
+        description="Module path (e.g., 'app.services.metrics_service')"
+    )
     filename: str = Field(description="Source file path")
     lineno: int = Field(ge=1, description="Line number where function is defined")
 
@@ -144,7 +146,9 @@ class FunctionProfile(BaseModel):
     self_time: float = Field(ge=0, description="Time excluding subcalls")
     cumulative_time: float = Field(ge=0, description="Cumulative time across all calls")
     avg_time_per_call: float = Field(ge=0, description="Average time per call")
-    time_percentage: float = Field(ge=0, le=100, description="% of total execution time")
+    time_percentage: float = Field(
+        ge=0, le=100, description="% of total execution time"
+    )
 
     # Call metrics
     call_count: int = Field(ge=0, description="Number of times called")
@@ -165,7 +169,9 @@ class ModulePerformance(BaseModel):
     Combines all function-level metrics for a single module/file.
     """
 
-    module_path: str = Field(description="Module path (e.g., 'app/services/metrics_service.py')")
+    module_path: str = Field(
+        description="Module path (e.g., 'app/services/metrics_service.py')"
+    )
 
     # Aggregated time metrics
     total_execution_time: float = Field(
@@ -202,8 +208,8 @@ class ModulePerformance(BaseModel):
     is_io_bottleneck: bool = Field(
         default=False, description="Identified as I/O bottleneck"
     )
-    performance_severity: Literal["critical", "high", "medium", "low", "normal"] = Field(
-        default="normal", description="Performance issue severity"
+    performance_severity: Literal["critical", "high", "medium", "low", "normal"] = (
+        Field(default="normal", description="Performance issue severity")
     )
 
 
@@ -215,19 +221,31 @@ class PriorityWeights(BaseModel):
     """
 
     execution_time: float = Field(
-        default=0.40, ge=0, le=1, description="Weight for execution time (default: 0.40)"
+        default=0.40,
+        ge=0,
+        le=1,
+        description="Weight for execution time (default: 0.40)",
     )
     coupling: float = Field(
-        default=0.30, ge=0, le=1, description="Weight for coupling metrics (default: 0.30)"
+        default=0.30,
+        ge=0,
+        le=1,
+        description="Weight for coupling metrics (default: 0.30)",
     )
     complexity: float = Field(
-        default=0.15, ge=0, le=1, description="Weight for code complexity (default: 0.15)"
+        default=0.15,
+        ge=0,
+        le=1,
+        description="Weight for code complexity (default: 0.15)",
     )
     memory_usage: float = Field(
         default=0.10, ge=0, le=1, description="Weight for memory usage (default: 0.10)"
     )
     call_frequency: float = Field(
-        default=0.05, ge=0, le=1, description="Weight for call frequency (default: 0.05)"
+        default=0.05,
+        ge=0,
+        le=1,
+        description="Weight for call frequency (default: 0.05)",
     )
 
     @property
@@ -263,14 +281,18 @@ class PerformanceBottleneck(BaseModel):
     call_count: int = Field(ge=0, description="Number of function calls")
 
     # Architectural metrics (from dependency graph)
-    coupling_score: float = Field(ge=0, description="Total coupling (afferent + efferent)")
+    coupling_score: float = Field(
+        ge=0, description="Total coupling (afferent + efferent)"
+    )
     complexity_score: float = Field(ge=0, description="Cyclomatic complexity")
     is_circular: bool = Field(default=False, description="Part of circular dependency")
     is_hot_zone: bool = Field(default=False, description="High complexity + coupling")
 
     # Priority scoring
     priority_score: float = Field(
-        ge=0, le=100, description="Optimization priority score (0-100, higher = more urgent)"
+        ge=0,
+        le=100,
+        description="Optimization priority score (0-100, higher = more urgent)",
     )
     priority_rank: int = Field(ge=1, description="Rank among all bottlenecks")
 
@@ -286,7 +308,7 @@ class PerformanceBottleneck(BaseModel):
     recommendation: str = Field(description="High-level optimization recommendation")
     affected_modules: list[str] = Field(
         default_factory=list,
-        description="Modules that depend on this (high coupling impact)"
+        description="Modules that depend on this (high coupling impact)",
     )
 
 
@@ -301,7 +323,9 @@ class PerformanceAnalysisResult(BaseModel):
 
     # Metadata
     profiler_type: ProfilerType = Field(description="Profiling tool used")
-    total_execution_time: float = Field(ge=0, description="Total program runtime (seconds)")
+    total_execution_time: float = Field(
+        ge=0, description="Total program runtime (seconds)"
+    )
     total_samples: int | None = Field(
         default=None, description="Number of samples (for sampling profilers)"
     )
@@ -320,7 +344,9 @@ class PerformanceAnalysisResult(BaseModel):
     # Statistics
     total_modules_profiled: int = Field(ge=0, description="Number of modules with data")
     critical_bottlenecks: int = Field(ge=0, description="Count of critical bottlenecks")
-    high_bottlenecks: int = Field(ge=0, description="Count of high-priority bottlenecks")
+    high_bottlenecks: int = Field(
+        ge=0, description="Count of high-priority bottlenecks"
+    )
 
     # Configuration
     weights_used: PriorityWeights = Field(

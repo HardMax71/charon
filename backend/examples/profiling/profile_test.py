@@ -73,7 +73,7 @@ def calculate_graph_metrics():
     for i in range(num_nodes):
         # Each module depends on 3-7 other modules
         for j in range(3, min(8, num_nodes - i)):
-            graph[f"module_{i}"].add(f"module_{i+j}")
+            graph[f"module_{i}"].add(f"module_{i + j}")
 
     # Calculate coupling metrics (O(n²) operation - slow!)
     coupling_metrics = {}
@@ -87,9 +87,11 @@ def calculate_graph_metrics():
                 afferent += 1
 
         coupling_metrics[node] = {
-            'afferent': afferent,
-            'efferent': efferent,
-            'instability': efferent / (afferent + efferent) if (afferent + efferent) > 0 else 0
+            "afferent": afferent,
+            "efferent": efferent,
+            "instability": efferent / (afferent + efferent)
+            if (afferent + efferent) > 0
+            else 0,
         }
 
     # Calculate centrality (expensive nested loops)
@@ -112,10 +114,10 @@ def detect_circular_dependencies():
     for i in range(num_nodes):
         # Add forward edges
         if i + 1 < num_nodes:
-            graph[f"module_{i}"].append(f"module_{i+1}")
+            graph[f"module_{i}"].append(f"module_{i + 1}")
         # Add some backward edges (create cycles)
         if i % 10 == 0 and i > 0:
-            graph[f"module_{i}"].append(f"module_{i-5}")
+            graph[f"module_{i}"].append(f"module_{i - 5}")
 
     # DFS-based cycle detection (recursive, stack-intensive)
     visited = set()
@@ -192,31 +194,27 @@ def function_{i}(data, threshold=10):
 def generate_export_data():
     """Simulate data export (JSON serialization)."""
     # Build large nested data structure
-    data = {
-        'nodes': [],
-        'edges': [],
-        'metrics': {}
-    }
+    data = {"nodes": [], "edges": [], "metrics": {}}
 
     for i in range(200):
-        data['nodes'].append({
-            'id': f'node_{i}',
-            'label': f'Module {i}',
-            'type': 'internal' if i % 3 == 0 else 'third_party',
-            'metrics': {
-                'coupling': i % 20,
-                'complexity': i % 15,
-                'loc': i * 100
+        data["nodes"].append(
+            {
+                "id": f"node_{i}",
+                "label": f"Module {i}",
+                "type": "internal" if i % 3 == 0 else "third_party",
+                "metrics": {"coupling": i % 20, "complexity": i % 15, "loc": i * 100},
             }
-        })
+        )
 
     for i in range(500):
-        data['edges'].append({
-            'id': f'edge_{i}',
-            'source': f'node_{i % 200}',
-            'target': f'node_{(i + 5) % 200}',
-            'weight': i % 10
-        })
+        data["edges"].append(
+            {
+                "id": f"edge_{i}",
+                "source": f"node_{i % 200}",
+                "target": f"node_{(i + 5) % 200}",
+                "weight": i % 10,
+            }
+        )
 
     # Serialize to JSON (CPU and memory intensive)
     json_str = json.dumps(data, indent=2)

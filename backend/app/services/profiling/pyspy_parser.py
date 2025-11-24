@@ -110,7 +110,9 @@ class PySpyParser:
             module = self._extract_module_from_filename(filename)
 
             # Calculate percentages
-            time_percentage = (total_time / self.total_time * 100) if self.total_time > 0 else 0
+            time_percentage = (
+                (total_time / self.total_time * 100) if self.total_time > 0 else 0
+            )
             avg_time = total_time / count if count > 0 else 0
 
             profile = FunctionProfile(

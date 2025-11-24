@@ -15,7 +15,7 @@ def create_error_response(
     error_type: str,
     message: str,
     details: Any = None,
-    path: str = None,
+    path: str | None = None,
 ) -> JSONResponse:
     """Create a standardized error response."""
     content: dict[str, Any] = {

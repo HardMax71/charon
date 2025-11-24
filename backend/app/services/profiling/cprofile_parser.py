@@ -26,7 +26,10 @@ class CProfileParser:
             raise FileNotFoundError(f"Profile file not found: {profile_path}")
 
         self.stats = pstats.Stats(str(self.profile_path))
-        self.total_time = self.stats.total_tt
+        # Calculate total execution time by summing all function times
+        # Each stat entry: (filename, lineno, func) -> (cc, nc, tt, ct, callers)
+        # tt = total time in function (excluding subcalls)
+        self.total_time = sum(stat[2] for stat in self.stats.stats.values())  # type: ignore[attr-defined]
 
     def parse(self) -> dict[str, ModulePerformance]:
         """Parse cProfile data and return module-level performance metrics.
@@ -54,7 +57,7 @@ class CProfileParser:
         # Format: (filename, lineno, function_name) -> (cc, nc, tt, ct, callers)
         # cc = primitive call count, nc = total call count
         # tt = total time, ct = cumulative time
-        for func, (cc, nc, tt, ct, callers) in self.stats.stats.items():
+        for func, (cc, nc, tt, ct, callers) in self.stats.stats.items():  # type: ignore[attr-defined]
             filename, lineno, function_name = func
 
             # Skip built-in functions and non-Python files
