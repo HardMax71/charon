@@ -153,7 +153,9 @@ class PySpyParser:
         module_performance = {}
         for module_path, functions in modules.items():
             # Calculate aggregated metrics
-            total_time = sum(f.total_time for f in functions)
+            # For sampling profilers: use max total_time (most expensive function)
+            # since total_time includes callees and would be double-counted if summed
+            total_time = max((f.total_time for f in functions), default=0)
             self_time = sum(f.self_time for f in functions)
             total_calls = sum(f.call_count for f in functions)
 

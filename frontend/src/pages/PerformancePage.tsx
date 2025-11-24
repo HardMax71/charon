@@ -98,7 +98,7 @@ export const PerformancePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 pb-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
             {/* Left Column: Upload & Info */}
             <div className="space-y-4 sm:space-y-6">
               {/* Upload Card */}
