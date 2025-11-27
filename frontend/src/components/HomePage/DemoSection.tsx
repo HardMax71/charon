@@ -1,53 +1,49 @@
-import { Cpu, Share2, Terminal } from 'lucide-react';
 import { Graph3D } from '@/components/Graph3D/Graph3D';
+import { LayoutSelector } from '@/components/Graph3D/LayoutSelector';
 import { DependencyGraph } from '@/types/graph';
+import { GlobalMetrics } from '@/types/metrics';
 
 interface DemoSectionProps {
   graph: DependencyGraph;
+  metrics: GlobalMetrics;
 }
 
-export const DemoSection = ({ graph }: DemoSectionProps) => (
-  <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 bg-slate-50">
+export const DemoSection = ({ graph, metrics }: DemoSectionProps) => (
+  <section className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] w-full flex-shrink-0 snap-start bg-slate-100 relative overflow-hidden p-6">
+    {/* Graph container with padding */}
+    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg">
+      {/* Graph visualization */}
+      <div className="absolute inset-0">
+        <Graph3D
+          customGraph={graph}
+          customMetrics={metrics}
+          hideLayoutSelector={true}
+          hideNodeMetrics={true}
+          hideControlsLegend={false}
+          hideClusterBoxes={false}
+        />
+      </div>
 
-    <div className="lg:col-span-8 relative bg-slate-100 min-h-[300px] lg:min-h-0">
-      <Graph3D
+      {/* Layout Selector - positioned absolute within container */}
+      <LayoutSelector
         customGraph={graph}
-        hideLayoutSelector={true}
-        hideNodeMetrics={true}
-        hideControlsLegend={true}
-        hideClusterBoxes={true}
+        customMetrics={metrics}
+        className="absolute top-4 right-4 z-40"
       />
-    </div>
 
-    <div className="lg:col-span-4 p-4 sm:p-6 flex flex-col justify-center bg-white">
-      <div className="w-12 h-1.5 bg-teal-600 mb-4" />
-      <h2 className="text-2xl font-bold mb-3 tracking-tight">
-        Surgical<br />Refactoring.
-      </h2>
-      <p className="text-slate-600 mb-4 leading-relaxed text-sm">
-        Charon isn't just a visualizer; it's a decision engine. Map afferent and efferent coupling for architectural surgery.
-      </p>
-
-      <ul className="space-y-2 font-mono text-xs text-slate-700">
-        <li className="flex items-center gap-2 group cursor-pointer">
-          <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-teal-500 transition-all">
-            <Cpu className="w-3.5 h-3.5" />
+      {/* Stats badge - top left */}
+      <div className="absolute top-4 left-4 z-10 pointer-events-none">
+        <div className="flex items-center gap-2">
+          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm text-center">
+            <div className="text-lg font-bold text-slate-900 tabular-nums leading-tight">{graph?.nodes?.length || 0}</div>
+            <div className="text-[9px] text-slate-500 uppercase tracking-wider">Modules</div>
           </div>
-          <span className="font-bold">Identify "God Objects"</span>
-        </li>
-        <li className="flex items-center gap-2 group cursor-pointer">
-          <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-rose-500 transition-all">
-            <Share2 className="w-3.5 h-3.5" />
+          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm text-center">
+            <div className="text-lg font-bold text-slate-900 tabular-nums leading-tight">{graph?.edges?.length || 0}</div>
+            <div className="text-[9px] text-slate-500 uppercase tracking-wider">Edges</div>
           </div>
-          <span className="font-bold">Visualize Blast Radius</span>
-        </li>
-        <li className="flex items-center gap-2 group cursor-pointer">
-          <div className="p-1.5 bg-slate-100 rounded border border-slate-200 group-hover:border-amber-500 transition-all">
-            <Terminal className="w-3.5 h-3.5" />
-          </div>
-          <span className="font-bold">Export as JSON</span>
-        </li>
-      </ul>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 );

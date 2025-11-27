@@ -60,32 +60,40 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-card border border-border rounded-lg p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-8 h-8 text-destructive" />
-              <h2 className="text-xl font-semibold text-foreground">
-                Something went wrong
-              </h2>
+        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+          <div className="max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-lg">
+            {/* Error icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
             </div>
 
-            <p className="text-muted-foreground mb-4">
+            {/* Title */}
+            <h2 className="text-2xl font-semibold text-slate-900 text-center mb-2">
+              Something went wrong
+            </h2>
+
+            {/* Description */}
+            <p className="text-slate-500 text-center mb-6">
               The application encountered an unexpected error. Please try refreshing the page.
             </p>
 
+            {/* Error details (dev only) */}
             {import.meta.env.DEV && this.state.error && (
-              <details className="mb-4 p-3 bg-muted rounded text-sm">
-                <summary className="cursor-pointer font-medium text-foreground mb-2">
+              <details className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                <summary className="cursor-pointer font-medium text-slate-700 mb-2">
                   Error Details
                 </summary>
-                <pre className="text-xs overflow-auto text-destructive">
+                <pre className="text-xs overflow-auto text-red-600 mt-2 p-2 bg-white rounded-lg border border-slate-100">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
               </details>
             )}
 
-            <div className="flex gap-2">
+            {/* Actions */}
+            <div className="flex gap-3 justify-center">
               <Button onClick={this.handleReset} className="flex items-center gap-2">
                 <RefreshCw className="w-4 h-4" />
                 Try Again

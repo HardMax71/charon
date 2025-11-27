@@ -8,9 +8,10 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     className?: string;
+    maxWidth?: string;
 }
 
-export const Modal = ({ isOpen, onClose, title, children, className = '' }: ModalProps) => {
+export const Modal = ({ isOpen, onClose, title, children, className = '', maxWidth = 'max-w-2xl' }: ModalProps) => {
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -33,7 +34,7 @@ export const Modal = ({ isOpen, onClose, title, children, className = '' }: Moda
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className={`bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 transform transition-all ${className}`}
+                className={`bg-white rounded-xl shadow-2xl w-full ${maxWidth} mx-4 transform transition-all ${className}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between p-6 border-b border-slate-100">

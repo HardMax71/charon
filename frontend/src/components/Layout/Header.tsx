@@ -1,93 +1,60 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, Activity, Shield, CheckCircle, GitBranch, Flame } from 'lucide-react';
+
+const navItems = [
+  { path: '/fitness', label: 'Fitness' },
+  { path: '/refactoring', label: 'Refactoring' },
+  { path: '/performance', label: 'Performance' },
+  { path: '/temporal', label: 'Temporal' },
+];
 
 export const Header = () => {
   const location = useLocation();
-  const isTemporal = location.pathname === '/temporal';
-  const isFitness = location.pathname === '/fitness';
-  const isRefactoring = location.pathname === '/refactoring';
-  const isPerformance = location.pathname === '/performance';
 
   return (
-    <header className="sticky top-0 z-50 w-full h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200 transition-all duration-300">
-      <div className="w-full h-full flex items-center justify-between px-6 md:px-12 max-w-[1400px] mx-auto">
-
-        {/* Logo Section - Primary Brand Anchor */}
-        <Link
-          to="/"
-          className="logo-container group"
-        >
-          <div className="w-8 h-8 rounded overflow-hidden">
-            <img src="/icon.png" alt="Charon Logo" className="w-full h-full object-cover" />
+    <header className="sticky top-0 z-50 w-full h-16 bg-white border-b border-slate-200">
+      <div className="w-full h-full flex items-center justify-between px-6 max-w-[1400px] mx-auto">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded overflow-hidden">
+            <img src="/icon.png" alt="Charon" className="w-full h-full object-cover" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-black text-styx-900 tracking-tight leading-none group-hover:text-styx-600 transition-colors">
-              CHARON
-            </span>
-            <span className="text-[10px] font-mono text-stone-700 tracking-widest uppercase leading-none mt-1">
-              System Visualizer
-            </span>
-          </div>
+          <span className="text-base font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
+            Charon
+          </span>
         </Link>
 
-        {/* Navigation Section */}
-        <nav className="flex items-center gap-6">
-          <Link
-            to="/fitness"
-            className={`
-              flex items-center gap-2 text-sm font-medium transition-colors
-              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
-              ${isFitness
-                ? 'text-styx-600 font-bold'
-                : 'text-stone-700'
-              }
-            `}
-          >
-            {isFitness ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <Shield className="w-4 h-4" />}
-            <span>Fitness Functions</span>
-          </Link>
-          <Link
-            to="/refactoring"
-            className={`
-              flex items-center gap-2 text-sm font-medium transition-colors
-              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
-              ${isRefactoring
-                ? 'text-styx-600 font-bold'
-                : 'text-stone-700'
-              }
-            `}
-          >
-            {isRefactoring ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <GitBranch className="w-4 h-4" />}
-            <span>Refactoring Scenarios</span>
-          </Link>
-          <Link
-            to="/performance"
-            className={`
-              flex items-center gap-2 text-sm font-medium transition-colors
-              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
-              ${isPerformance
-                ? 'text-styx-600 font-bold'
-                : 'text-stone-700'
-              }
-            `}
-          >
-            {isPerformance ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <Flame className="w-4 h-4" />}
-            <span>Performance Profiling</span>
-          </Link>
-          <Link
-            to="/temporal"
-            className={`
-              flex items-center gap-2 text-sm font-medium transition-colors
-              hover:text-styx-600 hover:underline decoration-2 underline-offset-4
-              ${isTemporal
-                ? 'text-styx-600 font-bold'
-                : 'text-stone-700'
-              }
-            `}
-          >
-            {isTemporal ? <CheckCircle className="w-4 h-4 animate-pulse" /> : <Clock className="w-4 h-4" />}
-            <span>Temporal Analysis</span>
-          </Link>
+        {/* Navigation */}
+        <nav className="hidden sm:flex items-center gap-1">
+          {navItems.map(({ path, label }) => (
+            <Link
+              key={path}
+              to={path}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                location.pathname === path
+                  ? 'text-teal-700 bg-teal-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Mobile nav */}
+        <nav className="flex sm:hidden items-center gap-1">
+          {navItems.map(({ path, label }) => (
+            <Link
+              key={path}
+              to={path}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                location.pathname === path
+                  ? 'text-teal-700 bg-teal-50'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              {label.slice(0, 3)}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

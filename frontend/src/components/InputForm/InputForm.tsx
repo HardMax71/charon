@@ -86,21 +86,13 @@ export const InputForm = () => {
 
   return (
     <div className="marble-panel p-8 md:p-10 w-full mx-auto animate-fade-in relative overflow-hidden">
-      {/* Decorative top highlight */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 via-teal-400 to-teal-500 opacity-50" />
-
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
-            Analyze Project
-          </h2>
-          <p className="text-slate-500 text-sm font-medium mt-1">
-            Select your source to begin autopsy
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center border border-teal-100">
-          <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
-        </div>
+      <div className="mb-8">
+        <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
+          Analyze Project
+        </h2>
+        <p className="text-slate-500 text-sm font-medium mt-1">
+          Select your source to begin autopsy
+        </p>
       </div>
 
       {/* Tabs */}

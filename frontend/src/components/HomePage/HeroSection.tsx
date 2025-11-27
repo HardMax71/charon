@@ -1,46 +1,68 @@
 import { InputForm } from '@/components/InputForm/InputForm';
+import { ArrowDown } from 'lucide-react';
 
 export const HeroSection = () => (
-  <div className="h-[calc(100vh-4rem)] w-full shrink-0 snap-start bg-gradient-to-b from-white to-slate-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full h-full flex items-center justify-center py-6 sm:py-8 lg:py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
+  <section className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] w-full flex-shrink-0 snap-start relative overflow-hidden bg-white">
+    {/* Decorative gradient blobs */}
+    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-teal-100/60 via-teal-50/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-slate-100/80 via-teal-50/30 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
 
-        <div className="space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-slate-900 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest bg-white shadow-sm">
-            <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
-            System Online
+    {/* Subtle dot pattern */}
+    <div className="absolute inset-0 opacity-[0.4]" style={{
+      backgroundImage: `radial-gradient(circle, rgba(13,148,136,0.15) 1px, transparent 1px)`,
+      backgroundSize: '24px 24px'
+    }} />
+
+    {/* Content */}
+    <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+
+        {/* Left: Copy */}
+        <div className="space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-full">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
+            </span>
+            <span className="text-xs font-semibold text-teal-700 tracking-wide">Python Architecture Analysis</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-none">
-            CODE<br />
-            VISUAL<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-800">AUTOPSY.</span>
-          </h1>
+          <div className="space-y-5">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-slate-900">
+              See your code.
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">
+                Really see it.
+              </span>
+            </h1>
 
-          <p className="text-sm sm:text-base lg:text-xl text-slate-600 font-medium leading-relaxed max-w-lg">
-            Stop guessing. Charon generates a 3D topology of your Python architecture, exposing circular dependencies and coupling at the source.
-          </p>
+            <p className="text-lg lg:text-xl text-slate-600 max-w-lg leading-relaxed">
+              Charon maps your Python codebase into an interactive 3D graph, revealing hidden dependencies, circular imports, and architectural debt.
+            </p>
+          </div>
 
-          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 pt-2 sm:pt-4 font-mono text-[10px] sm:text-xs text-slate-500 uppercase tracking-wider">
-            <div>
-              <span className="block text-slate-900 font-bold text-base sm:text-lg">AST</span>
-              Parser
-            </div>
-            <div>
-              <span className="block text-slate-900 font-bold text-base sm:text-lg">NX</span>
-              Graph Logic
-            </div>
-            <div>
-              <span className="block text-slate-900 font-bold text-base sm:text-lg">R3F</span>
-              Render Engine
-            </div>
+          {/* Tech stack - minimal inline */}
+          <div className="flex items-center gap-2 text-xs text-slate-400 pt-2">
+            <span className="uppercase tracking-wider">Powered by</span>
+            <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">AST</span>
+            <span>+</span>
+            <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">NetworkX</span>
+            <span>+</span>
+            <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">Three.js</span>
           </div>
         </div>
 
-        <div>
+        {/* Right: Form */}
+        <div className="lg:pl-8">
           <InputForm />
         </div>
       </div>
     </div>
-  </div>
+
+    {/* Scroll indicator */}
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400">
+      <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
+      <ArrowDown className="w-4 h-4 animate-bounce" />
+    </div>
+  </section>
 );

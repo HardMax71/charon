@@ -50,8 +50,8 @@ export const useUIStore = create<UIState>((set) => ({
   isDraggingNode: false,
   showClusters: false,
   metricsPanelHeight: 300,
-  layoutSelectorExpanded: true,
-  controlsLegendExpanded: true,
+  layoutSelectorExpanded: false,
+  controlsLegendExpanded: false,
 
   setLoading: (isLoading) => set({ isLoading }),
   setLoadingProgress: (loadingProgress, loadingMessage) => set({ loadingProgress, loadingMessage }),

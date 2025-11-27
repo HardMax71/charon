@@ -139,22 +139,22 @@ export const FitnessPage = () => {
   if (!graph || !globalMetrics) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50 p-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-10 max-w-lg w-full text-center shadow-sm">
-          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
-            <ShieldCheck className="w-8 h-8 text-slate-400" />
+        <div className="max-w-sm w-full text-center">
+          <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-6 h-6 text-teal-600" />
           </div>
 
-          <h2 className="text-xl font-bold text-slate-900 mb-2">
-            Architecture Enforcement
+          <h2 className="text-lg font-bold text-slate-900 mb-2">
+            Fitness Functions
           </h2>
 
-          <p className="text-sm text-slate-500 mb-8 leading-relaxed">
-            Define and validate strict architectural rules (e.g. "No circular dependencies", "Max coupling"). Analyze a project first to begin.
+          <p className="text-sm text-slate-500 mb-6">
+            Define architectural rules and validate your codebase against them. Analyze a project first.
           </p>
 
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-teal-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-teal-600 transition-colors"
           >
             Analyze Project <ArrowRight className="w-4 h-4" />
           </Link>

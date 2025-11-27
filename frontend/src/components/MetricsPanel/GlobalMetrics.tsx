@@ -3,11 +3,11 @@ import { IconComponent } from '@/types/common';
 import {
   Flame,
   Activity,
-  HelpCircle,
   GitMerge,
   Box,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  HelpCircle
 } from 'lucide-react';
 
 export const GlobalMetrics = () => {
@@ -41,11 +41,15 @@ export const GlobalMetrics = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
 
         {/* 1. Project Overview */}
-        <MetricCard title="Project Overview" icon={Box}>
-          <div className="grid grid-cols-3 gap-2 mt-3">
-            <StatItem label="Total Files" value={globalMetrics.total_files || 0} />
-            <StatItem label="Internal" value={globalMetrics.total_internal || 0} highlight />
-            <StatItem label="External" value={globalMetrics.total_third_party || 0} />
+        <MetricCard
+          title="Project Overview"
+          icon={Box}
+          tooltip="Total count of analyzed files in the project."
+        >
+          <div className="space-y-2.5">
+            <MetricRow label="Total Files" value={globalMetrics.total_files || 0} />
+            <MetricRow label="Internal" value={globalMetrics.total_internal || 0} highlight />
+            <MetricRow label="External" value={globalMetrics.total_third_party || 0} />
           </div>
         </MetricCard>
 
@@ -55,10 +59,10 @@ export const GlobalMetrics = () => {
           icon={GitMerge}
           tooltip="Measures dependency density. High coupling indicates a rigid system."
         >
-          <div className="space-y-3 mt-2">
-            <RowItem label="Avg Afferent (Ca)" value={fmt(globalMetrics.avg_afferent_coupling)} />
-            <RowItem label="Avg Efferent (Ce)" value={fmt(globalMetrics.avg_efferent_coupling)} />
-            <RowItem label="Threshold" value={fmt(globalMetrics.coupling_threshold)} subValue="(Max)" />
+          <div className="space-y-2.5">
+            <MetricRow label="Avg Afferent (Ca)" value={fmt(globalMetrics.avg_afferent_coupling)} />
+            <MetricRow label="Avg Efferent (Ce)" value={fmt(globalMetrics.avg_efferent_coupling)} />
+            <MetricRow label="Threshold (Max)" value={fmt(globalMetrics.coupling_threshold)} />
           </div>
         </MetricCard>
 
@@ -68,44 +72,24 @@ export const GlobalMetrics = () => {
           icon={Activity}
           tooltip="Cyclomatic Complexity and Maintainability Index."
         >
-          <div className="space-y-3 mt-2">
-            <RowItem
-              label="Avg Complexity"
-              value={fmt(complexity)}
-              highlight={complexity > 10}
-            />
-            <RowItem
-              label="Maintainability"
-              value={fmt(globalMetrics.avg_maintainability)}
-            />
-            <div className="pt-3 border-t border-slate-200">
-              <RowItem label="Avg Instability" value={fmt(instability)} />
-            </div>
+          <div className="space-y-2.5">
+            <MetricRow label="Avg Complexity" value={fmt(complexity)} highlight={complexity > 10} />
+            <MetricRow label="Maintainability" value={fmt(globalMetrics.avg_maintainability)} />
+            <MetricRow label="Avg Instability" value={fmt(instability)} />
           </div>
         </MetricCard>
 
-        {/* 4. Critical Alerts (Dynamic) */}
+        {/* 4. System Alerts */}
         <MetricCard
           title="System Alerts"
           icon={AlertTriangle}
           alert={circularDeps.length > 0 || hotZones.length > 0}
+          tooltip="Critical issues detected in the codebase that need attention."
         >
-          <div className="space-y-3 mt-2">
-            <AlertRow
-              label="Circular Deps"
-              count={circularDeps.length}
-              critical={circularDeps.length > 0}
-            />
-            <AlertRow
-              label="Hot Zones"
-              count={hotZones.length}
-              critical={hotZones.length > 0}
-            />
-            <AlertRow
-              label="High Coupling"
-              count={highCoupling.length}
-              critical={false}
-            />
+          <div className="space-y-2.5">
+            <MetricRow label="Circular Deps" value={circularDeps.length} critical={circularDeps.length > 0} />
+            <MetricRow label="Hot Zones" value={hotZones.length} critical={hotZones.length > 0} />
+            <MetricRow label="High Coupling" value={highCoupling.length} />
           </div>
         </MetricCard>
 
@@ -184,27 +168,25 @@ interface MetricCardProps {
   title: string;
   icon: IconComponent;
   children: React.ReactNode;
-  tooltip?: string;
   alert?: boolean;
+  tooltip?: string;
 }
 
-const MetricCard = ({ title, icon: Icon, children, tooltip, alert }: MetricCardProps) => (
+const MetricCard = ({ title, icon: Icon, children, alert, tooltip }: MetricCardProps) => (
   <div className={`
-    bg-white border rounded-xl p-5 transition-all hover:shadow-md
+    bg-white border rounded-xl p-4 transition-all hover:shadow-md
     ${alert ? 'border-rose-200 shadow-[0_0_0_1px_rgba(225,29,72,0.1)]' : 'border-slate-200 shadow-sm'}
   `}>
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2 text-stone-700">
-        <Icon className={`w-4 h-4 ${alert ? 'text-blood-700' : 'text-styx-600'}`} />
-        <h4 className="text-xs font-extrabold uppercase tracking-widest">{title}</h4>
+    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+      <div className="flex items-center gap-2">
+        <Icon className={`w-3.5 h-3.5 ${alert ? 'text-rose-500' : 'text-slate-400'}`} />
+        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">{title}</h4>
       </div>
-
       {tooltip && (
         <div className="group relative">
-          <HelpCircle className="w-3.5 h-3.5 text-stone-400 hover:text-styx-600 cursor-help transition-colors" />
-          <div className="absolute right-0 top-6 w-48 p-3 bg-styx-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-stone-700">
+          <HelpCircle className="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 cursor-help transition-colors" />
+          <div className="absolute right-0 top-5 w-44 p-2.5 bg-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed">
             {tooltip}
-            <div className="absolute -top-1 right-1 w-2 h-2 bg-styx-900 rotate-45 border-l border-t border-stone-700" />
           </div>
         </div>
       )}
@@ -213,57 +195,22 @@ const MetricCard = ({ title, icon: Icon, children, tooltip, alert }: MetricCardP
   </div>
 );
 
-interface StatItemProps {
+interface MetricRowProps {
   label: string;
   value: string | number;
   highlight?: boolean;
+  critical?: boolean;
 }
 
-const StatItem = ({ label, value, highlight }: StatItemProps) => (
-  <div className="text-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-    <div className={`text-xl font-black font-mono leading-none ${highlight ? 'text-styx-600' : 'text-styx-900'}`}>
+const MetricRow = ({ label, value, highlight, critical }: MetricRowProps) => (
+  <div className="flex justify-between items-center">
+    <span className="text-xs text-slate-500">{label}</span>
+    <span className={`text-xs font-semibold tabular-nums ${
+      critical ? 'text-rose-600' :
+      highlight ? 'text-teal-600' :
+      'text-slate-700'
+    }`}>
       {value}
-    </div>
-    <div className="text-[9px] text-stone-500 uppercase font-bold mt-1.5 tracking-wide">{label}</div>
-  </div>
-);
-
-interface RowItemProps {
-  label: string;
-  value: string | number;
-  subValue?: string;
-  highlight?: boolean;
-}
-
-const RowItem = ({ label, value, subValue, highlight }: RowItemProps) => (
-  <div className="flex justify-between items-center text-sm">
-    <span className="text-slate-600 font-medium">{label}</span>
-    <div className="flex items-baseline gap-1.5">
-      <span className={`font-mono font-bold ${highlight ? 'text-obol-500' : 'text-styx-900'}`}>
-        {value}
-      </span>
-      {subValue && <span className="text-[9px] text-stone-400 font-medium">{subValue}</span>}
-    </div>
-  </div>
-);
-
-interface AlertRowProps {
-  label: string;
-  count: number;
-  critical: boolean;
-}
-
-const AlertRow = ({ label, count, critical }: AlertRowProps) => (
-  <div className="flex justify-between items-center text-sm">
-    <span className="text-slate-600 font-medium">{label}</span>
-    <span className={`
-      px-2.5 py-0.5 rounded text-[10px] font-mono font-bold
-      ${critical
-        ? 'bg-rose-100 text-rose-800 border border-rose-200'
-        : 'bg-slate-100 text-slate-600 border border-slate-200'
-      }
-    `}>
-      {count}
     </span>
   </div>
 );

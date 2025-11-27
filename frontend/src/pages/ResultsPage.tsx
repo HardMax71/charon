@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Graph3D } from '@/components/Graph3D/Graph3D';
-import { MetricsPanel } from '@/components/MetricsPanel/MetricsPanel';
+import { MetricsStatusBar } from '@/components/MetricsStatusBar/MetricsStatusBar';
 import { useGraphStore } from '@/stores/graphStore';
 
 export const ResultsPage = () => {
@@ -24,7 +24,7 @@ export const ResultsPage = () => {
       <div className="flex-1 min-h-0 overflow-hidden">
         <Graph3D />
       </div>
-      <MetricsPanel />
+      <MetricsStatusBar />
     </div>
   );
 };

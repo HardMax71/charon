@@ -155,7 +155,7 @@ Integrate with git blame/CODEOWNERS to show which teams own which modules. Visua
 
 **Use case**: Identify organizational coupling ("Team A depends heavily on Team B's code").
 
-## 12. Performance Profiling Integration
+## 12. Performance Profiling Integration - DONE
 
 Overlay runtime performance data (from cProfile, py-spy, etc.) onto the dependency graph.
 

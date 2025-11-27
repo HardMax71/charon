@@ -28,22 +28,22 @@ export const PerformancePage = () => {
   if (!graph) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50 p-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-10 max-w-lg w-full text-center shadow-sm">
-          <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-6">
-            <Flame className="w-8 h-8 text-orange-500" />
+        <div className="max-w-sm w-full text-center">
+          <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto mb-4">
+            <Flame className="w-6 h-6 text-teal-600" />
           </div>
 
-          <h2 className="text-xl font-bold text-slate-900 mb-2">
+          <h2 className="text-lg font-bold text-slate-900 mb-2">
             Performance Profiling
           </h2>
 
-          <p className="text-sm text-slate-500 mb-8 leading-relaxed">
-            Identify optimization targets by combining runtime performance data (cProfile, py-spy) with architectural metrics (coupling, complexity). Analyze a project first to begin.
+          <p className="text-sm text-slate-500 mb-6">
+            Combine runtime profiling data with architectural metrics to find optimization targets. Analyze a project first.
           </p>
 
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-teal-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-medium text-sm hover:bg-teal-600 transition-colors"
           >
             Analyze Project <ArrowRight className="w-4 h-4" />
           </Link>
