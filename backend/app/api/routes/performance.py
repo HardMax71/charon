@@ -1,5 +1,9 @@
+import json
 import tempfile
 from pathlib import Path
+
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
 
 from app.core.models import DependencyGraph
 from app.core.parsing_models import (
@@ -11,8 +15,6 @@ from app.services.profiling import (
     PerformanceAnalyzer,
     PySpyParser,
 )
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
-from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -40,96 +42,38 @@ async def analyze_performance(
 
     Combines performance metrics with architectural metrics (coupling, complexity)
     to calculate priority scores and identify optimization targets.
-
-    Args:
-        file: Profiling file (.prof for cProfile, .json for py-spy)
-        graph_json: Dependency graph JSON (serialized DependencyGraph)
-        weights_json: Optional custom priority weights JSON
-
-    Returns:
-        PerformanceAnalysisResult with bottlenecks sorted by priority
     """
-    # Parse graph from JSON
-    try:
-        import json
+    graph = DependencyGraph(**json.loads(graph_json))
+    weights = PriorityWeights(**json.loads(weights_json)) if weights_json else None
 
-        graph_data = json.loads(graph_json)
-        graph = DependencyGraph(**graph_data)
-    except Exception as e:
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in (".prof", ".json"):
         raise HTTPException(
-            status_code=400, detail=f"Invalid graph JSON: {str(e)}"
-        ) from e
+            status_code=400,
+            detail=f"Unsupported format: {file.filename}. Supported: .prof (cProfile), .json (py-spy)",
+        )
 
-    # Parse weights if provided
-    weights = None
-    if weights_json:
-        try:
-            import json
-
-            weights_data = json.loads(weights_json)
-            weights = PriorityWeights(**weights_data)
-        except Exception as e:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid weights JSON: {str(e)}"
-            ) from e
-
-    # Save uploaded file to temporary location
+    tmp_path: str | None = None
     try:
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=Path(file.filename).suffix
-        ) as tmp:
-            content = await file.read()
-            tmp.write(content)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(await file.read())
             tmp_path = tmp.name
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to save uploaded file: {str(e)}"
-        ) from e
 
-    try:
-        # Detect profiler type and parse
-        if tmp_path.endswith(".prof"):
-            # cProfile format
-            parser = CProfileParser(tmp_path)
-        elif tmp_path.endswith(".json"):
-            # py-spy speedscope format
-            parser = PySpyParser(tmp_path)
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported file format: {file.filename}. Supported: .prof (cProfile), .json (py-spy)",
-            )
+        parser = CProfileParser(tmp_path) if suffix == ".prof" else PySpyParser(tmp_path)
 
-        # Parse profiling data
-        module_performance = parser.parse()
-        profiler_type = parser.get_profiler_type()
-        total_time = parser.get_total_execution_time()
-        total_samples = parser.get_total_samples()
-
-        # Analyze with dependency graph
         analyzer = PerformanceAnalyzer(
-            module_performance=module_performance,
+            module_performance=parser.parse(),
             dependency_graph=graph,
-            profiler_type=profiler_type,
-            total_execution_time=total_time,
-            total_samples=total_samples,
+            profiler_type=parser.get_profiler_type(),
+            total_execution_time=parser.get_total_execution_time(),
+            total_samples=parser.get_total_samples(),
             weights=weights,
         )
 
-        result = analyzer.analyze()
-
-        return result
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}") from e
+        return analyzer.analyze()
     finally:
-        # Clean up temporary file
-        try:
-            Path(tmp_path).unlink()
-        except Exception:
-            pass
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
 
 
 @router.get("/performance/health")
