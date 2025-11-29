@@ -54,10 +54,43 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
   const { selectNode } = useGraphSelection();
   const modifiers = useGraphModifiers();
   const selectedModule = useUIStore(state => state.selectedModule);
+  const graphFilters = useUIStore(state => state.graphFilters);
+  const hasActiveFilters = useUIStore(state => state.hasActiveFilters);
   const setSelectedEdge = useGraphStore(state => state.setSelectedEdge);
 
   const isRemoved = modifiers.removedEdgeIds.includes(edge.id);
   const isAdded = modifiers.addedEdgeIds.includes(edge.id);
+
+  // Check if edge connects to filtered nodes
+  const edgeMatchesFilters = useMemo(() => {
+    if (!hasActiveFilters()) return true;
+
+    const { languages, services, statuses, thirdPartyOnly } = graphFilters;
+
+    // Helper to check if a node matches
+    const nodeMatches = (node: NodeType) => {
+      if (thirdPartyOnly) return node.type === 'third_party';
+
+      let matches = true;
+      if (languages.length > 0) {
+        matches = matches && (node.language ? languages.includes(node.language) : false);
+      }
+      if (services.length > 0) {
+        matches = matches && (node.service ? services.includes(node.service) : false);
+      }
+      if (statuses.length > 0) {
+        const nodeStatuses: string[] = [];
+        if (node.metrics.is_hot_zone) nodeStatuses.push('hotZone');
+        if (node.metrics.is_circular) nodeStatuses.push('circular');
+        if (node.metrics.is_high_coupling) nodeStatuses.push('highCoupling');
+        matches = matches && statuses.some(s => nodeStatuses.includes(s));
+      }
+      return matches;
+    };
+
+    // Edge is visible if at least one connected node matches
+    return nodeMatches(sourceNode) || nodeMatches(targetNode);
+  }, [sourceNode, targetNode, graphFilters, hasActiveFilters]);
 
   // Refs for line and arrow
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,8 +192,14 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
       }
     }
 
+    // Dim edges that don't match active filters
+    if (!edgeMatchesFilters) {
+      op = 0.02;
+      w = 0.5;
+    }
+
     return { color: c, opacity: op, lineWidth: w };
-  }, [isRemoved, isAdded, edge.color, selectedModule, sourceNode.module, targetNode.module]);
+  }, [isRemoved, isAdded, edge.color, selectedModule, sourceNode.module, targetNode.module, edgeMatchesFilters]);
 
   // Initial positions for first render
   const sourcePos = nodePositionsRef.current.get(edge.source);

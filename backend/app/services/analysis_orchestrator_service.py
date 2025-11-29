@@ -1,7 +1,7 @@
 from collections.abc import AsyncGenerator
 import networkx as nx
 
-from app.core import get_logger
+from app.core import get_logger, LANGUAGE_COLORS, THIRD_PARTY_COLOR, DEFAULT_NODE_COLOR
 from app.core.models import (
     AnalyzeRequest,
     GitHubAnalyzeRequest,
@@ -19,6 +19,8 @@ from app.core.models import (
     GlobalMetrics,
     DependencyGraph,
     SourceFilesResult,
+    Language,
+    NodeType,
 )
 from app.services import (
     analyze_files,
@@ -30,7 +32,7 @@ from app.services import (
     ProgressTracker,
     apply_layout,
 )
-from app.utils.color_generator import get_color_for_node
+# get_color_for_node no longer used - colors now based on status in frontend
 
 logger = get_logger(__name__)
 
@@ -54,10 +56,10 @@ class AnalysisOrchestratorService:
                     project_name = url.split("/")[-1]
 
                     if not files:
-                        logger.warning("No Python files found in repository: %s", url)
+                        logger.warning("No supported source files found in repository: %s", url)
                         return SourceFilesResult(
                             success=False,
-                            error_message="No Python files found in repository",
+                            error_message="No supported source files found in repository",
                         )
 
                     logger.info(
@@ -106,14 +108,34 @@ class AnalysisOrchestratorService:
             node_data = graph.nodes[node_id]
             metrics = node_data.get("metrics", {})
 
-            color = get_color_for_node(
-                node_id,
-                node_data.get("module", ""),
-                is_circular=metrics.get("is_circular", False),
-                is_high_coupling=metrics.get("is_high_coupling", False),
-            )
+            # Get language and node type
+            lang_str = node_data.get("language")
+            node_type = node_data.get("type", "internal")
+
+            # Node fill color is now neutral by default
+            # Status colors (hot zone, added, removed) are applied in frontend
+            # Language is shown via outline + badge in frontend
+            if node_type == "third_party":
+                color = THIRD_PARTY_COLOR
+            else:
+                color = DEFAULT_NODE_COLOR
 
             cluster_id = clustering_result.node_to_cluster.get(node_id)
+
+            # Parse language enum if present
+            language = None
+            if lang_str:
+                try:
+                    language = Language(lang_str)
+                except ValueError:
+                    pass
+
+            # Parse node_kind enum if present
+            node_kind_str = node_data.get("node_kind", "module")
+            try:
+                node_kind = NodeType(node_kind_str)
+            except ValueError:
+                node_kind = NodeType.MODULE
 
             nodes.append(
                 Node(
@@ -127,6 +149,11 @@ class AnalysisOrchestratorService:
                     color=color,
                     metrics=NodeMetrics(**metrics),
                     cluster_id=cluster_id,
+                    # New multi-language fields
+                    language=language,
+                    node_kind=node_kind,
+                    file_path=node_data.get("file_path"),
+                    service=node_data.get("service"),
                 )
             )
 

@@ -1,6 +1,8 @@
 import aiohttp
-from app.core.models import FileInput
+
+from app.core import SUPPORTED_EXTENSIONS
 from app.core.config import settings
+from app.core.models import FileInput
 
 
 class GitHubService:
@@ -12,7 +14,9 @@ class GitHubService:
 
     async def fetch_repository(self, url: str, ref: str = "main") -> list[FileInput]:
         """
-        Fetch all Python files from a GitHub repository.
+        Fetch all supported source files from a GitHub repository.
+
+        Supports: Python, JavaScript, TypeScript, Go, Java, Rust
 
         Args:
             url: GitHub repository URL (e.g., https://github.com/owner/repo)
@@ -21,23 +25,18 @@ class GitHubService:
         Returns:
             List of FileInput objects
         """
-        # Parse owner and repo from URL
         owner, repo = self._parse_github_url(url)
-
-        # Get repository tree
         tree = await self._get_repository_tree(owner, repo, ref)
 
-        # Filter Python files
-        python_files = [
+        source_files = [
             item
             for item in tree
-            if item["path"].endswith(".py") and item["type"] == "blob"
+            if item["type"] == "blob" and self._is_supported_file(item["path"])
         ]
 
-        # Fetch file contents
         files = []
         async with aiohttp.ClientSession() as session:
-            for file_info in python_files:
+            for file_info in source_files:
                 content = await self._fetch_file_content(
                     session, owner, repo, file_info["path"], ref
                 )
@@ -45,6 +44,9 @@ class GitHubService:
                     files.append(FileInput(path=file_info["path"], content=content))
 
         return files
+
+    def _is_supported_file(self, path: str) -> bool:
+        return any(path.endswith(ext) for ext in SUPPORTED_EXTENSIONS)
 
     async def fetch_commit_history(
         self,

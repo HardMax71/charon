@@ -17,7 +17,7 @@ export const DragDropZone = ({ onFilesProcessed }: DragDropZoneProps) => {
       const files = await processDroppedFiles(items);
 
       if (files.length === 0) {
-        setError('No Python files found');
+        setError('No supported source files found');
         return;
       }
 
@@ -59,7 +59,7 @@ export const DragDropZone = ({ onFilesProcessed }: DragDropZoneProps) => {
           <p className="text-gray-600 mb-2">
             Drag and drop a project folder here
           </p>
-          <p className="text-xs text-gray-400">Max 10MB, Python files only</p>
+          <p className="text-xs text-gray-400">Max 10MB · Python, JS/TS, Go, Java, Rust</p>
         </>
       )}
 

@@ -21,14 +21,23 @@ def build_graph(data: DependencyAnalysis) -> nx.DiGraph:
 
     for module_path in data.modules.keys():
         complexity_metrics = data.complexity.get(module_path)
+        metadata = data.module_metadata.get(module_path)
 
-        graph.add_node(
-            module_path,
-            type="internal",
-            module=module_path,
-            label=module_path.split(".")[-1] if "." in module_path else module_path,
-            complexity=complexity_metrics.model_dump() if complexity_metrics else {},
-        )
+        node_attrs = {
+            "type": "internal",
+            "module": module_path,
+            "label": module_path.split(".")[-1] if "." in module_path else module_path,
+            "complexity": complexity_metrics.model_dump() if complexity_metrics else {},
+        }
+
+        # Add metadata if available
+        if metadata:
+            node_attrs["language"] = metadata.language
+            node_attrs["file_path"] = metadata.file_path
+            node_attrs["service"] = metadata.service
+            node_attrs["node_kind"] = metadata.node_kind
+
+        graph.add_node(module_path, **node_attrs)
 
     third_party_modules: set[str] = set()
     for deps in data.dependencies.values():
@@ -43,6 +52,10 @@ def build_graph(data: DependencyAnalysis) -> nx.DiGraph:
             type="third_party",
             module="third_party",
             label=lib_name,
+            language=None,
+            file_path=None,
+            service=None,
+            node_kind="library",
         )
 
     edge_count = 0

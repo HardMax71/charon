@@ -1,6 +1,7 @@
 import { useGraphStore } from '@/stores/graphStore';
 import { useUIStore } from '@/stores/uiStore';
 import { SectionHeaderProps, MetricBoxProps, AlertBoxProps } from '@/types/common';
+import { Language } from '@/types/graph';
 import {
   X,
   Network,
@@ -12,8 +13,31 @@ import {
   Code,
   Flame,
   Layers,
-  Box
+  Box,
+  FileCode,
+  FolderTree,
+  Component,
+  FileText
 } from 'lucide-react';
+import {
+  LANGUAGE_COLORS,
+  LANGUAGE_LABELS,
+  LANGUAGE_EXTENSIONS,
+  getLanguageColor,
+} from '@/utils/constants';
+
+const NODE_KIND_LABELS: Record<string, string> = {
+  module: 'Module',
+  package: 'Package',
+  class: 'Class',
+  interface: 'Interface',
+  function: 'Function',
+  method: 'Method',
+  component: 'Component',
+  hook: 'Hook',
+  service: 'Service',
+  library: 'Library',
+};
 
 interface NodeMetricsModalProps {
   position?: 'fixed' | 'absolute';
@@ -27,7 +51,11 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 
   if (!selectedNode) return null;
 
-  const { metrics, label, id, module, type } = selectedNode;
+  const { metrics, label, id, module, type, language, service, file_path, node_kind } = selectedNode;
+  const langColor = getLanguageColor(language);
+  const langLabel = language ? LANGUAGE_LABELS[language] : null;
+  const langExt = language ? LANGUAGE_EXTENSIONS[language] : null;
+  const kindLabel = node_kind ? NODE_KIND_LABELS[node_kind] || node_kind : 'Module';
 
   const positionClasses = position === 'fixed'
     ? 'fixed top-20 left-6'
@@ -42,15 +70,28 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
         {/* --- HEADER --- */}
         <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-start justify-between">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm flex-shrink-0 text-teal-600">
-              <Box className="w-4 h-4" />
+            <div
+              className="p-2 bg-white border-2 rounded-lg shadow-sm flex-shrink-0"
+              style={{ borderColor: langColor }}
+            >
+              <Box className="w-4 h-4" style={{ color: langColor }} />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-slate-900 truncate leading-tight" title={label}>
-                {label}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 truncate leading-tight" title={label}>
+                  {label}
+                </h3>
+                {langLabel && langExt && (
+                  <span
+                    className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono text-white flex-shrink-0"
+                    style={{ backgroundColor: langColor }}
+                  >
+                    {langExt}
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] font-mono text-slate-400 truncate leading-tight mt-0.5" title={id}>
-                {type.toUpperCase()} • {module}
+                {kindLabel} • {type === 'third_party' ? 'Third Party' : module}
               </p>
             </div>
           </div>
@@ -65,6 +106,36 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
         </div>
 
         <div className="p-4 space-y-5">
+
+          {/* 0. MODULE INFO (if service or file_path available) */}
+          {(service || file_path) && (
+            <div>
+              <SectionHeader icon={FolderTree} label="Module Info" />
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 space-y-2">
+                {service && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <Layers className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-500">Service:</span>
+                    <span className="font-mono font-bold text-slate-700 truncate" title={service}>
+                      {service}
+                    </span>
+                  </div>
+                )}
+                {file_path && (
+                  <div className="flex items-start gap-2 text-xs">
+                    <FileText className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-500 flex-shrink-0">Path:</span>
+                    <span
+                      className="font-mono text-[10px] text-slate-600 break-all leading-relaxed"
+                      title={file_path}
+                    >
+                      {file_path}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 1. COUPLING METRICS */}
           <div>

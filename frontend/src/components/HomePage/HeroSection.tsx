@@ -24,7 +24,7 @@ export const HeroSection = () => (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
             </span>
-            <span className="text-xs font-semibold text-teal-700 tracking-wide">Python Architecture Analysis</span>
+            <span className="text-xs font-semibold text-teal-700 tracking-wide">Multi-Language Architecture Analysis</span>
           </div>
 
           <div className="space-y-5">
@@ -37,14 +37,14 @@ export const HeroSection = () => (
             </h1>
 
             <p className="text-lg lg:text-xl text-slate-600 max-w-lg leading-relaxed">
-              Charon maps your Python codebase into an interactive 3D graph, revealing hidden dependencies, circular imports, and architectural debt.
+              Charon maps your codebase into an interactive 3D graph, revealing hidden dependencies, circular imports, and architectural debt.
             </p>
           </div>
 
           {/* Tech stack - minimal inline */}
           <div className="flex items-center gap-2 text-xs text-slate-400 pt-2">
             <span className="uppercase tracking-wider">Powered by</span>
-            <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">AST</span>
+            <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">tree-sitter</span>
             <span>+</span>
             <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">NetworkX</span>
             <span>+</span>

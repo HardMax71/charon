@@ -1,20 +1,32 @@
 from collections import defaultdict
+from pathlib import Path
 
-from app.core import get_logger
+from app.core import get_logger, NON_PYTHON_EXTENSIONS
 from app.core.models import FileInput
 from app.core.parsing_models import DependencyAnalysis
+from app.services.complexity_service import ComplexityService
+from app.services.multi_language_analyzer import analyze_files_multi_language
 from app.utils.ast_parser import parse_file, extract_module_path
 from app.utils.import_resolver import ImportResolver
-from app.services.complexity_service import ComplexityService
 
 logger = get_logger(__name__)
+
+
+def _has_multi_language_files(files: list[FileInput]) -> bool:
+    return any(
+        Path(f.path).suffix.lower() in NON_PYTHON_EXTENSIONS
+        for f in files
+    )
 
 
 async def analyze_files(
     files: list[FileInput], project_name: str = "project"
 ) -> DependencyAnalysis:
     """
-    Analyze Python files and extract dependencies.
+    Analyze source files and extract dependencies.
+
+    Supports Python natively, and JavaScript/TypeScript/Go/Java/Rust
+    via the multi-language analyzer when those file types are detected.
 
     Args:
         files: List of file inputs
@@ -23,6 +35,13 @@ async def analyze_files(
     Returns:
         DependencyAnalysis with validated, type-safe data
     """
+    if _has_multi_language_files(files):
+        logger.info(
+            "Multi-language files detected, using MultiLanguageAnalyzer for %d files",
+            len(files),
+        )
+        return await analyze_files_multi_language(files, project_name)
+
     logger.info(
         "Starting analysis of %d files for project '%s'", len(files), project_name
     )

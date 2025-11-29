@@ -22,6 +22,7 @@ import { useGraphStore } from '@/stores/graphStore';
 import { LayoutSelector } from './LayoutSelector';
 import { NodeMetricsModal } from '../NodeMetricsModal/NodeMetricsModal';
 import { ControlsLegend } from '../ControlsLegend/ControlsLegend';
+import { LanguageLegend } from '../LanguageLegend/LanguageLegend';
 
 // Legacy props interface (backward compatible)
 interface Graph3DProps {
@@ -169,6 +170,12 @@ export const Graph3D = memo(({
             <ControlsLegend />
           </div>
         )}
+
+        {/* Language/Service Legend - top left, aligned with NodeMetricsModal */}
+        {/* z-0 so NodeMetricsModal (z-50) appears on top when both visible */}
+        <div className="absolute top-4 left-6 z-0">
+          <LanguageLegend />
+        </div>
 
         {/* New: children slots for custom overlays */}
         {children}

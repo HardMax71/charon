@@ -1,6 +1,8 @@
-from datetime import datetime
-import networkx as nx
+import re
 from collections import defaultdict
+from datetime import datetime
+
+import networkx as nx
 
 from app.core.models import GlobalMetrics
 
@@ -565,7 +567,6 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     def _process_inline_markdown(self, text: str) -> str:
         """Process inline markdown (bold, code, etc.)."""
-        import re
 
         # Status badges
         text = re.sub(r"\[OK\]", r'<span class="badge badge-ok">OK</span>', text)

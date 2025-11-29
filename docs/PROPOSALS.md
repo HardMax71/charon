@@ -48,7 +48,7 @@ Watch the local project directory for changes and update the dependency graph in
 - Need efficient incremental parsing and graph updates
 - Handling temporary invalid states during editing
 
-## 4. Multi-Language Support
+## 4. Multi-Language Support - DONE
 
 Extend beyond Python to support JavaScript/TypeScript, Java, Go, Rust, etc.
 

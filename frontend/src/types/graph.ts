@@ -24,6 +24,9 @@ export interface NodeMetrics {
   hot_zone_reason: string;
 }
 
+export type Language = 'python' | 'javascript' | 'typescript' | 'go' | 'java' | 'rust' | null;
+export type NodeKind = 'module' | 'package' | 'class' | 'interface' | 'function' | 'method' | 'variable' | 'struct' | 'trait' | 'enum' | 'type_alias' | 'component' | 'hook' | 'service' | 'library';
+
 export interface Node {
   id: string;
   label: string;
@@ -33,6 +36,11 @@ export interface Node {
   color: string;
   metrics: NodeMetrics;
   cluster_id?: number | null;
+  // Multi-language & monorepo support
+  language?: Language;
+  node_kind?: NodeKind;
+  file_path?: string | null;
+  service?: string | null;
 }
 
 export interface Edge {

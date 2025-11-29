@@ -1,5 +1,47 @@
-from typing import Literal
+from enum import Enum
+from typing import Literal, Any
 from pydantic import BaseModel, Field
+
+
+class Language(str, Enum):
+    PYTHON = "python"
+    JAVASCRIPT = "javascript"
+    TYPESCRIPT = "typescript"
+    JAVA = "java"
+    GO = "go"
+    RUST = "rust"
+
+
+class NodeType(str, Enum):
+    MODULE = "module"
+    PACKAGE = "package"
+    CLASS = "class"
+    INTERFACE = "interface"
+    FUNCTION = "function"
+    METHOD = "method"
+    VARIABLE = "variable"
+    STRUCT = "struct"
+    TRAIT = "trait"
+    ENUM = "enum"
+    TYPE_ALIAS = "type_alias"
+    COMPONENT = "component"
+    HOOK = "hook"
+    SERVICE = "service"
+    LIBRARY = "library"
+
+
+class EdgeType(str, Enum):
+    IMPORTS = "imports"
+    EXPORTS = "exports"
+    EXTENDS = "extends"
+    IMPLEMENTS = "implements"
+    CALLS = "calls"
+    INSTANTIATES = "instantiates"
+    USES = "uses"
+    HTTP_CALLS = "http_calls"
+    GRPC_CALLS = "grpc_calls"
+    GRAPHQL_CALLS = "graphql_calls"
+    MESSAGE_SENDS = "message_sends"
 
 
 class Position3D(BaseModel):
@@ -57,6 +99,11 @@ class Node(BaseModel):
     color: str = Field(description="Hex color code")
     metrics: NodeMetrics
     cluster_id: int | None = Field(default=None, description="Cluster ID")
+    # Multi-language & monorepo support
+    language: Language | None = Field(default=None, description="Programming language")
+    node_kind: NodeType = Field(default=NodeType.MODULE, description="Node type (module, component, hook, etc.)")
+    file_path: str | None = Field(default=None, description="Original file path")
+    service: str | None = Field(default=None, description="Detected service/package name from path")
 
 
 class Edge(BaseModel):

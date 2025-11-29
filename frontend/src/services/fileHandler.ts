@@ -2,6 +2,20 @@ import { FileInput } from '@/types/api';
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
+const SUPPORTED_EXTENSIONS = new Set([
+  '.py', '.pyi',
+  '.js', '.jsx', '.mjs', '.cjs',
+  '.ts', '.tsx', '.mts', '.cts',
+  '.go',
+  '.java',
+  '.rs',
+]);
+
+const isSupportedFile = (filename: string): boolean => {
+  const ext = filename.slice(filename.lastIndexOf('.')).toLowerCase();
+  return SUPPORTED_EXTENSIONS.has(ext);
+};
+
 export const readFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -24,7 +38,7 @@ export const processDroppedFiles = async (
         fileEntry.file(resolve, reject);
       });
 
-      if (file.name.endsWith('.py')) {
+      if (isSupportedFile(file.name)) {
         totalSize += file.size;
 
         if (totalSize > MAX_SIZE_BYTES) {

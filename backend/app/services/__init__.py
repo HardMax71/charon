@@ -19,6 +19,10 @@ from app.services.export_service import (
 
 # Level 2: Services that may depend on Level 1
 from app.services.analyzer_service import analyze_files
+from app.services.multi_language_analyzer import (
+    MultiLanguageAnalyzer,
+    analyze_files_multi_language,
+)
 from app.services.graph_service import build_graph
 from app.services.metrics_service import MetricsCalculator
 from app.services.clustering_service import ClusteringService
@@ -41,7 +45,9 @@ from app.services.temporal_orchestrator_service import TemporalOrchestratorServi
 __all__ = [
     "DependencyAnalysis",
     "analyze_files",
+    "analyze_files_multi_language",
     "build_graph",
+    "MultiLanguageAnalyzer",
     "ComplexityService",
     "MetricsCalculator",
     "ClusteringService",
