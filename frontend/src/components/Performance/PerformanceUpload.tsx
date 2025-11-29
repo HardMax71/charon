@@ -56,26 +56,31 @@ export const PerformanceUpload = () => {
   return (
     <div className="space-y-4">
       {/* File Upload Area */}
-      <label className="block border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-300 hover:border-gray-400 cursor-pointer">
+      <label className={`block border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${
+        selectedFile
+          ? 'border-teal-300 bg-teal-50/50'
+          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+      }`}>
         <input
           type="file"
           accept=".prof,.json"
           onChange={handleFileInputChange}
           className="hidden"
         />
-        <p className="text-gray-600 mb-2">
+        <FileCode className={`w-8 h-8 mx-auto mb-2 ${selectedFile ? 'text-teal-600' : 'text-slate-400'}`} />
+        <p className={`text-sm mb-1 ${selectedFile ? 'font-medium text-teal-700' : 'text-slate-600'}`}>
           {selectedFile ? selectedFile.name : 'Click to upload profiling file'}
         </p>
-        <p className="text-xs text-gray-400">
-          Supports .prof (cProfile), .json (py-spy)
+        <p className="text-xs text-slate-400">
+          Supports <span className="font-mono font-medium">.prof</span> (cProfile), <span className="font-mono font-medium">.json</span> (py-spy)
         </p>
       </label>
 
       {/* Error Display */}
       {error && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
@@ -84,19 +89,19 @@ export const PerformanceUpload = () => {
         onClick={handleAnalyze}
         disabled={!selectedFile || !graph || isLoading}
         className={`
-          w-full py-3 px-4 rounded-lg font-medium text-sm
+          w-full py-2.5 px-4 rounded-xl font-medium text-sm
           flex items-center justify-center gap-2
-          transition-all duration-200
+          transition-colors
           ${selectedFile && graph && !isLoading
-            ? 'bg-styx-600 hover:bg-styx-700 text-white shadow-sm hover:shadow'
-            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            ? 'bg-slate-900 hover:bg-teal-600 text-white'
+            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
           }
         `}
       >
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Analyzing performance...
+            Analyzing...
           </>
         ) : (
           <>

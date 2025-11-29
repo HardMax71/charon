@@ -1,3 +1,5 @@
+import { ArrowDown } from 'lucide-react';
+
 const features = [
   {
     num: '01',
@@ -60,6 +62,12 @@ export const FeaturesSection = () => (
           </div>
         ))}
       </div>
+    </div>
+
+    {/* Scroll indicator */}
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400">
+      <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
+      <ArrowDown className="w-4 h-4 animate-bounce" />
     </div>
   </section>
 );

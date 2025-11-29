@@ -12,6 +12,7 @@ import {
 import { Vector3 } from 'three';
 import { DependencyGraph, Node, Edge } from '@/types/graph';
 import { GlobalMetrics } from '@/types/metrics';
+import { useGraphStore } from '@/stores/graphStore';
 
 // Layout types
 export type LayoutType = 'hierarchical' | 'force' | 'circular';
@@ -148,10 +149,20 @@ export const GraphProvider = ({
     });
   }, [graph]);
 
+  // Get store actions
+  const setStoreSelectedNode = useGraphStore(state => state.setSelectedNode);
+
   // Actions
   const selectNode = useCallback((id: string | null) => {
     setSelectedNodeId(id);
-  }, []);
+    // Sync to global store
+    if (id && graph) {
+      const node = graph.nodes.find(n => n.id === id);
+      setStoreSelectedNode(node || null);
+    } else {
+      setStoreSelectedNode(null);
+    }
+  }, [graph, setStoreSelectedNode]);
 
   const hoverNode = useCallback((id: string | null) => {
     setHoveredNodeId(id);

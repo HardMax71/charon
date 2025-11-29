@@ -84,7 +84,7 @@ export const SceneSetup = memo(({ controlsDisabled = false }: SceneSetupProps) =
   return (
     <>
       {/* Background */}
-      <color attach="background" args={['#f8fafc']} />
+      <color attach="background" args={['#dfe9e8']} />
 
       {/* Camera */}
       <PerspectiveCamera

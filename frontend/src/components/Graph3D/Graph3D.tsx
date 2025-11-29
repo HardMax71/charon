@@ -11,7 +11,7 @@
  * - Composition-based overlays (children slots)
  */
 
-import { memo, ReactNode } from 'react';
+import { memo, ReactNode, useEffect } from 'react';
 import { DependencyGraph } from '@/types/graph';
 import { GlobalMetrics } from '@/types/metrics';
 import { GraphProvider, LayoutType } from './context/GraphContext';
@@ -116,9 +116,18 @@ export const Graph3D = memo(({
   // Fall back to store if no props provided
   const storeGraph = useGraphStore(state => state.graph);
   const storeMetrics = useGraphStore(state => state.globalMetrics);
+  const setGraph = useGraphStore(state => state.setGraph);
 
   const graph = customGraph ?? storeGraph;
   const metrics = customMetrics ?? storeMetrics;
+
+  // Sync custom graph to store so DependencyModal can access it
+  // Only sync once when store is empty (avoid constant updates in RefactoringPage)
+  useEffect(() => {
+    if (customGraph && !storeGraph) {
+      setGraph(customGraph);
+    }
+  }, [customGraph, storeGraph, setGraph]);
 
   return (
     <div className="relative w-full h-full bg-slate-50">

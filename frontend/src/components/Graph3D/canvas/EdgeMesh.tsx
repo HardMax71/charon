@@ -1,10 +1,11 @@
-import { memo, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
-import { Vector3, Euler, Quaternion, ConeGeometry, QuadraticBezierCurve3, Mesh } from 'three';
+import { Vector3, Euler, Quaternion, ConeGeometry, QuadraticBezierCurve3, Mesh, CatmullRomCurve3, TubeGeometry } from 'three';
 import { Edge as EdgeType, Node as NodeType } from '@/types/graph';
-import { useGraphContext, useGraphModifiers } from '../context/GraphContext';
+import { useGraphContext, useGraphModifiers, useGraphSelection } from '../context/GraphContext';
 import { useUIStore } from '@/stores/uiStore';
+import { useGraphStore } from '@/stores/graphStore';
 
 // Shared cone geometry for arrows
 const sharedConeGeometry = new ConeGeometry(0.8, 2, 16);
@@ -12,13 +13,15 @@ const sharedConeGeometry = new ConeGeometry(0.8, 2, 16);
 // Number of points for bezier curve
 const CURVE_SEGMENTS = 20;
 
-// Reusable vectors to avoid allocations
+// Reusable vectors to avoid allocations in hot paths
 const tempStart = new Vector3();
 const tempEnd = new Vector3();
 const tempMid = new Vector3();
 const tangentVec = new Vector3();
+const arrowOffset = new Vector3();
 const tempQuat = new Quaternion();
 const upVec = new Vector3(0, 1, 0);
+const midOffset = new Vector3(0, 1, 0);
 
 interface EdgeMeshProps {
   edge: EdgeType;
@@ -26,14 +29,20 @@ interface EdgeMeshProps {
   targetNode: NodeType;
 }
 
+// Reusable curve object - will be updated in place
+const reusableCurve = new QuadraticBezierCurve3(new Vector3(), new Vector3(), new Vector3());
+
 /**
- * Compute bezier curve points
+ * Compute bezier curve points - reuses curve object to avoid allocations
  */
 function computeBezierPoints(start: Vector3, end: Vector3, mid: Vector3, points: Vector3[]): void {
-  const curve = new QuadraticBezierCurve3(start, mid, end);
-  const curvePoints = curve.getPoints(CURVE_SEGMENTS);
-  for (let i = 0; i < curvePoints.length && i < points.length; i++) {
-    points[i].copy(curvePoints[i]);
+  reusableCurve.v0.copy(start);
+  reusableCurve.v1.copy(mid);
+  reusableCurve.v2.copy(end);
+
+  for (let i = 0; i <= CURVE_SEGMENTS; i++) {
+    const t = i / CURVE_SEGMENTS;
+    reusableCurve.getPoint(t, points[i]);
   }
 }
 
@@ -42,8 +51,10 @@ function computeBezierPoints(start: Vector3, end: Vector3, mid: Vector3, points:
  */
 const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
   const { nodePositionsRef } = useGraphContext();
+  const { selectNode } = useGraphSelection();
   const modifiers = useGraphModifiers();
   const selectedModule = useUIStore(state => state.selectedModule);
+  const setSelectedEdge = useGraphStore(state => state.setSelectedEdge);
 
   const isRemoved = modifiers.removedEdgeIds.includes(edge.id);
   const isAdded = modifiers.addedEdgeIds.includes(edge.id);
@@ -58,25 +69,37 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
     Array.from({ length: CURVE_SEGMENTS + 1 }, () => new Vector3())
   );
 
-  // Update positions from refs each frame
+  // Pre-allocate Float32Array for line positions (reused every frame)
+  const positionsArrayRef = useRef<Float32Array>(
+    new Float32Array((CURVE_SEGMENTS + 1) * 3)
+  );
+
+  // Handle edge click
+  const handleClick = useCallback((e: any) => {
+    e.stopPropagation();
+    selectNode(null); // Clear node selection
+    setSelectedEdge(edge);
+  }, [edge, setSelectedEdge, selectNode]);
+
+  // Update positions from refs each frame - optimized to avoid allocations
   useFrame(() => {
     const sourcePos = nodePositionsRef.current.get(edge.source);
     const targetPos = nodePositionsRef.current.get(edge.target);
 
     if (!sourcePos || !targetPos) return;
 
-    // Calculate mid point for arc
+    // Calculate mid point for arc (no allocations)
     tempStart.copy(sourcePos);
     tempEnd.copy(targetPos);
-    tempMid
-      .addVectors(tempStart, tempEnd)
-      .multiplyScalar(0.5)
-      .add(new Vector3(0, tempStart.distanceTo(tempEnd) * 0.15, 0));
+    const dist = tempStart.distanceTo(tempEnd);
+    tempMid.addVectors(tempStart, tempEnd).multiplyScalar(0.5);
+    midOffset.set(0, dist * 0.15, 0);
+    tempMid.add(midOffset);
 
-    // Update line geometry
+    // Update line geometry (reuse Float32Array)
     if (lineRef.current?.geometry) {
       computeBezierPoints(tempStart, tempEnd, tempMid, pointsRef.current);
-      const positions = new Float32Array(pointsRef.current.length * 3);
+      const positions = positionsArrayRef.current;
       for (let i = 0; i < pointsRef.current.length; i++) {
         positions[i * 3] = pointsRef.current[i].x;
         positions[i * 3 + 1] = pointsRef.current[i].y;
@@ -85,10 +108,11 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
       lineRef.current.geometry.setPositions(positions);
     }
 
-    // Update arrow position and rotation
+    // Update arrow position and rotation (no allocations)
     if (arrowRef.current) {
       tangentVec.subVectors(tempEnd, tempMid).normalize();
-      arrowRef.current.position.copy(tempEnd).sub(tangentVec.clone().multiplyScalar(3.5));
+      arrowOffset.copy(tangentVec).multiplyScalar(3.5);
+      arrowRef.current.position.copy(tempEnd).sub(arrowOffset);
       tempQuat.setFromUnitVectors(upVec, tangentVec);
       arrowRef.current.quaternion.copy(tempQuat);
     }
@@ -97,26 +121,26 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
   // Style calculations
   const { color, opacity, lineWidth } = useMemo(() => {
     let c = '#64748b'; // Slate-500
-    let op = 0.6;
-    let w = 1.2;
+    let op = 0.7;
+    let w = 2.5; // Default bolder width
 
     // Removed edge - red, thick
     if (isRemoved) {
       c = '#ef4444';
       op = 1.0;
-      w = 3.0;
+      w = 4.0;
     }
     // Added edge - green
     else if (isAdded) {
       c = '#10b981';
       op = 1.0;
-      w = 2.5;
+      w = 3.5;
     }
     // Custom edge color (e.g., circular dependency)
     else if (edge.color) {
       c = edge.color;
       op = 0.9;
-      w = 2.0;
+      w = 3.0;
     }
     // Module filter
     else if (selectedModule) {
@@ -128,9 +152,10 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
       if (sIn || tIn) {
         c = '#0d9488';
         op = 0.9;
-        w = 2.5;
+        w = 3.5;
       } else {
-        op = 0.05;
+        op = 0.1;
+        w = 1.5;
       }
     }
 
@@ -161,8 +186,13 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
     new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), tangent)
   );
 
+  // Create curve for hitbox tube
+  const hitboxCurve = useMemo(() => {
+    return new CatmullRomCurve3(pointsRef.current.map(p => p.clone()));
+  }, []);
+
   return (
-    <group>
+    <group onClick={handleClick} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
       {/* Visual line */}
       <Line
         ref={lineRef}
@@ -173,10 +203,16 @@ const EdgeMesh = memo(({ edge, sourceNode, targetNode }: EdgeMeshProps) => {
         opacity={opacity}
       />
 
-      {/* Arrow head */}
+      {/* Invisible hitbox tube for click detection - static, doesn't update */}
+      <mesh>
+        <tubeGeometry args={[hitboxCurve, CURVE_SEGMENTS, 2.5, 8, false]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
+      {/* Arrow head - solid to occlude line */}
       {opacity > 0.1 && (
         <mesh ref={arrowRef} position={arrowPos} rotation={arrowRot} geometry={sharedConeGeometry}>
-          <meshBasicMaterial color={color} transparent opacity={opacity} />
+          <meshBasicMaterial color={color} depthWrite={true} />
         </mesh>
       )}
     </group>
