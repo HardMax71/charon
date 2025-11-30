@@ -19,14 +19,6 @@ export const HeroSection = () => (
 
         {/* Left: Copy */}
         <div className="space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-full">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
-            </span>
-            <span className="text-xs font-semibold text-teal-700 tracking-wide">Multi-Language Architecture Analysis</span>
-          </div>
-
           <div className="space-y-5">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-slate-900">
               See your code.

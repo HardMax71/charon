@@ -16,6 +16,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ToastContainer } from './components/Toast/ToastContainer';
 import { setupGlobalErrorHandler } from './utils/globalErrorHandler';
 import { useGitHubAuth } from './stores/githubAuthStore';
+import { logger } from './utils/logger';
 
 const AppContent = () => {
   const location = useLocation();
@@ -31,12 +32,21 @@ const AppContent = () => {
     const storedState = sessionStorage.getItem('oauth_state');
 
     if (code) {
-      // Verify state to prevent CSRF attacks
-      if (state && storedState && state !== storedState) {
-        console.error('OAuth state mismatch - possible CSRF attack');
+      // Clear URL params IMMEDIATELY to prevent reuse on refresh
+      window.history.replaceState({}, '', window.location.pathname);
+
+      // Check if we already processed this code
+      const processedCode = sessionStorage.getItem('oauth_processed_code');
+      if (processedCode === code) {
+        return; // Already processed
+      }
+      sessionStorage.setItem('oauth_processed_code', code);
+
+      // Verify state to prevent CSRF attacks (only if we initiated the flow)
+      if (storedState && state !== storedState) {
+        logger.error('OAuth state mismatch - possible CSRF attack');
         sessionStorage.removeItem('oauth_state');
-        // Clear URL params
-        window.history.replaceState({}, '', window.location.pathname);
+        sessionStorage.removeItem('oauth_processed_code');
         return;
       }
 
@@ -45,8 +55,8 @@ const AppContent = () => {
 
       // Handle the callback
       handleOAuthCallback(code).then((success) => {
-        // Clear URL params
-        window.history.replaceState({}, '', window.location.pathname);
+        // Clear processed code marker after a delay (allow for retries on different codes)
+        setTimeout(() => sessionStorage.removeItem('oauth_processed_code'), 5000);
 
         if (success) {
           // Check if we should return to a specific page
@@ -90,7 +100,7 @@ function App() {
   }, []);
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppContent />
       </BrowserRouter>
     </ErrorBoundary>

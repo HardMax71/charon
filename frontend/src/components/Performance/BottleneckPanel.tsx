@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePerformanceStore } from '@/stores/performanceStore';
+import { logger } from '@/utils/logger';
 import {
   PerformanceBottleneck,
   getBottleneckColor,
@@ -37,7 +38,7 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy path:', err);
+      logger.error('Failed to copy path:', err);
     }
   };
 

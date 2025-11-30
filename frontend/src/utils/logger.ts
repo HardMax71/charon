@@ -7,40 +7,22 @@ interface Logger {
   error: (...args: unknown[]) => void;
 }
 
-const isDevelopment = import.meta.env.DEV;
+/**
+ * Send log to Vite dev server via HMR WebSocket.
+ * Logs appear in `docker logs charon-frontend`, NOT in browser console.
+ */
+const sendToServer = (level: LogLevel, args: unknown[]) => {
+  if (import.meta.hot) {
+    import.meta.hot.send('browser-log', { level, args });
+  }
+};
 
 const createLogger = (): Logger => {
-  const shouldLog = (level: LogLevel): boolean => {
-    if (level === 'error' || level === 'warn') {
-      return true;
-    }
-    return isDevelopment;
-  };
-
   return {
-    debug: (...args: unknown[]) => {
-      if (shouldLog('debug')) {
-        console.log('[DEBUG]', ...args);
-      }
-    },
-
-    info: (...args: unknown[]) => {
-      if (shouldLog('info')) {
-        console.log('[INFO]', ...args);
-      }
-    },
-
-    warn: (...args: unknown[]) => {
-      if (shouldLog('warn')) {
-        console.warn('[WARN]', ...args);
-      }
-    },
-
-    error: (...args: unknown[]) => {
-      if (shouldLog('error')) {
-        console.error('[ERROR]', ...args);
-      }
-    },
+    debug: (...args: unknown[]) => sendToServer('debug', args),
+    info: (...args: unknown[]) => sendToServer('info', args),
+    warn: (...args: unknown[]) => sendToServer('warn', args),
+    error: (...args: unknown[]) => sendToServer('error', args),
   };
 };
 

@@ -32,7 +32,19 @@ export const GraphCanvas = memo(({ children, hideClusterBoxes = false }: GraphCa
       className="w-full h-full"
       shadows
       dpr={[1, 2]}
-      gl={{ antialias: true }}
+      gl={{
+        antialias: true,
+        // Disable problematic pixel storage options that trigger Firefox warnings
+        // These are deprecated for non-DOM-Element uploads
+        premultipliedAlpha: false,
+      }}
+      onCreated={({ gl }) => {
+        // Disable deprecated pixel store settings to avoid Firefox warnings
+        // gl is Three.js WebGLRenderer, need to access raw WebGL context
+        const context = gl.getContext();
+        context.pixelStorei(context.UNPACK_FLIP_Y_WEBGL, false);
+        context.pixelStorei(context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      }}
     >
       <Suspense fallback={null}>
         {/* Scene setup: camera, lights, controls */}

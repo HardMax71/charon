@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { logger } from '@/utils/logger';
 
 const API_BASE = '/api';
 
@@ -58,7 +59,7 @@ export const useGitHubAuth = create<GitHubAuthState>()(
       initiateOAuth: () => {
         const { clientId } = get();
         if (!clientId) {
-          console.error('GitHub OAuth not configured');
+          logger.error('GitHub OAuth not configured');
           return;
         }
 
@@ -96,7 +97,7 @@ export const useGitHubAuth = create<GitHubAuthState>()(
 
           if (!tokenRes.ok) {
             const error = await tokenRes.json();
-            console.error('Token exchange failed:', error);
+            logger.error('Token exchange failed:', error);
             set({ isAuthenticating: false });
             return false;
           }
@@ -107,7 +108,7 @@ export const useGitHubAuth = create<GitHubAuthState>()(
           // Fetch user data and repos
           const meRes = await fetch(`${API_BASE}/auth/github/me?token=${accessToken}`);
           if (!meRes.ok) {
-            console.error('Failed to fetch user data');
+            logger.error('Failed to fetch user data');
             set({ isAuthenticating: false });
             return false;
           }
@@ -122,7 +123,7 @@ export const useGitHubAuth = create<GitHubAuthState>()(
 
           return true;
         } catch (error) {
-          console.error('OAuth callback error:', error);
+          logger.error('OAuth callback error:', error);
           set({ isAuthenticating: false });
           return false;
         }
