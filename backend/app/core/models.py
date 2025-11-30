@@ -160,6 +160,86 @@ class PackageSuggestion(BaseModel):
     reason: str
 
 
+class RefactoringSuggestionMetrics(BaseModel):
+    """Typed metrics for refactoring suggestions.
+
+    Different anti-patterns populate different fields:
+    - God Object: efferent_coupling, afferent_coupling, total_coupling
+    - Feature Envy: target_module, dependency_ratio, dependency_count, total_dependencies
+    - Inappropriate Intimacy: coupled_module, forward_imports, backward_imports
+    - Dead Code: afferent_coupling, efferent_coupling
+    - Hub Module: afferent_coupling, efferent_coupling, instability, abstractness_needed
+    - Circular Dependency: cycle_length, modules_in_cycle
+    - Unstable Dependency: module_instability, worst_dependency, worst_dependency_instability, violation_count
+    """
+
+    # Coupling metrics (God Object, Dead Code, Hub Module)
+    efferent_coupling: int | None = Field(
+        default=None, description="Outgoing dependencies count"
+    )
+    afferent_coupling: int | None = Field(
+        default=None, description="Incoming dependencies count"
+    )
+    total_coupling: int | None = Field(
+        default=None, description="Sum of afferent and efferent coupling"
+    )
+
+    # Feature Envy metrics
+    target_module: str | None = Field(
+        default=None, description="Module that this one heavily depends on"
+    )
+    dependency_ratio: float | None = Field(
+        default=None, description="Ratio of dependencies to target module"
+    )
+    dependency_count: int | None = Field(
+        default=None, description="Number of dependencies to target module"
+    )
+    total_dependencies: int | None = Field(
+        default=None, description="Total number of dependencies"
+    )
+
+    # Inappropriate Intimacy metrics
+    coupled_module: str | None = Field(
+        default=None, description="Module with bidirectional dependency"
+    )
+    forward_imports: int | None = Field(
+        default=None, description="Imports from this module to coupled module"
+    )
+    backward_imports: int | None = Field(
+        default=None, description="Imports from coupled module to this module"
+    )
+
+    # Hub Module / Stability metrics
+    instability: float | None = Field(
+        default=None, description="Instability metric (0=stable, 1=unstable)"
+    )
+    abstractness_needed: float | None = Field(
+        default=None, description="Required abstractness level for stability"
+    )
+
+    # Circular Dependency metrics
+    cycle_length: int | None = Field(
+        default=None, description="Number of modules in the cycle"
+    )
+    modules_in_cycle: list[str] | None = Field(
+        default=None, description="List of modules forming the cycle"
+    )
+
+    # Unstable Dependency metrics
+    module_instability: float | None = Field(
+        default=None, description="Instability of the current module"
+    )
+    worst_dependency: str | None = Field(
+        default=None, description="Most unstable dependency"
+    )
+    worst_dependency_instability: float | None = Field(
+        default=None, description="Instability of the worst dependency"
+    )
+    violation_count: int | None = Field(
+        default=None, description="Number of stability violations"
+    )
+
+
 class RefactoringSuggestion(BaseModel):
     """Automated refactoring suggestion based on code smells and anti-patterns."""
 
@@ -169,7 +249,9 @@ class RefactoringSuggestion(BaseModel):
     )
     pattern: str = Field(description="Anti-pattern or code smell name")
     description: str = Field(description="Brief description of the issue")
-    metrics: dict = Field(description="Relevant metrics for this suggestion")
+    metrics: RefactoringSuggestionMetrics = Field(
+        description="Relevant metrics for this suggestion"
+    )
     recommendation: str = Field(description="High-level refactoring recommendation")
     details: str = Field(description="Detailed explanation with concrete steps")
     suggested_refactoring: str = Field(
@@ -276,7 +358,10 @@ class GitHubAnalyzeRequest(BaseModel):
     """Request to analyze code from GitHub."""
 
     source: Literal["github"]
-    url: str = Field(description="GitHub repository URL")
+    url: str = Field(
+        pattern=r"^https?://(?:www\.)?github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+/?$",
+        description="GitHub repository URL (e.g., https://github.com/owner/repo)",
+    )
     github_token: str | None = Field(
         default=None,
         description="Optional GitHub token for private repos or higher rate limits",
@@ -331,7 +416,10 @@ class ExportDocumentationRequest(BaseModel):
 class TemporalAnalysisRequest(BaseModel):
     """Request model for temporal analysis."""
 
-    repository_url: str
+    repository_url: str = Field(
+        pattern=r"^https?://(?:www\.)?github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+/?$",
+        description="GitHub repository URL",
+    )
     start_date: str | None = None
     end_date: str | None = None
     sample_strategy: Literal["all", "daily", "weekly", "monthly"] = "all"

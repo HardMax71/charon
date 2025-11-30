@@ -32,7 +32,7 @@ def setup_logging(log_level: str | None = None) -> None:
 
     # Set specific loggers to WARNING to reduce noise
     logging.getLogger("uvicorn").setLevel(logging.WARNING)
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.access").setLevel(logging.INFO)
     logging.getLogger("uvicorn.error").setLevel(logging.INFO)
     logging.getLogger("fastapi").setLevel(logging.INFO)
 

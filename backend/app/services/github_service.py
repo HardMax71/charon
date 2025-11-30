@@ -2,9 +2,11 @@ import asyncio
 
 import aiohttp
 
-from app.core import SUPPORTED_EXTENSIONS
+from app.core import SUPPORTED_EXTENSIONS, get_logger
 from app.core.config import settings
 from app.core.models import FileInput
+
+logger = get_logger(__name__)
 
 SKIP_DIRS = frozenset(
     {
@@ -302,5 +304,6 @@ class GitHubService:
                 if response.status == 200:
                     return await response.text()
                 return None
-        except Exception:
+        except aiohttp.ClientError as e:
+            logger.debug("Failed to fetch file %s: %s", path, e)
             return None

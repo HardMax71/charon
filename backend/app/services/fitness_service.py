@@ -1,14 +1,16 @@
 import re
 from datetime import datetime, timezone
+
 import networkx as nx
 
 from app.core.models import (
-    FitnessRule,
-    FitnessViolation,
-    FitnessValidationResult,
     DependencyGraph,
+    FitnessRule,
+    FitnessValidationResult,
+    FitnessViolation,
     GlobalMetrics,
 )
+from app.services.analysis_orchestrator_service import AnalysisOrchestratorService
 
 
 class FitnessService:
@@ -17,27 +19,8 @@ class FitnessService:
     def __init__(self, graph: DependencyGraph, global_metrics: GlobalMetrics):
         self.graph = graph
         self.global_metrics = global_metrics
-        self.nx_graph = self._build_networkx_graph()
-
-    def _build_networkx_graph(self) -> nx.DiGraph:
-        """Build NetworkX graph from dependency graph."""
-        G = nx.DiGraph()
-
-        # Add nodes
-        for node in self.graph.nodes:
-            G.add_node(
-                node.id,
-                label=node.label,
-                type=node.type,
-                module=node.module,
-                metrics=node.metrics.model_dump(),
-            )
-
-        # Add edges
-        for edge in self.graph.edges:
-            G.add_edge(edge.source, edge.target, weight=edge.weight)
-
-        return G
+        # Reuse shared graph builder
+        self.nx_graph = AnalysisOrchestratorService.build_networkx_graph(graph)
 
     def validate_rules(
         self,

@@ -5,16 +5,23 @@ from typing import Any
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from pydantic_core import ErrorDetails as PydanticErrorDetails
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger("charon.error_handler")
+
+# Type for error details:
+# - str: Simple error message (from unhandled exceptions)
+# - list[PydanticErrorDetails]: Validation errors from Pydantic
+# - None: No additional details
+ErrorDetails = str | list[PydanticErrorDetails] | None
 
 
 def create_error_response(
     status_code: int,
     error_type: str,
     message: str,
-    details: Any = None,
+    details: ErrorDetails = None,
     path: str | None = None,
 ) -> JSONResponse:
     """Create a standardized error response."""
@@ -53,7 +60,7 @@ async def validation_exception_handler(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         error_type="ValidationError",
         message="Request validation failed",
-        details=exc.errors(),
+        details=list(exc.errors()),
         path=str(request.url.path),
     )
 

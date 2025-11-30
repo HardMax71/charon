@@ -1,6 +1,9 @@
-import hashlib
+import uuid
 from collections import defaultdict
 from datetime import datetime
+from typing import Any
+
+from cachetools import TTLCache
 
 from app.core import get_logger
 from app.services.analyzer_service import analyze_files
@@ -17,7 +20,10 @@ class TemporalAnalysisService:
 
     def __init__(self):
         self.github_service = GitHubService()
-        self.snapshots_cache: dict[str, dict] = {}
+        # TTL cache: max 50 analyses, 1 hour TTL
+        self.snapshots_cache: TTLCache[str, dict[str, Any]] = TTLCache(
+            maxsize=50, ttl=3600
+        )
 
     async def analyze_repository_history_streaming(
         self,
@@ -32,9 +38,12 @@ class TemporalAnalysisService:
         Yields progress events during analysis.
         """
         # Generate analysis ID
-        analysis_id = hashlib.md5(
-            f"{repo_url}_{start_date}_{end_date}_{sample_strategy}".encode()
-        ).hexdigest()
+        analysis_id = str(
+            uuid.uuid5(
+                uuid.NAMESPACE_URL,
+                f"{repo_url}_{start_date}_{end_date}_{sample_strategy}",
+            )
+        )
 
         yield {
             "type": "progress",
@@ -140,116 +149,6 @@ class TemporalAnalysisService:
             "total": 6,
         }
         yield {"type": "result", "data": result}
-
-    async def analyze_repository_history(
-        self,
-        repo_url: str,
-        start_date: str | None = None,
-        end_date: str | None = None,
-        sample_strategy: str = "all",  # "all", "daily", "weekly", "monthly"
-    ) -> dict:
-        """
-        Analyze dependency evolution over git history.
-
-        Args:
-            repo_url: GitHub repository URL
-            start_date: Optional start date (ISO format)
-            end_date: Optional end date (ISO format)
-            sample_strategy: How to sample commits ("all", "daily", "weekly", "monthly")
-
-        Returns:
-            dict with:
-                - analysis_id: Unique ID for this analysis
-                - snapshots: List of dependency snapshots
-                - churn_data: Dependency churn metrics
-                - circular_deps_timeline: When circular dependencies appeared
-        """
-        logger.info("Starting temporal analysis for %s", repo_url)
-        logger.info("Date range: %s to %s", start_date, end_date)
-        logger.info("Sample strategy: %s", sample_strategy)
-
-        # Generate analysis ID
-        analysis_id = hashlib.md5(
-            f"{repo_url}_{start_date}_{end_date}_{sample_strategy}".encode()
-        ).hexdigest()
-
-        # Fetch commit history from GitHub
-        logger.info("Fetching commit history...")
-        commits = await self.github_service.fetch_commit_history(
-            repo_url, start_date, end_date
-        )
-        logger.info("Fetched %d commits", len(commits))
-
-        if not commits:
-            return {
-                "analysis_id": analysis_id,
-                "error": "No commits found in the specified range",
-            }
-
-        # Sample commits based on strategy
-        sampled_commits = self._sample_commits(commits, sample_strategy)
-        logger.info(
-            "Sampled to %d commits using '%s' strategy",
-            len(sampled_commits),
-            sample_strategy,
-        )
-
-        # Limit to reasonable number to prevent timeouts
-        max_analysis_commits = 20
-        if len(sampled_commits) > max_analysis_commits:
-            logger.info(
-                "Limiting analysis to most recent %d commits", max_analysis_commits
-            )
-            sampled_commits = sampled_commits[-max_analysis_commits:]
-
-        # Analyze each commit
-        snapshots = []
-        previous_snapshot = None
-
-        for idx, commit in enumerate(sampled_commits):
-            logger.info(
-                "Analyzing commit %d/%d: %s",
-                idx + 1,
-                len(sampled_commits),
-                commit["sha"][:7],
-            )
-            snapshot = await self._analyze_commit(repo_url, commit, previous_snapshot)
-            if snapshot:
-                snapshots.append(snapshot)
-                previous_snapshot = snapshot
-                logger.info(
-                    "  ✓ Success: %d nodes, %d edges",
-                    snapshot["node_count"],
-                    snapshot["edge_count"],
-                )
-            else:
-                logger.warning("  ✗ Failed to analyze commit")
-
-        logger.info("Analysis complete: %d snapshots created", len(snapshots))
-
-        # Calculate churn metrics
-        churn_data = self._calculate_churn(snapshots)
-
-        # Track circular dependency introduction
-        circular_deps_timeline = self._track_circular_dependencies(snapshots)
-
-        result = {
-            "analysis_id": analysis_id,
-            "repository": repo_url,
-            "start_date": start_date,
-            "end_date": end_date,
-            "total_commits": len(commits),
-            "analyzed_commits": len(snapshots),
-            "sample_strategy": sample_strategy,
-            "snapshots": snapshots,
-            "churn_data": churn_data,
-            "circular_deps_timeline": circular_deps_timeline,
-        }
-
-        # Cache results
-        self.snapshots_cache[analysis_id] = result
-
-        return result
 
     def _sample_commits(self, commits: list[dict], strategy: str) -> list[dict]:
         """Sample commits based on strategy."""

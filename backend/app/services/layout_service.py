@@ -57,8 +57,9 @@ def hierarchical_layout_3d(graph: nx.DiGraph) -> nx.DiGraph:
                 iterations=50,
                 seed=42,
             )
-        except Exception:
+        except (nx.NetworkXError, ValueError) as e:
             # Fallback to 2D if 3D fails
+            logger.warning("3D spring layout failed, falling back to 2D: %s", e)
             pos_dict_2d = nx.spring_layout(subgraph, k=3.0, iterations=50, seed=42)
             pos_dict = {node: [pos[0], 0, pos[1]] for node, pos in pos_dict_2d.items()}
 
@@ -86,8 +87,9 @@ def force_directed_layout_3d(graph: nx.DiGraph) -> nx.DiGraph:
     """
     try:
         pos_dict = nx.spring_layout(graph, dim=3, k=4.0, iterations=80, seed=42)
-    except Exception:
+    except (nx.NetworkXError, ValueError) as e:
         # Fallback to 2D
+        logger.warning("3D force-directed layout failed, falling back to 2D: %s", e)
         pos_dict_2d = nx.spring_layout(graph, k=4.0, iterations=80, seed=42)
         pos_dict = {node: [pos[0], 0, pos[1]] for node, pos in pos_dict_2d.items()}
 

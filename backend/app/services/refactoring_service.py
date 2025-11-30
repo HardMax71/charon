@@ -2,6 +2,10 @@ import networkx as nx
 from typing import Any
 from collections import defaultdict
 
+from app.core import get_logger
+
+logger = get_logger(__name__)
+
 
 class RefactoringService:
     """Analyzes code structure and suggests refactoring opportunities."""
@@ -296,7 +300,8 @@ class RefactoringService:
         # Find all cycles
         try:
             cycles = list(nx.simple_cycles(self.graph))
-        except Exception:
+        except nx.NetworkXError as e:
+            logger.warning("Failed to detect cycles for refactoring analysis: %s", e)
             cycles = []
 
         # Filter to internal-only cycles

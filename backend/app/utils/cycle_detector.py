@@ -1,5 +1,9 @@
 import networkx as nx
 
+from app.core import get_logger
+
+logger = get_logger(__name__)
+
 
 def detect_cycles(graph: nx.DiGraph) -> list[list[str]]:
     """
@@ -14,7 +18,8 @@ def detect_cycles(graph: nx.DiGraph) -> list[list[str]]:
     try:
         cycles = list(nx.simple_cycles(graph))
         return cycles
-    except Exception:
+    except nx.NetworkXError as e:
+        logger.warning("Failed to detect cycles in graph: %s", e)
         return []
 
 

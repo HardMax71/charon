@@ -5,6 +5,12 @@ from fastapi.responses import Response
 
 router = APIRouter()
 
+# Format configuration: (export_function, media_type)
+_FORMAT_CONFIG = {
+    "json": (export_to_json, "application/json"),
+    "toml": (export_to_toml, "application/toml"),
+}
+
 
 @router.post("/export")
 async def export_analysis(request: ExportRequest) -> Response:
@@ -17,19 +23,9 @@ async def export_analysis(request: ExportRequest) -> Response:
     Returns:
         File download response
     """
-    if request.format == "json":
-        content = export_to_json(
-            request.graph, request.global_metrics, request.project_name
-        )
-        media_type = "application/json"
-    elif request.format == "toml":
-        content = export_to_toml(
-            request.graph, request.global_metrics, request.project_name
-        )
-        media_type = "application/toml"
-    else:
-        return Response(content="Invalid format", status_code=400)
-
+    # format is validated by Pydantic Literal["json", "toml"]
+    export_fn, media_type = _FORMAT_CONFIG[request.format]
+    content = export_fn(request.graph, request.global_metrics, request.project_name)
     filename = generate_filename(request.project_name, request.format)
 
     return Response(

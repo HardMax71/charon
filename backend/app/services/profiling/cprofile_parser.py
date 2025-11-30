@@ -25,11 +25,10 @@ class CProfileParser:
         if not self.profile_path.exists():
             raise FileNotFoundError(f"Profile file not found: {profile_path}")
 
-        self.stats = pstats.Stats(str(self.profile_path))
-        # Calculate total execution time by summing all function times
-        # Each stat entry: (filename, lineno, func) -> (cc, nc, tt, ct, callers)
-        # tt = total time in function (excluding subcalls)
-        self.total_time = sum(stat[2] for stat in self.stats.stats.values())  # type: ignore[attr-defined]
+        stats = pstats.Stats(str(self.profile_path))
+        # Use typed get_stats_profile() API (Python 3.9+) instead of untyped .stats dict
+        self.stats_profile = stats.get_stats_profile()
+        self.total_time = self.stats_profile.total_tt
 
     def parse(self) -> dict[str, ModulePerformance]:
         """Parse cProfile data and return module-level performance metrics.
@@ -45,6 +44,22 @@ class CProfileParser:
 
         return module_performance
 
+    @staticmethod
+    def _parse_ncalls(ncalls: str) -> tuple[int, int]:
+        """Parse pstats ncalls string to (total_calls, primitive_calls).
+
+        Args:
+            ncalls: String like "6/1" (total/primitive) or "1" (both equal)
+
+        Returns:
+            Tuple of (total_calls, primitive_calls)
+        """
+        if "/" in ncalls:
+            total, primitive = ncalls.split("/")
+            return int(total), int(primitive)
+        count = int(ncalls)
+        return count, count
+
     def _extract_function_profiles(self) -> list[FunctionProfile]:
         """Extract function-level profiles from pstats.
 
@@ -53,12 +68,10 @@ class CProfileParser:
         """
         profiles = []
 
-        # Iterate through all function statistics
-        # Format: (filename, lineno, function_name) -> (cc, nc, tt, ct, callers)
-        # cc = primitive call count, nc = total call count
-        # tt = total time, ct = cumulative time
-        for func, (cc, nc, tt, ct, callers) in self.stats.stats.items():  # type: ignore[attr-defined]
-            filename, lineno, function_name = func
+        # Iterate through typed func_profiles from get_stats_profile()
+        for function_name, fp in self.stats_profile.func_profiles.items():
+            filename = fp.file_name
+            lineno = fp.line_number
 
             # Skip built-in functions and non-Python files
             if not filename.endswith(".py"):
@@ -67,24 +80,29 @@ class CProfileParser:
             # Extract module path from filename
             module = self._extract_module_from_filename(filename)
 
+            # Parse ncalls string (e.g., "6/1" -> total=6, primitive=1)
+            total_calls, primitive_calls = self._parse_ncalls(fp.ncalls)
+
             # Calculate time percentage
-            time_percentage = (tt / self.total_time * 100) if self.total_time > 0 else 0
+            time_percentage = (
+                (fp.tottime / self.total_time * 100) if self.total_time > 0 else 0
+            )
 
             # Calculate average time per call
-            avg_time = tt / nc if nc > 0 else 0
+            avg_time = fp.tottime / total_calls if total_calls > 0 else 0
 
             profile = FunctionProfile(
                 function_name=function_name,
                 module=module,
                 filename=filename,
                 lineno=lineno,
-                total_time=tt,
-                self_time=tt,  # pstats 'tt' is time in function (excluding subcalls)
-                cumulative_time=ct,  # pstats 'ct' includes subcalls
+                total_time=fp.tottime,
+                self_time=fp.tottime,  # pstats tottime is time in function (excluding subcalls)
+                cumulative_time=fp.cumtime,  # cumtime includes subcalls
                 avg_time_per_call=avg_time,
                 time_percentage=time_percentage,
-                call_count=nc,
-                primitive_calls=cc,
+                call_count=total_calls,
+                primitive_calls=primitive_calls,
                 memory_usage_mb=None,  # cProfile doesn't track memory
                 memory_peak_mb=None,
             )

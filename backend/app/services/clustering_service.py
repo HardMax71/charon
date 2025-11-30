@@ -1,5 +1,9 @@
 import networkx as nx
 
+from app.core import get_logger
+
+logger = get_logger(__name__)
+
 
 class ClusteringService:
     """Detect clusters and calculate cluster metrics."""
@@ -56,8 +60,11 @@ class ClusteringService:
                 for node in nodes:
                     self.node_to_cluster[node] = cluster_id
 
-        except Exception:
+        except (nx.NetworkXError, nx.PowerIterationFailedConvergence) as e:
             # Fallback: each node is its own cluster
+            logger.warning(
+                "Louvain community detection failed, using fallback clustering: %s", e
+            )
             self.clusters = {i: {node} for i, node in enumerate(internal_nodes)}
             self.node_to_cluster = {node: i for i, node in enumerate(internal_nodes)}
 
@@ -182,6 +189,9 @@ class ClusteringService:
         """
         suggestions = []
 
+        # Calculate metrics once, index by cluster_id (avoid N+1 pattern)
+        all_metrics = {m["cluster_id"]: m for m in self._calculate_cluster_metrics()}
+
         for cluster_id, nodes in self.clusters.items():
             # Skip small clusters (< 3 files)
             if len(nodes) < 3:
@@ -190,15 +200,8 @@ class ClusteringService:
             # Find common module prefix
             common_prefix = self._find_common_prefix(nodes)
 
-            # Get cluster metrics
-            metrics = next(
-                (
-                    m
-                    for m in self._calculate_cluster_metrics()
-                    if m["cluster_id"] == cluster_id
-                ),
-                None,
-            )
+            # Get cluster metrics (O(1) lookup)
+            metrics = all_metrics.get(cluster_id)
 
             if metrics and metrics["is_package_candidate"]:
                 suggestions.append(
