@@ -34,7 +34,7 @@ export const ProgressIndicator = () => {
           <h3 className="text-lg font-bold text-slate-900">
             Analyzing Project
           </h3>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Parsing AST and resolving dependencies...
           </p>
         </div>
@@ -42,7 +42,7 @@ export const ProgressIndicator = () => {
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500">{loadingMessage || 'Processing...'}</span>
+            <span className="text-slate-600">{loadingMessage || 'Processing...'}</span>
             <span className="font-medium text-teal-600">{Math.round(loadingProgress)}%</span>
           </div>
           <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -51,7 +51,7 @@ export const ProgressIndicator = () => {
               style={{ width: `${loadingProgress}%` }}
             />
           </div>
-          <div className="text-xs text-slate-400 text-center">
+          <div className="text-xs text-slate-600 text-center">
             {elapsed.toFixed(1)}s elapsed
           </div>
         </div>

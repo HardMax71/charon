@@ -15,8 +15,8 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
     {currentSnapshot && (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center gap-2">
-          <GitCommit className="w-4 h-4 text-slate-400" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Snapshot Data</span>
+          <GitCommit className="w-4 h-4 text-slate-600" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Snapshot Data</span>
         </div>
 
         <div className="p-4 space-y-3">
@@ -36,17 +36,17 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <Calendar className="w-3.5 h-3.5 text-slate-600" />
               <span>{new Date(currentSnapshot.commit_date).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-600">
-              <User className="w-3.5 h-3.5 text-slate-400" />
+              <User className="w-3.5 h-3.5 text-slate-600" />
               <span>{currentSnapshot.author}</span>
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-100">
-            <p className="text-xs text-slate-500 italic leading-relaxed">
+            <p className="text-xs text-slate-600 italic leading-relaxed">
               "{currentSnapshot.commit_message}"
             </p>
           </div>
@@ -56,7 +56,7 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
 
     {currentSnapshot && (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
-        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+        <h4 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-3">
           State Metrics
         </h4>
         <div className="space-y-2">
@@ -89,7 +89,7 @@ interface MetricRowProps {
 
 const MetricRow = ({ label, value, highlight }: MetricRowProps) => (
   <div className="flex justify-between items-center text-xs">
-    <span className="text-slate-500 font-medium">{label}</span>
+    <span className="text-slate-600 font-medium">{label}</span>
     <span className={`font-mono font-bold ${highlight ? 'text-rose-600' : 'text-slate-900'}`}>
       {value}
     </span>

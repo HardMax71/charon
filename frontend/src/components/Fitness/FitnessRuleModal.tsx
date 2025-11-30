@@ -77,8 +77,8 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
 
   const renderParameterInputs = () => {
     const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all";
-    const labelClass = "block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1";
-    const hintClass = "text-[10px] text-slate-400 mt-1";
+    const labelClass = "block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1";
+    const hintClass = "text-[10px] text-slate-600 mt-1";
 
     switch (formData.rule_type) {
       case 'import_restriction':
@@ -160,17 +160,17 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
         {/* Header */}
         <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500">
+            <div className="p-2 bg-white border border-slate-200 rounded-lg text-slate-600">
               <Settings className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900 leading-none">
                 {editingRule ? 'Configure Rule' : 'New Fitness Rule'}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">Define architectural constraints</p>
+              <p className="text-sm text-slate-600 mt-1">Define architectural constraints</p>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Close rule editor" title="Close" className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded p-1.5 transition-colors">
+          <button onClick={onClose} aria-label="Close rule editor" title="Close" className="text-slate-600 hover:text-slate-700 hover:bg-slate-200 rounded p-1.5 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -182,7 +182,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
             {/* Main Details */}
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Rule Name</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Rule Name</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all"
@@ -193,7 +193,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Description</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Description</label>
                 <textarea
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all resize-none h-20"
                   placeholder="Describe the architectural constraint..."
@@ -207,7 +207,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
             {/* Configuration Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Rule Logic</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Rule Logic</label>
                 <select
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all cursor-pointer"
                   value={formData.rule_type}
@@ -217,20 +217,20 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                <p className="text-[10px] text-slate-600 mt-1 leading-tight">
                   {ruleTypeOptions.find(o => o.value === formData.rule_type)?.description}
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Severity Level</label>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Severity Level</label>
                 <div className="flex gap-2">
                   {(['error', 'warning', 'info'] as Severity[]).map((sev) => (
                     <label key={sev} className={`
                       flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-all
                       ${formData.severity === sev 
                         ? (sev === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' : sev === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-blue-50 border-blue-200 text-blue-700') 
-                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }
                     `}>
                       <input type="radio" name="severity" value={sev} checked={formData.severity === sev} onChange={(e) => setFormData({ ...formData, severity: e.target.value as Severity })} className="hidden" />
@@ -262,7 +262,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
               </label>
 
               <div className="flex gap-3">
-                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+                <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                   Cancel
                 </button>
                 <button type="submit" className="px-6 py-2 bg-slate-900 hover:bg-teal-600 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">

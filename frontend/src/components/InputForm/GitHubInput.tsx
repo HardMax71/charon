@@ -55,14 +55,14 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
             <span className="flex items-center gap-2">
               {selectedRepoData ? (
                 <>
-                  {selectedRepoData.private ? <Lock className="w-3.5 h-3.5 text-slate-500" /> : <Globe className="w-3.5 h-3.5 text-slate-400" />}
+                  {selectedRepoData.private ? <Lock className="w-3.5 h-3.5 text-slate-600" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
                   {selectedRepoData.full_name}
                 </>
               ) : (
-                <span className="text-slate-500">Select repository...</span>
+                <span className="text-slate-600">Select repository...</span>
               )}
             </span>
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-600 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {dropdownOpen && (
@@ -75,7 +75,7 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
                   onClick={() => { setSelectedRepo(repo.full_name); setDropdownOpen(false); }}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 ${selectedRepo === repo.full_name ? 'bg-slate-100' : ''}`}
                 >
-                  {repo.private ? <Lock className="w-3.5 h-3.5 text-slate-500" /> : <Globe className="w-3.5 h-3.5 text-slate-400" />}
+                  {repo.private ? <Lock className="w-3.5 h-3.5 text-slate-600" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
                   <span className="truncate">{repo.full_name}</span>
                 </button>
               ))}
@@ -114,7 +114,7 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
         type="text"
         name="url"
         placeholder="https://github.com/owner/repo"
-        className="w-full input-text text-gray-900 placeholder-gray-400 text-sm"
+        className="w-full input-text text-slate-900 placeholder-slate-500 text-sm"
       />
 
       <div className="flex gap-2 h-10">

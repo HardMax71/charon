@@ -93,7 +93,7 @@ h3 {
   }
 
   .modal-panel {
-    @apply bg-white rounded-2xl shadow-2xl p-6 w-full border border-gray-100 transform transition-all;
+    @apply bg-white rounded-2xl shadow-2xl p-6 w-full border border-slate-100 transform transition-all;
   }
 
   .modal-header {
@@ -101,11 +101,44 @@ h3 {
   }
 
   .modal-title {
-    @apply text-xl font-bold text-gray-900;
+    @apply text-xl font-bold text-slate-900;
   }
 
   .modal-close-button {
-    @apply text-gray-400 hover:text-gray-600 transition-colors;
+    @apply text-slate-500 hover:text-slate-700 transition-colors;
+  }
+
+  /* --- Text Hierarchy (Readable Contrast) --- */
+  /* Primary: Main content, headings - highest contrast */
+  .text-primary {
+    @apply text-slate-900;
+  }
+
+  /* Secondary: Labels, descriptions - good contrast */
+  .text-secondary {
+    @apply text-slate-600;
+  }
+
+  /* Tertiary: Hints, timestamps, captions - adequate contrast */
+  .text-tertiary {
+    @apply text-slate-500;
+  }
+
+  /* Combined semantic styles for common patterns */
+  .label {
+    @apply text-sm font-medium text-slate-700;
+  }
+
+  .body-text {
+    @apply text-sm text-slate-700;
+  }
+
+  .caption {
+    @apply text-xs text-slate-500;
+  }
+
+  .hint {
+    @apply text-sm text-slate-500;
   }
 
   /* --- Buttons --- */
@@ -114,7 +147,7 @@ h3 {
   }
 
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply bg-slate-900 text-white hover:bg-teal-600;
   }
 
   .btn-secondary {
@@ -152,7 +185,7 @@ h3 {
   }
 
   .input-text {
-    @apply input-base px-4 py-3 border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+    @apply input-base px-4 py-3 border-gray-300 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100;
   }
 
   .input-select {

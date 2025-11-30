@@ -48,7 +48,7 @@ export const HealthScore = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-slate-400 space-y-3">
+      <div className="flex flex-col items-center justify-center p-12 text-slate-600 space-y-3">
         <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
         <span className="text-xs font-mono uppercase tracking-widest">Calibrating Metrics...</span>
       </div>
@@ -161,7 +161,7 @@ export const HealthScore = () => {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={`text-4xl font-black ${colorClass}`}>{healthScore.overall_grade}</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Grade</span>
+              <span className="text-[10px] font-bold text-slate-600 uppercase mt-1">Grade</span>
             </div>
           </div>
 
@@ -190,7 +190,7 @@ export const HealthScore = () => {
               ))}
             </ul>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm italic">
+            <div className="flex-1 flex items-center justify-center text-slate-600 text-sm italic">
               No immediate recommendations found.
             </div>
           )}
@@ -221,7 +221,7 @@ export const HealthScore = () => {
             </div>
 
             {/* Metric Label */}
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
               {getComponentLabel(key)}
             </div>
 

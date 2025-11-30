@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </h2>
 
             {/* Description */}
-            <p className="text-slate-500 text-center mb-6">
+            <p className="text-slate-600 text-center mb-6">
               The application encountered an unexpected error. Please try refreshing the page.
             </p>
 

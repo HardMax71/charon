@@ -90,7 +90,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-mono text-slate-400 truncate leading-tight mt-0.5" title={id}>
+              <p className="text-[10px] font-mono text-slate-600 truncate leading-tight mt-0.5" title={id}>
                 {kindLabel} • {type === 'third_party' ? 'Third Party' : module}
               </p>
             </div>
@@ -99,7 +99,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
             onClick={() => setSelectedNode(null)}
             aria-label="Close node metrics"
             title="Close"
-            className="text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded p-1 transition-colors"
+            className="text-slate-600 hover:text-slate-700 hover:bg-slate-200 rounded p-1 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -114,8 +114,8 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
               <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 space-y-2">
                 {service && (
                   <div className="flex items-center gap-2 text-xs">
-                    <Layers className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    <span className="text-slate-500">Service:</span>
+                    <Layers className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                    <span className="text-slate-600">Service:</span>
                     <span className="font-mono font-bold text-slate-700 truncate" title={service}>
                       {service}
                     </span>
@@ -123,8 +123,8 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
                 )}
                 {file_path && (
                   <div className="flex items-start gap-2 text-xs">
-                    <FileText className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-500 flex-shrink-0">Path:</span>
+                    <FileText className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-600 flex-shrink-0">Path:</span>
                     <span
                       className="font-mono text-[10px] text-slate-600 break-all leading-relaxed"
                       title={file_path}
@@ -155,7 +155,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 
             {/* Instability Bar */}
             <div className="mt-3 space-y-1.5">
-              <div className="flex justify-between items-end text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+              <div className="flex justify-between items-end text-[10px] uppercase font-bold text-slate-600 tracking-wider">
                 <span>Instability</span>
                 <span className="font-mono text-slate-900">{metrics.instability.toFixed(2)}</span>
               </div>
@@ -185,7 +185,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
                 grade={metrics.maintainability_grade}
               />
               <div className="flex justify-between items-center pt-1 text-xs">
-                <span className="text-slate-500 font-medium">Lines of Code</span>
+                <span className="text-slate-600 font-medium">Lines of Code</span>
                 <span className="font-mono font-bold text-slate-700">{metrics.lines_of_code}</span>
               </div>
             </div>
@@ -249,16 +249,16 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 
 const SectionHeader = ({ icon: Icon, label }: SectionHeaderProps) => (
   <div className="flex items-center gap-2 mb-2.5 pb-1 border-b border-slate-100">
-    <Icon className="w-3.5 h-3.5 text-slate-400" />
-    <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</h5>
+    <Icon className="w-3.5 h-3.5 text-slate-600" />
+    <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{label}</h5>
   </div>
 );
 
 const MetricBox = ({ label, value, desc }: MetricBoxProps) => (
   <div className="bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
-    <div className="text-[9px] text-slate-400 font-bold uppercase mb-1">{label}</div>
+    <div className="text-[9px] text-slate-600 font-bold uppercase mb-1">{label}</div>
     <div className="text-lg font-black text-slate-800 font-mono leading-none">{value}</div>
-    <div className="text-[9px] text-slate-400 mt-1">{desc}</div>
+    <div className="text-[9px] text-slate-600 mt-1">{desc}</div>
   </div>
 );
 
@@ -282,7 +282,7 @@ const RowMetric = ({ label, value, grade }: RowMetricProps) => {
 
   return (
     <div className="flex justify-between items-center text-xs">
-      <span className="text-slate-500 font-medium">{label}</span>
+      <span className="text-slate-600 font-medium">{label}</span>
       <div className="flex items-center gap-2">
         <span className="font-mono font-bold text-slate-900">{value}</span>
         {grade && (

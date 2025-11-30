@@ -80,7 +80,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
 
       {/* Header */}
       <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between select-none h-9 rounded-t-lg">
-        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-500">
+        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
           <Settings className="w-3 h-3" />
           <span>View Config</span>
         </div>
@@ -88,7 +88,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
           onClick={() => setLayoutSelectorExpanded(false)}
           aria-label="Collapse view config"
           title="Collapse"
-          className="text-slate-400 hover:text-slate-700 rounded hover:bg-slate-200/50 p-0.5 transition-colors"
+          className="text-slate-600 hover:text-slate-700 rounded hover:bg-slate-200/50 p-0.5 transition-colors"
         >
           <Minimize2 className="w-3.5 h-3.5" />
         </button>
@@ -98,11 +98,11 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
 
         {/* 1. Layout Selector */}
         <div className="space-y-1.5">
-          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block pl-0.5">
+          <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider block pl-0.5">
             Topology Layout
           </label>
           <div className="relative group">
-            <Layout className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+            <Layout className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600 group-focus-within:text-teal-600 transition-colors" />
             <select
               value={currentLayout}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => setCurrentLayout(e.target.value as LayoutType)}
@@ -114,23 +114,23 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600 pointer-events-none" />
           </div>
         </div>
 
         {/* 2. Module Filter */}
         <div className="space-y-1.5">
-          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block pl-0.5">
+          <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider block pl-0.5">
             Scope Filter
           </label>
           <div className="relative group">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600 group-focus-within:text-teal-600 transition-colors" />
             <input
               list="modules-list"
               value={selectedModule || ''}
               onChange={(e) => setSelectedModule(e.target.value || null)}
               placeholder="Select module..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-8 pr-6 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors placeholder:text-slate-400"
+              className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-8 pr-6 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors placeholder:text-slate-600"
             />
             <datalist id="modules-list">
               {modules.map((module) => (
@@ -140,7 +140,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
             {selectedModule && (
               <button
                 onClick={() => setSelectedModule(null)}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 rounded p-0.5 transition-all"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-rose-500 rounded p-0.5 transition-all"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -155,7 +155,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
               <Layers className="w-3.5 h-3.5 text-teal-600" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Clusters</span>
-                <span className="text-[9px] text-slate-400 leading-none">{activeMetrics.clusters.length} detected</span>
+                <span className="text-[9px] text-slate-600 leading-none">{activeMetrics.clusters.length} detected</span>
               </div>
             </div>
 

@@ -75,7 +75,7 @@ export const MetricsPanel = () => {
         `}
         title="Drag to resize panel"
       >
-        <GripHorizontal className={`w-8 h-3 transition-colors ${isResizing ? 'text-styx-600' : 'text-slate-200 group-hover:text-slate-400'}`} />
+        <GripHorizontal className={`w-8 h-3 transition-colors ${isResizing ? 'text-styx-600' : 'text-slate-200 group-hover:text-slate-600'}`} />
       </div>
 
       {/* --- NAVIGATION RAIL --- */}

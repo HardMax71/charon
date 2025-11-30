@@ -49,7 +49,7 @@ export const Header = () => {
               className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                 location.pathname === path
                   ? 'text-teal-700 bg-teal-50'
-                  : 'text-slate-500 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {label.slice(0, 3)}

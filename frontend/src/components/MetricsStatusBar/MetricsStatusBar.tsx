@@ -51,7 +51,7 @@ export const MetricsStatusBar = () => {
       case 'C': return 'text-amber-500';
       case 'D': return 'text-orange-500';
       case 'F': return 'text-rose-500';
-      default: return 'text-slate-400';
+      default: return 'text-slate-600';
     }
   };
 
@@ -70,7 +70,7 @@ export const MetricsStatusBar = () => {
             <span className={`text-xs font-bold leading-none ${getHealthColor(healthScore?.overall_grade || '?')}`}>
               {healthScore?.overall_grade || '?'}
             </span>
-            <span className="text-xs text-slate-400 font-medium leading-none">Health</span>
+            <span className="text-xs text-slate-600 font-medium leading-none">Health</span>
           </button>
 
           {/* Divider */}
@@ -82,19 +82,19 @@ export const MetricsStatusBar = () => {
             className="h-8 flex items-center gap-3 px-3 rounded-lg hover:bg-slate-50 transition-colors group"
           >
             <div className="flex items-center gap-2">
-              <Box className="w-4 h-4 flex-shrink-0 text-slate-400 group-hover:text-styx-600 transition-colors" />
+              <Box className="w-4 h-4 flex-shrink-0 text-slate-600 group-hover:text-styx-600 transition-colors" />
               <span className="text-xs font-bold text-slate-700 tabular-nums leading-none">{totalFiles}</span>
-              <span className="text-xs text-slate-400 font-medium leading-none">Files</span>
+              <span className="text-xs text-slate-600 font-medium leading-none">Files</span>
             </div>
             <div className="h-3 w-px bg-slate-200 flex-shrink-0" />
             <div className="flex items-center gap-2">
               <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${
-                criticalIssues > 0 ? 'text-rose-500' : 'text-slate-400 group-hover:text-slate-500'
+                criticalIssues > 0 ? 'text-rose-500' : 'text-slate-600 group-hover:text-slate-600'
               }`} />
               <span className={`text-xs font-bold tabular-nums leading-none ${
                 criticalIssues > 0 ? 'text-rose-600' : 'text-slate-700'
               }`}>{criticalIssues}</span>
-              <span className="text-xs text-slate-400 font-medium leading-none">Issues</span>
+              <span className="text-xs text-slate-600 font-medium leading-none">Issues</span>
             </div>
           </button>
 
@@ -107,12 +107,12 @@ export const MetricsStatusBar = () => {
             className="h-8 flex items-center gap-2 px-3 rounded-lg hover:bg-slate-50 transition-colors group"
           >
             <Lightbulb className={`w-4 h-4 flex-shrink-0 ${
-              refactoringSuggestionsCount > 0 ? 'text-amber-500' : 'text-slate-400'
+              refactoringSuggestionsCount > 0 ? 'text-amber-500' : 'text-slate-600'
             }`} />
             <span className={`text-xs font-bold tabular-nums leading-none ${
               refactoringSuggestionsCount > 0 ? 'text-amber-600' : 'text-slate-700'
             }`}>{refactoringSuggestionsCount}</span>
-            <span className="text-xs text-slate-400 font-medium leading-none">Suggestions</span>
+            <span className="text-xs text-slate-600 font-medium leading-none">Suggestions</span>
           </button>
 
         </div>

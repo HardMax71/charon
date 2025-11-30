@@ -237,7 +237,7 @@ export const RefactoringPage = () => {
             Refactoring Scenarios
           </h2>
 
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-600 mb-6">
             Experiment with architectural changes and see how metrics update in real-time. Analyze a project first.
           </p>
 
@@ -269,14 +269,14 @@ export const RefactoringPage = () => {
               <span className="text-sm font-semibold text-slate-900">Refactoring Sandbox</span>
             </div>
             <div className="h-4 w-px bg-slate-200" />
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-500">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
               {analysisSource && sourceIcon[analysisSource.type]}
               <span className="font-mono truncate max-w-[200px]">
                 {analysisSource?.url || analysisSource?.fileName || 'Unknown Source'}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-4 text-xs text-slate-600">
             {changes.length > 0 && (
               <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded-md font-medium">
                 {changes.length} change{changes.length !== 1 ? 's' : ''}
@@ -285,7 +285,7 @@ export const RefactoringPage = () => {
             {modifiedGraph && (
               <span>
                 <span className="font-mono font-semibold text-slate-700">{modifiedGraph.nodes.length}</span> nodes
-                <span className="mx-1.5 text-slate-300">·</span>
+                <span className="mx-1.5 text-slate-600">·</span>
                 <span className="font-mono font-semibold text-slate-700">{modifiedGraph.edges.length}</span> edges
               </span>
             )}
@@ -301,7 +301,7 @@ export const RefactoringPage = () => {
           <div className="w-72 border-r border-slate-200 bg-white overflow-y-auto custom-scrollbar z-20 flex-shrink-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 sticky top-0 bg-white z-10">
               <h3 className="text-sm font-semibold text-slate-900">Modifications</h3>
-              <button onClick={() => setControlsExpanded(false)} className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded p-1 -mr-1">
+              <button onClick={() => setControlsExpanded(false)} className="text-slate-600 hover:text-slate-600 hover:bg-slate-100 rounded p-1 -mr-1">
                 <ArrowRight className="w-4 h-4 rotate-180" />
               </button>
             </div>
@@ -320,7 +320,7 @@ export const RefactoringPage = () => {
             )}
             {changes.length > 0 && (
               <div className="mt-4 pt-4 border-t border-slate-100">
-                <h4 className="text-xs font-medium text-slate-500 mb-3">History</h4>
+                <h4 className="text-xs font-medium text-slate-600 mb-3">History</h4>
                 <div className="space-y-2">
                   {changes.slice().reverse().map((change, idx) => (
                     <div
@@ -340,7 +340,7 @@ export const RefactoringPage = () => {
                       onMouseLeave={() => setHighlightedNodeId(null)}
                     >
                       <div className="flex items-start gap-2">
-                        <span className="text-[10px] font-mono text-slate-400 mt-0.5">#{changes.length - idx}</span>
+                        <span className="text-[10px] font-mono text-slate-600 mt-0.5">#{changes.length - idx}</span>
                         <div className="flex-1 min-w-0">
                           <div className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase mb-1 ${change.type.includes('remove') ? 'bg-rose-100 text-rose-600' : 'bg-teal-100 text-teal-600'
                             }`}>
@@ -352,7 +352,7 @@ export const RefactoringPage = () => {
                           onClick={(e) => { e.stopPropagation(); handleUndoChange(change.id); }}
                           aria-label="Undo this change"
                           title="Undo this change"
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded p-1 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                          className="text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded p-1 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -366,7 +366,7 @@ export const RefactoringPage = () => {
           </div>
         ) : (
           <div className="w-12 border-r border-slate-200 bg-white flex flex-col items-center py-4 gap-2 z-20 flex-shrink-0">
-            <button onClick={() => setControlsExpanded(true)} className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded p-2">
+            <button onClick={() => setControlsExpanded(true)} className="text-slate-600 hover:text-slate-600 hover:bg-slate-100 rounded p-2">
               <ArrowRight className="w-5 h-5" />
             </button>
 
@@ -468,7 +468,7 @@ export const RefactoringPage = () => {
             // Graph3D will listen to the same store that LayoutSelector updates.
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400 font-mono text-sm">
+            <div className="w-full h-full flex items-center justify-center text-slate-600 font-mono text-sm">
               NO GRAPH LOADED
             </div>
           )}
@@ -480,7 +480,7 @@ export const RefactoringPage = () => {
           {/* Header */}
           <div className="px-4 py-3 border-b border-slate-100 flex-shrink-0">
             <h2 className="text-sm font-semibold text-slate-900">Metrics Comparison</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Before & after your changes</p>
+            <p className="text-sm text-slate-600 mt-0.5">Before & after your changes</p>
           </div>
 
           {/* Content */}

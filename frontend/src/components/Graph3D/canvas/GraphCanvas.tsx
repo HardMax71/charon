@@ -21,7 +21,7 @@ export const GraphCanvas = memo(({ children, hideClusterBoxes = false }: GraphCa
 
   if (!graph) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 font-mono text-sm">
+      <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-600 font-mono text-sm">
         No graph data
       </div>
     );

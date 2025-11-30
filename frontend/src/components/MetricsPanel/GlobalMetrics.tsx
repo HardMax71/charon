@@ -21,7 +21,7 @@ export const GlobalMetrics = () => {
 
   if (!globalMetrics) {
     return (
-      <div className="flex items-center justify-center h-40 text-slate-400 space-y-2 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+      <div className="flex items-center justify-center h-40 text-slate-600 space-y-2 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
         <span className="text-xs font-mono uppercase tracking-widest font-bold">System Offline</span>
       </div>
     );
@@ -121,7 +121,7 @@ export const GlobalMetrics = () => {
                       {file.severity}
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500 border-t border-slate-100 pt-2">
+                  <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-600 border-t border-slate-100 pt-2">
                     <div>Cmplx: <strong className="text-slate-900">{fmt(file.complexity)}</strong></div>
                     <div>Cplng: <strong className="text-slate-900">{fmt(file.coupling)}</strong></div>
                     <div>Score: <strong className="text-slate-900">{fmt(file.score)}</strong></div>
@@ -179,12 +179,12 @@ const MetricCard = ({ title, icon: Icon, children, alert, tooltip }: MetricCardP
   `}>
     <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
       <div className="flex items-center gap-2">
-        <Icon className={`w-3.5 h-3.5 ${alert ? 'text-rose-500' : 'text-slate-400'}`} />
+        <Icon className={`w-3.5 h-3.5 ${alert ? 'text-rose-500' : 'text-slate-600'}`} />
         <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">{title}</h4>
       </div>
       {tooltip && (
         <div className="group relative">
-          <HelpCircle className="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 cursor-help transition-colors" />
+          <HelpCircle className="w-3.5 h-3.5 text-slate-600 hover:text-slate-600 cursor-help transition-colors" />
           <div className="absolute right-0 top-5 w-44 p-2.5 bg-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed">
             {tooltip}
           </div>
@@ -204,7 +204,7 @@ interface MetricRowProps {
 
 const MetricRow = ({ label, value, highlight, critical }: MetricRowProps) => (
   <div className="flex justify-between items-center">
-    <span className="text-xs text-slate-500">{label}</span>
+    <span className="text-xs text-slate-600">{label}</span>
     <span className={`text-xs font-semibold tabular-nums ${
       critical ? 'text-rose-600' :
       highlight ? 'text-teal-600' :

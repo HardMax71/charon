@@ -58,22 +58,22 @@ export const FitnessRuleCard = ({ rule, onToggle, onDelete, onEdit }: FitnessRul
             <div className="flex items-center gap-2 mb-2">
               <span className={`
                 flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider
-                ${rule.enabled ? config.badge : 'bg-slate-100 text-slate-500 border-slate-200'}
+                ${rule.enabled ? config.badge : 'bg-slate-100 text-slate-600 border-slate-200'}
               `}>
                 <SeverityIcon className="w-3 h-3" />
                 {rule.severity}
               </span>
 
               <span className="flex items-center gap-1.5 px-2 py-0.5 rounded border bg-slate-50 border-slate-200 text-slate-600 text-[10px] font-mono uppercase tracking-wide">
-                <Activity className="w-3 h-3 text-slate-400" />
+                <Activity className="w-3 h-3 text-slate-600" />
                 {ruleTypeLabels[rule.rule_type] || rule.rule_type}
               </span>
             </div>
 
-            <h3 className={`text-sm font-bold truncate ${rule.enabled ? 'text-slate-900' : 'text-slate-500'}`}>
+            <h3 className={`text-sm font-bold truncate ${rule.enabled ? 'text-slate-900' : 'text-slate-600'}`}>
               {rule.name}
             </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">
+            <p className="text-sm text-slate-600 mt-1 leading-relaxed line-clamp-2">
               {rule.description}
             </p>
           </div>
@@ -105,7 +105,7 @@ export const FitnessRuleCard = ({ rule, onToggle, onDelete, onEdit }: FitnessRul
         {/* Parameters Grid */}
         {Object.keys(rule.parameters).length > 0 && (
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
               <Settings className="w-3 h-3" />
               <span>Configuration</span>
             </div>
@@ -115,7 +115,7 @@ export const FitnessRuleCard = ({ rule, onToggle, onDelete, onEdit }: FitnessRul
                   key={key}
                   className="flex items-center bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs group-hover:border-slate-300 transition-colors"
                 >
-                  <span className="text-slate-500 font-medium mr-2">{key.replace(/_/g, ' ')}:</span>
+                  <span className="text-slate-600 font-medium mr-2">{key.replace(/_/g, ' ')}:</span>
                   <span className="font-mono font-bold text-slate-700">
                     {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                   </span>
@@ -155,7 +155,7 @@ const ActionButton = ({
       p-1.5 rounded-md transition-all duration-200
       ${active
         ? activeColor
-        : `text-slate-400 ${hoverColor}`
+        : `text-slate-600 ${hoverColor}`
       }
     `}
   >

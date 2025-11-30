@@ -47,7 +47,7 @@ export const FitnessValidationResults = ({ result, onViolationClick }: FitnessVa
             <h3 className={`text-lg font-black tracking-tight ${result.passed ? 'text-teal-900' : 'text-rose-900'}`}>
               {result.passed ? 'Architecture Validated' : 'Validation Failed'}
             </h3>
-            <p className="text-sm text-slate-500 mt-1 font-medium">
+            <p className="text-sm text-slate-600 mt-1 font-medium">
               {result.summary}
             </p>
           </div>
@@ -65,7 +65,7 @@ export const FitnessValidationResults = ({ result, onViolationClick }: FitnessVa
       {/* --- VIOLATIONS LIST --- */}
       {result.violations.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider px-1">
             <ListChecks className="w-4 h-4" />
             <span>Violation Report</span>
             <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">
@@ -116,12 +116,12 @@ export const FitnessValidationResults = ({ result, onViolationClick }: FitnessVa
                       {violation.affected_modules.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {violation.affected_modules.slice(0, 4).map((module, idx) => (
-                            <span key={idx} className="text-[10px] font-mono text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
+                            <span key={idx} className="text-[10px] font-mono text-slate-600 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
                               {module}
                             </span>
                           ))}
                           {violation.affected_modules.length > 4 && (
-                            <span className="text-[10px] font-medium text-slate-400 px-1">
+                            <span className="text-[10px] font-medium text-slate-600 px-1">
                               +{violation.affected_modules.length - 4} more
                             </span>
                           )}
@@ -130,7 +130,7 @@ export const FitnessValidationResults = ({ result, onViolationClick }: FitnessVa
                     </div>
 
                     <button
-                      className={`text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      className={`text-slate-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                     >
                       <ChevronDown className="w-5 h-5" />
                     </button>
@@ -140,13 +140,13 @@ export const FitnessValidationResults = ({ result, onViolationClick }: FitnessVa
                   {isExpanded && Object.keys(violation.details).length > 0 && (
                     <div className="px-4 pb-4 pl-[3.75rem]">
                       <div className="bg-white border border-slate-200 rounded-lg p-3">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">
                           Technical Context
                         </div>
                         <div className="grid grid-cols-1 gap-1">
                           {Object.entries(violation.details).map(([key, value]) => (
                             <div key={key} className="flex items-baseline gap-2 text-xs font-mono">
-                              <span className="text-slate-500 flex-shrink-0">{key}:</span>
+                              <span className="text-slate-600 flex-shrink-0">{key}:</span>
                               <span className="text-slate-900 font-bold break-all">
                                 {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                               </span>

@@ -63,7 +63,7 @@ export const GraphManipulationControls = ({
           onClick={() => setShowAddNodeModal(true)}
           className="flex flex-col items-center gap-1.5 p-3 bg-white border border-slate-200 rounded-lg hover:border-emerald-300 hover:bg-emerald-50 transition-colors group"
         >
-          <Plus className="w-4 h-4 text-slate-400 group-hover:text-emerald-600" />
+          <Plus className="w-4 h-4 text-slate-600 group-hover:text-emerald-600" />
           <span className="text-[10px] font-bold text-slate-600 group-hover:text-emerald-700">
             Add Node
           </span>
@@ -77,7 +77,7 @@ export const GraphManipulationControls = ({
           }}
           className="flex flex-col items-center gap-1.5 p-3 bg-white border border-slate-200 rounded-lg hover:border-teal-300 hover:bg-teal-50 transition-colors group"
         >
-          <LinkIcon className="w-4 h-4 text-slate-400 group-hover:text-teal-600" />
+          <LinkIcon className="w-4 h-4 text-slate-600 group-hover:text-teal-600" />
           <span className="text-[10px] font-bold text-slate-600 group-hover:text-teal-700">
             Add Edge
           </span>
@@ -91,7 +91,7 @@ export const GraphManipulationControls = ({
           }}
           className="flex flex-col items-center gap-1.5 p-3 bg-white border border-slate-200 rounded-lg hover:border-rose-300 hover:bg-rose-50 transition-colors group"
         >
-          <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-rose-600" />
+          <Trash2 className="w-4 h-4 text-slate-600 group-hover:text-rose-600" />
           <span className="text-[10px] font-bold text-slate-600 group-hover:text-rose-700">
             Remove Node
           </span>
@@ -105,7 +105,7 @@ export const GraphManipulationControls = ({
           }}
           className="flex flex-col items-center gap-1.5 p-3 bg-white border border-slate-200 rounded-lg hover:border-amber-300 hover:bg-amber-50 transition-colors group"
         >
-          <X className="w-4 h-4 text-slate-400 group-hover:text-amber-600" />
+          <X className="w-4 h-4 text-slate-600 group-hover:text-amber-600" />
           <span className="text-[10px] font-bold text-slate-600 group-hover:text-amber-700">
             Remove Edge
           </span>
@@ -115,7 +115,7 @@ export const GraphManipulationControls = ({
       {/* Remove Node Panel */}
       {showNodeList && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3">
             Select Node to Remove
           </div>
           <div className="space-y-1">
@@ -133,9 +133,9 @@ export const GraphManipulationControls = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-xs font-semibold text-slate-900">{node.label}</div>
-                    <div className="text-[10px] text-slate-500 font-mono">{node.id}</div>
+                    <div className="text-[10px] text-slate-600 font-mono">{node.id}</div>
                   </div>
-                  <Trash2 className="w-3 h-3 text-slate-300 group-hover:text-rose-600" />
+                  <Trash2 className="w-3 h-3 text-slate-600 group-hover:text-rose-600" />
                 </div>
               </button>
             ))}
@@ -146,7 +146,7 @@ export const GraphManipulationControls = ({
       {/* Remove Edge Panel */}
       {showEdgeList && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3">
             Click Edge to Remove (shows RED on graph)
           </div>
 
@@ -170,16 +170,16 @@ export const GraphManipulationControls = ({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className={`text-[10px] ${isRemoved ? 'text-rose-700 font-bold line-through' : 'text-slate-500'}`}>
+                      <div className={`text-[10px] ${isRemoved ? 'text-rose-700 font-bold line-through' : 'text-slate-600'}`}>
                         {sourceNode?.label || edge.source}
-                        <span className={`mx-1 ${isRemoved ? 'text-rose-400' : 'text-slate-300'}`}>→</span>
+                        <span className={`mx-1 ${isRemoved ? 'text-rose-400' : 'text-slate-600'}`}>→</span>
                         {targetNode?.label || edge.target}
                       </div>
-                      <div className={`text-[9px] font-mono ${isRemoved ? 'text-rose-600' : 'text-slate-400'}`}>
+                      <div className={`text-[9px] font-mono ${isRemoved ? 'text-rose-600' : 'text-slate-600'}`}>
                         {`${edge.imports.slice(0, 3).join(', ')}${edge.imports.length > 3 ? ` +${edge.imports.length - 3}` : ''}`}
                       </div>
                     </div>
-                    <X className={`w-3 h-3 flex-shrink-0 ${isRemoved ? 'text-rose-600' : 'text-slate-300 group-hover:text-rose-600'
+                    <X className={`w-3 h-3 flex-shrink-0 ${isRemoved ? 'text-rose-600' : 'text-slate-600 group-hover:text-rose-600'
                       }`} />
                   </div>
                 </button>
@@ -192,12 +192,12 @@ export const GraphManipulationControls = ({
       {/* Add Edge Panel */}
       {showAddEdge && (
         <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">
+          <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3">
             Create New Dependency
           </div>
           <div className="space-y-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">
                 Source Module
               </label>
               <select
@@ -215,7 +215,7 @@ export const GraphManipulationControls = ({
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">
                 Target Module
               </label>
               <select

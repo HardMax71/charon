@@ -47,7 +47,7 @@ const LanguageLegendItem = ({ color, label, extension, count, isActive, onClick 
       {extension}
     </span>
     <span className="text-xs text-slate-700 flex-grow text-left">{label}</span>
-    <span className="text-[10px] text-slate-400 font-mono">{count}</span>
+    <span className="text-[10px] text-slate-600 font-mono">{count}</span>
   </button>
 );
 
@@ -67,7 +67,7 @@ const StatusLegendItem = ({ color, label, icon, isActive, onClick, clickable = t
         className="w-3 h-3 rounded-full flex-shrink-0 border border-black/10"
         style={{ backgroundColor: color }}
       />
-      {icon && <span className="text-slate-400">{icon}</span>}
+      {icon && <span className="text-slate-600">{icon}</span>}
       <span className="text-[10px] text-slate-600">{label}</span>
     </>
   );
@@ -109,7 +109,7 @@ const ServiceLegendItem = ({ service, count, isActive, onClick }: ServiceLegendI
     <span className="text-xs text-slate-600 flex-grow truncate text-left" title={service}>
       {service}
     </span>
-    <span className="text-[10px] text-slate-400 font-mono">{count}</span>
+    <span className="text-[10px] text-slate-600 font-mono">{count}</span>
   </button>
 );
 
@@ -202,8 +202,8 @@ export const LanguageLegend = () => {
         }`}
       >
         <div className="flex items-center gap-2">
-          <Layers className="w-3.5 h-3.5 text-slate-500" />
-          <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-slate-500">
+          <Layers className="w-3.5 h-3.5 text-slate-600" />
+          <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
             Legend
           </span>
           {filtersActive && (
@@ -211,9 +211,9 @@ export const LanguageLegend = () => {
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronUp className="w-3.5 h-3.5 text-slate-600" />
         ) : (
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
         )}
       </button>
 
@@ -233,7 +233,7 @@ export const LanguageLegend = () => {
           {/* Languages Section */}
           {activeLanguages.length > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
                 Languages
               </div>
               <div className="space-y-0.5">
@@ -254,7 +254,7 @@ export const LanguageLegend = () => {
 
           {/* Status Colors Section */}
           <div>
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
               Status
             </div>
             <div className="space-y-0.5">
@@ -297,7 +297,7 @@ export const LanguageLegend = () => {
           {/* Services Section */}
           {activeServices.length > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
                 Services
               </div>
               <div className="space-y-0.5">
@@ -317,7 +317,7 @@ export const LanguageLegend = () => {
           {/* Third Party */}
           {stats.thirdPartyCount > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
                 Dependencies
               </div>
               <button
@@ -333,14 +333,14 @@ export const LanguageLegend = () => {
                   style={{ backgroundColor: THIRD_PARTY_COLOR }}
                 />
                 <span className="text-xs text-slate-600 flex-grow text-left">Third Party</span>
-                <span className="text-[10px] text-slate-400 font-mono">{stats.thirdPartyCount}</span>
+                <span className="text-[10px] text-slate-600 font-mono">{stats.thirdPartyCount}</span>
               </button>
             </div>
           )}
 
           {/* Summary */}
           <div className="border-t border-slate-100 pt-2 px-2">
-            <div className="text-[10px] text-slate-400 text-center">
+            <div className="text-[10px] text-slate-600 text-center">
               {nodes.length} total nodes
             </div>
           </div>

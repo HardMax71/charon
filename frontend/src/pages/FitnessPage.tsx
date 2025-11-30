@@ -148,7 +148,7 @@ export const FitnessPage = () => {
             Fitness Functions
           </h2>
 
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-600 mb-6">
             Define architectural rules and validate your codebase against them. Analyze a project first.
           </p>
 
@@ -182,10 +182,10 @@ export const FitnessPage = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <button onClick={handleLoadConfig} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Load Config">
+            <button onClick={handleLoadConfig} className="p-2 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Load Config">
               <Upload className="w-4 h-4" />
             </button>
-            <button onClick={handleSaveConfig} disabled={rules.length === 0} className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50" title="Save Config">
+            <button onClick={handleSaveConfig} disabled={rules.length === 0} className="p-2 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50" title="Save Config">
               <Download className="w-4 h-4" />
             </button>
 
@@ -211,10 +211,10 @@ export const FitnessPage = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-slate-400" />
+                <Settings className="w-5 h-5 text-slate-600" />
                 Fitness Functions
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-sm text-slate-600 mt-1">
                 {rules.filter((r) => r.enabled).length} active rules configured
               </p>
             </div>
@@ -240,7 +240,7 @@ export const FitnessPage = () => {
           <div className="space-y-3">
             {rules.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
-                <p className="text-sm text-slate-400">No rules defined.</p>
+                <p className="text-sm text-slate-600">No rules defined.</p>
               </div>
             ) : (
               rules.map((rule) => (
@@ -260,7 +260,7 @@ export const FitnessPage = () => {
         <div className="w-1/2 overflow-y-auto p-6 bg-white custom-scrollbar">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-slate-900">Validation Report</h2>
-            <p className="text-xs text-slate-500 mt-1">Real-time architectural compliance check</p>
+            <p className="text-sm text-slate-600 mt-1">Real-time architectural compliance check</p>
           </div>
 
           {validationResult ? (
@@ -271,10 +271,10 @@ export const FitnessPage = () => {
           ) : (
             <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-100 rounded-xl">
               <div className="p-4 bg-slate-50 rounded-full mb-3">
-                <Play className="w-6 h-6 text-slate-300 ml-1" />
+                <Play className="w-6 h-6 text-slate-600 ml-1" />
               </div>
-              <p className="text-sm text-slate-400 font-medium">Ready to validate</p>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-sm text-slate-600 font-medium">Ready to validate</p>
+              <p className="text-sm text-slate-600 mt-1">
                 Click "Run Validation" to execute active rules
               </p>
             </div>

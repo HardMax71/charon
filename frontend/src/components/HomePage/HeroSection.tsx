@@ -42,7 +42,7 @@ export const HeroSection = () => (
           </div>
 
           {/* Tech stack - minimal inline */}
-          <div className="flex items-center gap-2 text-xs text-slate-400 pt-2">
+          <div className="flex items-center gap-2 text-xs text-slate-600 pt-2">
             <span className="uppercase tracking-wider">Powered by</span>
             <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">tree-sitter</span>
             <span>+</span>
@@ -60,7 +60,7 @@ export const HeroSection = () => (
     </div>
 
     {/* Scroll indicator */}
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600">
       <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
       <ArrowDown className="w-4 h-4 animate-bounce" />
     </div>

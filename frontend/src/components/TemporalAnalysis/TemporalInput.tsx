@@ -106,7 +106,7 @@ export const TemporalInput = ({
             <Clock className="w-6 h-6 text-teal-600" />
           </div>
           <h2 className="text-lg font-bold text-slate-900 mb-2">Temporal Analysis</h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Analyze how your codebase architecture evolved over time.
           </p>
         </div>
@@ -120,7 +120,7 @@ export const TemporalInput = ({
                 Repository URL
               </label>
               <div className="relative">
-                <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
                   type="text"
                   value={repoUrl}
@@ -196,7 +196,7 @@ export const TemporalInput = ({
             {isAnalyzing && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5">
+                  <span className="text-slate-600 flex items-center gap-1.5">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     {progressMessage || 'Processing...'}
                   </span>

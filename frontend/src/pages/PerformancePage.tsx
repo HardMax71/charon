@@ -37,7 +37,7 @@ export const PerformancePage = () => {
             Performance Profiling
           </h2>
 
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-600 mb-6">
             Combine runtime profiling data with architectural metrics to find optimization targets. Analyze a project first.
           </p>
 
@@ -59,30 +59,30 @@ export const PerformancePage = () => {
           {/* Page Header */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-orange-500" />
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-rose-500" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">Performance Profiling</h1>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-600">
                   Combine <span className="font-medium text-slate-700">runtime data</span> with architectural metrics
                 </p>
               </div>
               <div className="group relative ml-1">
-                <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help transition-colors" />
+                <HelpCircle className="w-4 h-4 text-slate-600 hover:text-slate-600 cursor-help transition-colors" />
                 <div className="absolute left-0 top-8 w-72 p-4 bg-slate-900 text-white text-xs rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="space-y-3">
                     <div>
                       <p className="font-semibold text-white mb-1">1. Profile your code</p>
-                      <p className="text-slate-400">Use <span className="text-teal-400 font-mono">cProfile</span> or <span className="text-teal-400 font-mono">py-spy</span></p>
+                      <p className="text-slate-300">Use <span className="text-teal-400 font-mono">cProfile</span> or <span className="text-teal-400 font-mono">py-spy</span></p>
                     </div>
                     <div>
                       <p className="font-semibold text-white mb-1">2. Upload & analyze</p>
-                      <p className="text-slate-400">Combines performance with coupling metrics</p>
+                      <p className="text-slate-300">Combines performance with coupling metrics</p>
                     </div>
                     <div>
                       <p className="font-semibold text-white mb-1">3. Get recommendations</p>
-                      <p className="text-slate-400">Ranked bottlenecks with actionable fixes</p>
+                      <p className="text-slate-300">Ranked bottlenecks with actionable fixes</p>
                     </div>
                   </div>
                   <div className="absolute -top-1.5 left-4 w-3 h-3 bg-slate-900 transform rotate-45"></div>
@@ -113,16 +113,16 @@ export const PerformancePage = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                       <p className="text-2xl font-bold text-slate-900 tabular-nums">
-                        {analysis.total_execution_time.toFixed(2)}<span className="text-base font-medium text-slate-500">s</span>
+                        {analysis.total_execution_time.toFixed(2)}<span className="text-base font-medium text-slate-600">s</span>
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-1 font-medium">Total Runtime</p>
+                      <p className="text-[11px] text-slate-600 mt-1 font-medium">Total Runtime</p>
                     </div>
 
                     <div className="text-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                       <p className="text-2xl font-bold text-slate-900 tabular-nums">
                         {analysis.total_modules_profiled}
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-1 font-medium">Modules</p>
+                      <p className="text-[11px] text-slate-600 mt-1 font-medium">Modules</p>
                     </div>
 
                     <div className="text-center p-3 bg-red-50 rounded-xl border border-red-100">
@@ -132,25 +132,25 @@ export const PerformancePage = () => {
                       <p className="text-[11px] text-red-600 mt-1 font-medium">Critical</p>
                     </div>
 
-                    <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-100">
-                      <p className="text-2xl font-bold text-orange-600 tabular-nums">
+                    <div className="text-center p-3 bg-rose-50 rounded-xl border border-rose-100">
+                      <p className="text-2xl font-bold text-rose-600 tabular-nums">
                         {analysis.high_bottlenecks}
                       </p>
-                      <p className="text-[11px] text-orange-600 mt-1 font-medium">High Priority</p>
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">High Priority</p>
                     </div>
                   </div>
 
                   {/* Profiler Info */}
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Profiler</span>
+                      <span className="text-slate-600">Profiler</span>
                       <span className="font-semibold text-slate-900 uppercase tracking-wide">
                         {analysis.profiler_type}
                       </span>
                     </div>
                     {analysis.total_samples && (
                       <div className="flex items-center justify-between text-xs mt-2">
-                        <span className="text-slate-500">Samples</span>
+                        <span className="text-slate-600">Samples</span>
                         <span className="font-semibold text-slate-900 tabular-nums">
                           {analysis.total_samples.toLocaleString()}
                         </span>

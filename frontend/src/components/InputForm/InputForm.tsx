@@ -94,7 +94,7 @@ export const InputForm = () => {
         <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
           Analyze Project
         </h2>
-        <p className="text-slate-500 text-sm font-medium mt-1">
+        <p className="text-slate-600 text-sm font-medium mt-1">
           Select your source to begin autopsy
         </p>
       </div>
@@ -105,7 +105,7 @@ export const InputForm = () => {
           onClick={() => setActiveTab('github')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'github'
             ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            : 'text-slate-600 hover:text-slate-700 hover:bg-slate-200/50'
             }`}
         >
           <Github className="w-4 h-4" />
@@ -115,7 +115,7 @@ export const InputForm = () => {
           onClick={() => setActiveTab('local')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'local'
             ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            : 'text-slate-600 hover:text-slate-700 hover:bg-slate-200/50'
             }`}
         >
           <FolderOpen className="w-4 h-4" />
@@ -125,7 +125,7 @@ export const InputForm = () => {
           onClick={() => setActiveTab('import')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${activeTab === 'import'
             ? 'bg-white text-teal-700 shadow-sm ring-1 ring-black/5'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+            : 'text-slate-600 hover:text-slate-700 hover:bg-slate-200/50'
             }`}
         >
           <Upload className="w-4 h-4" />
@@ -153,10 +153,10 @@ export const InputForm = () => {
               onChange={handleFileUpload}
               className="hidden"
             />
-            <p className="text-gray-600 mb-2">
+            <p className="text-slate-600 mb-2">
               Click to upload JSON/TOML
             </p>
-            <p className="text-xs text-gray-400">Charon export format</p>
+            <p className="text-sm text-slate-600">Charon export format</p>
           </label>
         )}
       </div>

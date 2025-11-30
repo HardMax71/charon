@@ -10,7 +10,7 @@ interface MetricsComparisonProps {
 export const MetricsComparison = ({ original, modified }: MetricsComparisonProps) => {
   if (!modified) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 text-slate-400 border border-dashed border-slate-300 rounded-lg bg-slate-50/50">
+      <div className="h-full flex flex-col items-center justify-center p-6 text-slate-600 border border-dashed border-slate-300 rounded-lg bg-slate-50/50">
         <AlertCircle className="w-6 h-6 mb-2 opacity-50" />
         <p className="text-xs font-medium text-center">
           Modify the graph to generate<br/>an impact analysis
@@ -25,10 +25,10 @@ export const MetricsComparison = ({ original, modified }: MetricsComparisonProps
     <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
       <div className="bg-slate-50/80 backdrop-blur border-b border-slate-200 px-3 py-2 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+        <h3 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
           Metric
         </h3>
-        <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">
+        <h3 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
           Impact
         </h3>
       </div>
@@ -65,7 +65,7 @@ const MetricRow = ({ data }: MetricRowProps) => {
     : 'bg-slate-100';
   const deltaText = hasChange
     ? (improved ? 'text-emerald-700' : 'text-rose-700')
-    : 'text-slate-500';
+    : 'text-slate-600';
   const borderHighlight = hasChange
     ? (improved ? 'border-l-2 border-l-emerald-500' : 'border-l-2 border-l-rose-500')
     : 'border-l-2 border-l-transparent pl-[2px]'; // compensate layout shift
@@ -85,13 +85,13 @@ const MetricRow = ({ data }: MetricRowProps) => {
 
         {/* Before / After Logic */}
         <div className="flex items-center gap-2 text-xs font-mono">
-          <span className="text-slate-400 font-medium">
+          <span className="text-slate-600 font-medium">
             {typeof before === 'number' ? before.toFixed(2).replace(/\.00$/, '') : before}
           </span>
 
           {hasChange && (
             <>
-              <ArrowRight className="w-3 h-3 text-slate-300" />
+              <ArrowRight className="w-3 h-3 text-slate-600" />
               <span className="text-slate-900 font-bold">
                 {typeof after === 'number' ? after.toFixed(2).replace(/\.00$/, '') : after}
               </span>

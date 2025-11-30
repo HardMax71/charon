@@ -48,18 +48,18 @@ export const DragDropZone = ({ onFilesProcessed }: DragDropZoneProps) => {
       onDrop={handleDrop}
       className={`min-h-[118px] flex flex-col items-center justify-center border-2 border-dashed rounded-lg text-center transition-colors ${
         isDragging
-          ? 'border-blue-500 bg-blue-50'
+          ? 'border-teal-500 bg-teal-50'
           : 'border-gray-300 hover:border-gray-400'
       }`}
     >
       {isProcessing ? (
-        <p className="text-gray-600">Processing files...</p>
+        <p className="text-slate-600">Processing files...</p>
       ) : (
         <>
-          <p className="text-gray-600 mb-2">
+          <p className="text-slate-600 mb-2">
             Drag and drop a project folder here
           </p>
-          <p className="text-xs text-gray-400">Max 10MB · Python, JS/TS, Go, Java, Rust</p>
+          <p className="text-sm text-slate-600">Max 10MB · Python, JS/TS, Go, Java, Rust</p>
         </>
       )}
 

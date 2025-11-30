@@ -67,11 +67,11 @@ export const PerformanceUpload = () => {
           onChange={handleFileInputChange}
           className="hidden"
         />
-        <FileCode className={`w-8 h-8 mx-auto mb-2 ${selectedFile ? 'text-teal-600' : 'text-slate-400'}`} />
+        <FileCode className={`w-8 h-8 mx-auto mb-2 ${selectedFile ? 'text-teal-600' : 'text-slate-600'}`} />
         <p className={`text-sm mb-1 ${selectedFile ? 'font-medium text-teal-700' : 'text-slate-600'}`}>
           {selectedFile ? selectedFile.name : 'Click to upload profiling file'}
         </p>
-        <p className="text-xs text-slate-400">
+        <p className="text-sm text-slate-600">
           Supports <span className="font-mono font-medium">.prof</span> (cProfile), <span className="font-mono font-medium">.json</span> (py-spy)
         </p>
       </label>
@@ -94,7 +94,7 @@ export const PerformanceUpload = () => {
           transition-colors
           ${selectedFile && graph && !isLoading
             ? 'bg-slate-900 hover:bg-teal-600 text-white'
-            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            : 'bg-slate-100 text-slate-600 cursor-not-allowed'
           }
         `}
       >

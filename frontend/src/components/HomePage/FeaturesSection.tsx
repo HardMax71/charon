@@ -34,7 +34,7 @@ export const FeaturesSection = () => (
         <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight mb-3">
           Architecture analysis, <span className="text-teal-600">automated.</span>
         </h2>
-        <p className="text-base text-slate-500 max-w-xl mx-auto">
+        <p className="text-base text-slate-600 max-w-xl mx-auto">
           Stop manually tracing imports. Charon does the heavy lifting.
         </p>
       </div>
@@ -45,7 +45,7 @@ export const FeaturesSection = () => (
           <div key={feature.num} className="group flex gap-4">
             {/* Number */}
             <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-teal-50 transition-colors">
-              <span className="text-sm font-bold font-mono text-slate-400 group-hover:text-teal-600 transition-colors">
+              <span className="text-sm font-bold font-mono text-slate-600 group-hover:text-teal-600 transition-colors">
                 {feature.num}
               </span>
             </div>
@@ -55,7 +55,7 @@ export const FeaturesSection = () => (
               <h3 className="text-base font-bold text-slate-900 mb-1 group-hover:text-teal-700 transition-colors">
                 {feature.title}
               </h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {feature.description}
               </p>
             </div>
@@ -65,7 +65,7 @@ export const FeaturesSection = () => (
     </div>
 
     {/* Scroll indicator */}
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600">
       <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
       <ArrowDown className="w-4 h-4 animate-bounce" />
     </div>

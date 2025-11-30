@@ -43,7 +43,7 @@ export const AddNodeModal = ({ isOpen, onClose, onConfirm, nodes }: AddNodeModal
             <div className="space-y-6 p-1">
                 {/* Name Input */}
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">
                         Node Name
                     </label>
                     <input
@@ -58,7 +58,7 @@ export const AddNodeModal = ({ isOpen, onClose, onConfirm, nodes }: AddNodeModal
 
                 {/* Connections Selection */}
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">
                         Connect to Existing Nodes (Optional)
                     </label>
 
@@ -72,7 +72,7 @@ export const AddNodeModal = ({ isOpen, onClose, onConfirm, nodes }: AddNodeModal
 
                     <div className="border border-slate-200 rounded-md max-h-60 overflow-y-auto bg-slate-50/50">
                         {filteredNodes.length === 0 ? (
-                            <div className="p-4 text-center text-xs text-slate-400 italic">
+                            <div className="p-4 text-center text-xs text-slate-600 italic">
                                 No nodes found
                             </div>
                         ) : (
@@ -90,7 +90,7 @@ export const AddNodeModal = ({ isOpen, onClose, onConfirm, nodes }: AddNodeModal
                                                 <div className={`text-xs font-medium ${isSelected ? 'text-teal-700' : 'text-slate-700'}`}>
                                                     {node.label}
                                                 </div>
-                                                <div className="text-[10px] text-slate-400 truncate font-mono">
+                                                <div className="text-[10px] text-slate-600 truncate font-mono">
                                                     {node.id}
                                                 </div>
                                             </div>
@@ -106,7 +106,7 @@ export const AddNodeModal = ({ isOpen, onClose, onConfirm, nodes }: AddNodeModal
                             </div>
                         )}
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1.5">
+                    <p className="text-[10px] text-slate-600 mt-1.5">
                         Selected: {selectedConnections.length} node{selectedConnections.length !== 1 ? 's' : ''}
                     </p>
                 </div>

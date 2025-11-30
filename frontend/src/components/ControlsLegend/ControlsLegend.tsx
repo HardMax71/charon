@@ -35,7 +35,7 @@ export const ControlsLegend = () => {
 
       {/* Header Strip */}
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between select-none">
-        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-500">
+        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
           <MousePointer2 className="w-3.5 h-3.5" />
           <span>Input Mapping</span>
         </div>
@@ -43,7 +43,7 @@ export const ControlsLegend = () => {
           onClick={() => setControlsLegendExpanded(false)}
           aria-label="Minimize controls"
           title="Minimize"
-          className="text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded p-1 transition-colors"
+          className="text-slate-600 hover:text-slate-600 hover:bg-slate-200 rounded p-1 transition-colors"
         >
           <Minimize2 className="w-3.5 h-3.5" />
         </button>
@@ -86,7 +86,7 @@ export const ControlsLegend = () => {
 
       {/* Footer Hint */}
       <div className="bg-slate-50 border-t border-slate-100 p-2 text-center">
-        <p className="text-[9px] text-slate-400 font-mono">
+        <p className="text-[9px] text-slate-600 font-mono">
           DOUBLE-CLICK TO RESET CAMERA
         </p>
       </div>
@@ -106,7 +106,7 @@ const ControlRow = ({ label, action, highlight = false }: { label: string, actio
     `}>
       {label}
     </span>
-    <span className="text-slate-500 font-medium text-[11px]">
+    <span className="text-slate-600 font-medium text-[11px]">
       {action}
     </span>
   </div>

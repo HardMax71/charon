@@ -53,7 +53,7 @@ export const TemporalControls = ({
           <option value={500}>2x Speed</option>
           <option value={250}>4x Speed</option>
         </select>
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
           <Clock className="w-3.5 h-3.5" />
         </div>
       </div>
@@ -65,7 +65,7 @@ export const TemporalControls = ({
         className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
           viewMode === 'graph'
             ? 'bg-white text-teal-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+            : 'text-slate-600 hover:text-slate-700'
         }`}
       >
         <Network className="w-3.5 h-3.5" />
@@ -76,7 +76,7 @@ export const TemporalControls = ({
         className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
           viewMode === 'heatmap'
             ? 'bg-white text-teal-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+            : 'text-slate-600 hover:text-slate-700'
         }`}
       >
         <BarChart3 className="w-3.5 h-3.5" />

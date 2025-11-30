@@ -57,18 +57,18 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
   const getImpactBadge = () => {
     const colors = {
       critical: 'bg-red-100 text-red-700 border-red-200',
-      high: 'bg-orange-100 text-orange-700 border-orange-200',
+      high: 'bg-rose-100 text-rose-700 border-rose-200',
       medium: 'bg-amber-100 text-amber-700 border-amber-200',
-      low: 'bg-lime-100 text-lime-700 border-lime-200',
+      low: 'bg-teal-100 text-teal-700 border-teal-200',
     };
     return colors[bottleneck.estimated_impact];
   };
 
   const getDifficultyBadge = () => {
     const colors = {
-      easy: 'bg-green-100 text-green-700 border-green-200',
+      easy: 'bg-teal-100 text-teal-700 border-teal-200',
       medium: 'bg-amber-100 text-amber-700 border-amber-200',
-      hard: 'bg-orange-100 text-orange-700 border-orange-200',
+      hard: 'bg-rose-100 text-rose-700 border-rose-200',
       very_hard: 'bg-red-100 text-red-700 border-red-200',
     };
     return colors[bottleneck.optimization_difficulty];
@@ -109,10 +109,10 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
               {isCopied ? (
                 <Check className="w-3.5 h-3.5 text-green-600" />
               ) : (
-                <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                <Copy className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-600" />
               )}
             </button>
-            <div className="flex items-center gap-1 text-xs text-slate-500">
+            <div className="flex items-center gap-1 text-xs text-slate-600">
               {getBottleneckIcon()}
               <span className="uppercase font-medium">{bottleneck.bottleneck_type}</span>
             </div>
@@ -129,7 +129,7 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
               <span className="font-mono">{bottleneck.priority_score.toFixed(0)}/100</span>
             </div>
             {bottleneck.is_hot_zone && (
-              <div className="flex items-center gap-1 text-orange-600 animate-pulse">
+              <div className="flex items-center gap-1 text-rose-600 animate-pulse">
                 <Flame className="w-3 h-3" />
                 <span className="font-semibold">HOT ZONE</span>
               </div>
@@ -156,7 +156,7 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
         {/* Chevron Icon */}
         <div className="flex-shrink-0">
           <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
-            <ChevronDown className="w-5 h-5 text-slate-400" />
+            <ChevronDown className="w-5 h-5 text-slate-600" />
           </div>
         </div>
       </div>
@@ -167,32 +167,32 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
           {/* Performance Details */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-slate-500">Execution Time</span>
+              <span className="text-slate-600">Execution Time</span>
               <span className="font-mono font-semibold text-slate-900">
                 {formatTime(bottleneck.execution_time)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Calls</span>
+              <span className="text-slate-600">Calls</span>
               <span className="font-mono font-semibold text-slate-900">
                 {bottleneck.call_count.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Coupling</span>
+              <span className="text-slate-600">Coupling</span>
               <span className="font-mono font-semibold text-slate-900">
                 {bottleneck.coupling_score.toFixed(0)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Complexity</span>
+              <span className="text-slate-600">Complexity</span>
               <span className="font-mono font-semibold text-slate-900">
                 {bottleneck.complexity_score.toFixed(1)}
               </span>
             </div>
             {bottleneck.memory_usage_mb !== null && (
               <div className="col-span-2 flex justify-between">
-                <span className="text-slate-500">Memory</span>
+                <span className="text-slate-600">Memory</span>
                 <span className="font-mono font-semibold text-slate-900">
                   {formatMemory(bottleneck.memory_usage_mb)}
                 </span>
@@ -210,7 +210,7 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
           {bottleneck.affected_modules.length > 0 && (
             <div>
               <p className="text-xs font-medium text-slate-600 mb-2">
-                Affected Modules <span className="text-slate-400">({bottleneck.affected_modules.length})</span>
+                Affected Modules <span className="text-slate-600">({bottleneck.affected_modules.length})</span>
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {bottleneck.affected_modules.slice(0, 5).map((module) => (
@@ -222,7 +222,7 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
                   </span>
                 ))}
                 {bottleneck.affected_modules.length > 5 && (
-                  <span className="px-2 py-1 text-xs text-slate-400">
+                  <span className="px-2 py-1 text-xs text-slate-600">
                     +{bottleneck.affected_modules.length - 5} more
                   </span>
                 )}
@@ -240,12 +240,14 @@ export const BottleneckPanel = () => {
 
   if (!analysis) {
     return (
-      <div className="p-8 text-center">
-        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-          <Flame className="w-6 h-6 text-slate-400" />
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+            <Flame className="w-6 h-6 text-slate-600" />
+          </div>
+          <p className="text-sm font-medium text-slate-600">No analysis yet</p>
+          <p className="text-sm text-slate-600 mt-1">Upload a profiling file to identify bottlenecks</p>
         </div>
-        <p className="text-sm font-medium text-slate-600">No analysis yet</p>
-        <p className="text-xs text-slate-400 mt-1">Upload a profiling file to identify bottlenecks</p>
       </div>
     );
   }
@@ -259,22 +261,22 @@ export const BottleneckPanel = () => {
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Bottlenecks</h3>
           <div className="flex items-center gap-3 mt-1 text-xs">
-            <span className="text-slate-500">
+            <span className="text-slate-600">
               <span className="font-semibold text-slate-700 tabular-nums">{bottlenecks.length}</span> total
             </span>
-            <span className="text-slate-300">·</span>
-            <span className="text-slate-500">
+            <span className="text-slate-600">·</span>
+            <span className="text-slate-600">
               <span className="font-semibold text-red-600 tabular-nums">{critical_bottlenecks}</span> critical
             </span>
-            <span className="text-slate-300">·</span>
-            <span className="text-slate-500">
-              <span className="font-semibold text-orange-500 tabular-nums">{high_bottlenecks}</span> high
+            <span className="text-slate-600">·</span>
+            <span className="text-slate-600">
+              <span className="font-semibold text-rose-500 tabular-nums">{high_bottlenecks}</span> high
             </span>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] text-slate-400">
+        <div className="flex items-center gap-3 text-[10px] text-slate-600">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
             <span>Time %</span>
@@ -294,7 +296,7 @@ export const BottleneckPanel = () => {
               <Sparkles className="w-6 h-6 text-green-500" />
             </div>
             <p className="text-sm font-medium text-slate-700">No bottlenecks detected!</p>
-            <p className="text-xs text-slate-500 mt-1">Your code is performing well</p>
+            <p className="text-sm text-slate-600 mt-1">Your code is performing well</p>
           </div>
         ) : (
           bottlenecks.map((bottleneck) => (
