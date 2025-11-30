@@ -1,5 +1,6 @@
 from app.api.routes import (
     analyze,
+    auth,
     export,
     diff,
     diagram,
@@ -46,6 +47,7 @@ app.add_middleware(
 )
 
 app.include_router(analyze.router, prefix=settings.api_prefix, tags=["analysis"])
+app.include_router(auth.router, prefix=settings.api_prefix, tags=["auth"])
 app.include_router(export.router, prefix=settings.api_prefix, tags=["export"])
 app.include_router(diff.router, prefix=settings.api_prefix, tags=["diff"])
 app.include_router(diagram.router, prefix=settings.api_prefix, tags=["diagram"])

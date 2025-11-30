@@ -49,10 +49,10 @@ class AnalysisOrchestratorService:
         logger.debug("Fetching source files for source type: %s", request.source)
 
         match request:
-            case GitHubAnalyzeRequest(url=url):
+            case GitHubAnalyzeRequest(url=url, github_token=token):
                 try:
                     github_service = GitHubService()
-                    files = await github_service.fetch_repository(url)
+                    files = await github_service.fetch_repository(url, token=token)
                     project_name = url.split("/")[-1]
 
                     if not files:

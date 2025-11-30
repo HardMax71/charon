@@ -277,6 +277,10 @@ class GitHubAnalyzeRequest(BaseModel):
 
     source: Literal["github"]
     url: str = Field(description="GitHub repository URL")
+    github_token: str | None = Field(
+        default=None,
+        description="Optional GitHub token for private repos or higher rate limits"
+    )
 
 
 class LocalAnalyzeRequest(BaseModel):
@@ -588,3 +592,74 @@ class TemporalAnalysisResponse(BaseModel):
     circular_deps_timeline: list[dict] = Field(
         description="Timeline of circular dependency events"
     )
+
+
+# GitHub OAuth Models
+
+
+class GitHubAuthConfig(BaseModel):
+    """GitHub OAuth configuration for frontend."""
+
+    client_id: str | None
+    enabled: bool
+
+
+class GitHubTokenExchange(BaseModel):
+    """Request to exchange OAuth code for token."""
+
+    code: str
+
+
+class GitHubTokenResponse(BaseModel):
+    """Response with access token."""
+
+    access_token: str
+    token_type: str
+    scope: str
+
+
+class GitHubUser(BaseModel):
+    """GitHub user info."""
+
+    login: str
+    avatar_url: str
+    name: str | None
+
+
+class GitHubRepo(BaseModel):
+    """GitHub repository."""
+
+    full_name: str
+    private: bool
+    default_branch: str
+
+
+class GitHubAuthData(BaseModel):
+    """GitHub user with their repos - returned after auth."""
+
+    user: GitHubUser
+    repos: list[GitHubRepo]
+
+
+class GitHubDeviceCodeResponse(BaseModel):
+    """Response from GitHub device code request."""
+
+    device_code: str
+    user_code: str
+    verification_uri: str
+    expires_in: int
+    interval: int
+
+
+class GitHubDevicePollRequest(BaseModel):
+    """Request to poll for device flow token."""
+
+    device_code: str
+
+
+class GitHubDevicePollResponse(BaseModel):
+    """Response from device flow polling."""
+
+    status: Literal["pending", "success", "expired", "error"]
+    access_token: str | None = None
+    error: str | None = None

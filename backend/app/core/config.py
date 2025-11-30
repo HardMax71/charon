@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     github_api_base: str = "https://api.github.com"
     github_raw_base: str = "https://raw.githubusercontent.com"
 
+    # GitHub OAuth (optional - for private repo support)
+    github_client_id: str | None = None
+    github_client_secret: str | None = None
+
     # Metrics thresholds
     high_coupling_percentile: int = 80  # Top 20% = 80th percentile
 

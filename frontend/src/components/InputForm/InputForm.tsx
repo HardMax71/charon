@@ -20,11 +20,15 @@ export const InputForm = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
-  const handleGitHubSubmit = (url: string) => {
+  const handleGitHubSubmit = (url: string, token: string | null) => {
     setLoading(true);
 
+    const request = token
+      ? { source: 'github' as const, url, github_token: token }
+      : { source: 'github' as const, url };
+
     analyzeCode(
-      { source: 'github', url },
+      request,
       (event) => {
         if (event.message && event.progress !== undefined) {
           setLoadingProgress(event.progress, event.message);
@@ -85,7 +89,7 @@ export const InputForm = () => {
   };
 
   return (
-    <div className="marble-panel p-8 md:p-10 w-full mx-auto animate-fade-in relative overflow-hidden">
+    <div className="marble-panel p-8 md:p-10 w-full mx-auto animate-fade-in relative overflow-visible">
       <div className="mb-8">
         <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight font-sans">
           Analyze Project
@@ -129,35 +133,31 @@ export const InputForm = () => {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content - min height for consistency, overflow visible for dropdowns */}
       <div className="relative min-h-[120px]">
         {activeTab === 'github' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="min-h-[118px] flex flex-col justify-center overflow-visible">
             <GitHubInput onSubmit={handleGitHubSubmit} />
           </div>
         )}
 
         {activeTab === 'local' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <DragDropZone onFilesProcessed={handleLocalFiles} />
-          </div>
+          <DragDropZone onFilesProcessed={handleLocalFiles} />
         )}
 
         {activeTab === 'import' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <label className="block border-2 border-dashed rounded-lg p-8 text-center transition-colors border-gray-300 hover:border-gray-400 cursor-pointer">
-              <input
-                type="file"
-                accept=".json,.toml"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <p className="text-gray-600 mb-2">
-                Click to upload JSON/TOML
-              </p>
-              <p className="text-xs text-gray-400">Charon export format</p>
-            </label>
-          </div>
+          <label className="min-h-[118px] flex flex-col items-center justify-center border-2 border-dashed rounded-lg text-center transition-colors border-gray-300 hover:border-gray-400 cursor-pointer">
+            <input
+              type="file"
+              accept=".json,.toml"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <p className="text-gray-600 mb-2">
+              Click to upload JSON/TOML
+            </p>
+            <p className="text-xs text-gray-400">Charon export format</p>
+          </label>
         )}
       </div>
     </div>
