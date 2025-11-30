@@ -1,72 +1,115 @@
-import { memo, useRef, useMemo, useCallback } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Html, Outlines } from '@react-three/drei';
-import { Mesh, Vector3, SphereGeometry, Color } from 'three';
+import { Html } from '@react-three/drei';
+import { SphereGeometry, Group } from 'three';
 import { Node as NodeType } from '@/types/graph';
 import { useGraphContext, useGraphSelection, useGraphModifiers } from '../context/GraphContext';
 import { useNodeDrag } from '../hooks/useNodeDrag';
-import { useUIStore } from '@/stores/uiStore';
+import { useUIStore, GraphFilters } from '@/stores/uiStore';
 import {
   STATUS_COLORS,
   THIRD_PARTY_COLOR,
   getLanguageColor,
 } from '@/utils/constants';
 
-// Shared geometry - created once, reused by all nodes
-const sharedSphereGeometry = new SphereGeometry(3, 32, 32);
-
-// Reusable color object
-const tempColor = new Color();
+const sharedSphereGeometry = new SphereGeometry(3, 16, 16);
 
 interface NodeMeshProps {
   node: NodeType;
+  graphFilters: GraphFilters;
+  filtersActive: boolean;
 }
 
-/**
- * Individual node mesh component
- * Uses shared geometry and ref-based position updates for performance
- */
-export const NodeMesh = memo(({ node }: NodeMeshProps) => {
-  const meshRef = useRef<Mesh>(null);
-  const { nodePositionsRef, disableImpactAnalysis } = useGraphContext();
-  const { selectedNodeId, hoveredNodeId, selectNode, hoverNode } = useGraphSelection();
-  const modifiers = useGraphModifiers();
-  const { gl } = useThree();
+interface NodeGroupProps {
+  nodes: NodeType[];
+}
 
-  // Get filter state
+export const NodeGroup = memo(({ nodes }: NodeGroupProps) => {
+  const { nodePositionsRef } = useGraphContext();
   const graphFilters = useUIStore(state => state.graphFilters);
   const hasActiveFilters = useUIStore(state => state.hasActiveFilters);
+  const filtersActive = hasActiveFilters();
+
+  const groupRefs = useRef<Map<string, Group>>(new Map());
+
+  useEffect(() => {
+    const nodeIds = new Set(nodes.map(n => n.id));
+    groupRefs.current.forEach((_, id) => {
+      if (!nodeIds.has(id)) {
+        groupRefs.current.delete(id);
+      }
+    });
+  }, [nodes]);
+
+  useFrame(() => {
+    groupRefs.current.forEach((group, nodeId) => {
+      const pos = nodePositionsRef.current.get(nodeId);
+      if (pos) {
+        group.position.copy(pos);
+      }
+    });
+  });
+
+  const registerGroup = useCallback((nodeId: string, group: Group | null) => {
+    if (group) {
+      groupRefs.current.set(nodeId, group);
+    } else {
+      groupRefs.current.delete(nodeId);
+    }
+  }, []);
+
+  return (
+    <group>
+      {nodes.map(node => (
+        <NodeMeshWithRef
+          key={node.id}
+          node={node}
+          graphFilters={graphFilters}
+          filtersActive={filtersActive}
+          registerGroup={registerGroup}
+        />
+      ))}
+    </group>
+  );
+});
+
+NodeGroup.displayName = 'NodeGroup';
+
+interface NodeMeshWithRefProps extends NodeMeshProps {
+  registerGroup: (nodeId: string, group: Group | null) => void;
+}
+
+const NodeMeshWithRef = memo(({ node, graphFilters, filtersActive, registerGroup }: NodeMeshWithRefProps) => {
+  const groupRef = useRef<Group>(null);
+  const { nodePositionsRef, disableImpactAnalysis } = useGraphContext();
+  const { selectedNodeId, selectNode, hoverNode } = useGraphSelection();
+  const modifiers = useGraphModifiers();
+  const { gl } = useThree();
 
   const isSelected = selectedNodeId === node.id;
   const isHighlighted = modifiers.highlightedNodeId === node.id;
   const isAdded = modifiers.addedNodeIds.includes(node.id);
   const isRemoved = modifiers.removedNodeIds.includes(node.id);
 
-  // Check if node matches active filters
   const matchesFilters = useMemo(() => {
-    if (!hasActiveFilters()) return true;
+    if (!filtersActive) return true;
 
     const { languages, services, statuses, thirdPartyOnly } = graphFilters;
 
-    // Third party filter
     if (thirdPartyOnly) {
       return node.type === 'third_party';
     }
 
-    // If any filters are active, check each category (OR within category, AND between categories)
     let matches = true;
 
-    // Language filter
     if (languages.length > 0) {
       matches = matches && (node.language ? languages.includes(node.language) : false);
     }
 
-    // Service filter
     if (services.length > 0) {
       matches = matches && (node.service ? services.includes(node.service) : false);
     }
 
-    // Status filter
     if (statuses.length > 0) {
       const nodeStatuses: string[] = [];
       if (node.metrics.is_hot_zone) nodeStatuses.push('hotZone');
@@ -76,94 +119,67 @@ export const NodeMesh = memo(({ node }: NodeMeshProps) => {
     }
 
     return matches;
-  }, [node, graphFilters, hasActiveFilters]);
+  }, [node, graphFilters, filtersActive]);
 
-  // Drag handling
   const { handlePointerDown } = useNodeDrag({
     nodeId: node.id,
     enabled: isSelected,
   });
 
-  // Update position from ref each frame (no React re-render!)
-  useFrame(() => {
-    if (!meshRef.current) return;
-
-    const pos = nodePositionsRef.current.get(node.id);
-    if (pos) {
-      meshRef.current.position.copy(pos);
-    }
-  });
-
-  // Visual calculations - memoized
-  // Fill color = status, Outline color = language
   const { fillColor, outlineColor, opacity, scale } = useMemo(() => {
     let fill = STATUS_COLORS.default;
     let op = 1.0;
     let sc = 1.0;
 
-    // Third party gets gray fill
     if (node.type === 'third_party') {
       fill = THIRD_PARTY_COLOR;
     }
 
-    // Hot zone coloring (status override)
     if (!disableImpactAnalysis && node.metrics.is_hot_zone) {
       fill = node.metrics.hot_zone_severity === 'critical'
         ? STATUS_COLORS.hot_critical
         : STATUS_COLORS.hot_warning;
     }
 
-    // Circular dependency
     if (node.metrics.is_circular) {
       fill = STATUS_COLORS.circular;
     }
 
-    // High coupling (only if not already colored by hot zone/circular)
     if (node.metrics.is_high_coupling && fill === STATUS_COLORS.default) {
       fill = STATUS_COLORS.high_coupling;
     }
 
-    // Added node - green (highest priority for diff view)
     if (isAdded) {
       fill = STATUS_COLORS.added;
     }
 
-    // Removed node - red with transparency
     if (isRemoved) {
       fill = STATUS_COLORS.removed;
       op = 0.7;
     }
 
-    // Outline color based on language (always visible)
     const outline = getLanguageColor(node.language);
 
-    // Selection scale
     if (isSelected) {
       sc = 1.4;
-    }
-
-    // Complexity-based scale
-    const complexity = node.metrics.cyclomatic_complexity || 0;
-    if (!isSelected) {
+    } else {
+      const complexity = node.metrics.cyclomatic_complexity || 0;
       sc = 1.0 + Math.min(complexity / 30, 0.4);
     }
 
-    // Dim non-matching nodes when filters are active (applied last for highest priority)
     if (!matchesFilters && !isSelected) {
       op = 0.03;
-      sc = 0.5; // Also shrink non-matching nodes
+      sc = 0.5;
     }
 
     return { fillColor: fill, outlineColor: outline, opacity: op, scale: sc };
   }, [node, isSelected, isAdded, isRemoved, disableImpactAnalysis, matchesFilters]);
 
-  // Click handler
   const handleClick = useCallback((e: any) => {
     e.stopPropagation();
     selectNode(node.id);
   }, [node.id, selectNode]);
 
-  // Hover handlers
   const handlePointerOver = useCallback(() => {
     hoverNode(node.id);
     gl.domElement.style.cursor = 'pointer';
@@ -174,61 +190,54 @@ export const NodeMesh = memo(({ node }: NodeMeshProps) => {
     gl.domElement.style.cursor = 'default';
   }, [hoverNode, gl]);
 
-  // Initial position
+  useEffect(() => {
+    if (groupRef.current) {
+      registerGroup(node.id, groupRef.current);
+    }
+    return () => registerGroup(node.id, null);
+  }, [node.id, registerGroup]);
+
   const initialPos = nodePositionsRef.current.get(node.id);
   const position: [number, number, number] = initialPos
     ? [initialPos.x, initialPos.y, initialPos.z]
     : [node.position.x, node.position.y, node.position.z];
 
   return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      scale={scale}
-      geometry={sharedSphereGeometry}
-      onClick={handleClick}
-      onPointerDown={isSelected ? handlePointerDown : undefined}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-    >
-      <meshStandardMaterial
-        color={fillColor}
-        roughness={0.2}
-        metalness={0.1}
-        transparent={opacity < 1}
-        opacity={opacity}
-        emissive={fillColor}
-        emissiveIntensity={isSelected ? 0.4 : 0.15}
-      />
+    <group ref={groupRef} position={position}>
+      <mesh
+        scale={scale}
+        geometry={sharedSphereGeometry}
+        onClick={handleClick}
+        onPointerDown={isSelected ? handlePointerDown : undefined}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <meshStandardMaterial
+          color={fillColor}
+          roughness={0.2}
+          metalness={0.1}
+          transparent={opacity < 1}
+          opacity={opacity}
+          emissive={fillColor}
+          emissiveIntensity={isSelected ? 0.4 : 0.15}
+        />
+      </mesh>
 
-      {/* Selection indicator */}
       {isSelected && (
-        <mesh scale={1.2} geometry={sharedSphereGeometry}>
+        <mesh scale={scale * 1.2} geometry={sharedSphereGeometry}>
           <meshBasicMaterial color={fillColor} transparent opacity={0.2} wireframe />
         </mesh>
       )}
 
-      {/* Highlight glow */}
       {isHighlighted && (
-        <mesh scale={1.4} geometry={sharedSphereGeometry}>
+        <mesh scale={scale * 1.4} geometry={sharedSphereGeometry}>
           <meshBasicMaterial color="#10b981" transparent opacity={0.4} />
         </mesh>
       )}
 
-      {/* Language-colored outline (hidden for filtered nodes) */}
-      {opacity > 0.1 && (
-        <Outlines
-          thickness={0.25}
-          color={outlineColor}
-          transparent
-          opacity={opacity < 1 ? 0.5 : 0.9}
-        />
-      )}
-
-      {/* Detailed label - only for selected node */}
       {isSelected && (
         <Html
-          position={[0, 4, 0]}
+          position={[0, 4 * scale, 0]}
           style={{
             pointerEvents: 'none',
             transform: 'translate3d(-50%, -100%, 0)',
@@ -273,27 +282,8 @@ export const NodeMesh = memo(({ node }: NodeMeshProps) => {
           </div>
         </Html>
       )}
-    </mesh>
-  );
-});
-
-NodeMesh.displayName = 'NodeMesh';
-
-/**
- * Container for all nodes
- */
-interface NodeGroupProps {
-  nodes: NodeType[];
-}
-
-export const NodeGroup = memo(({ nodes }: NodeGroupProps) => {
-  return (
-    <group>
-      {nodes.map(node => (
-        <NodeMesh key={node.id} node={node} />
-      ))}
     </group>
   );
 });
 
-NodeGroup.displayName = 'NodeGroup';
+NodeMeshWithRef.displayName = 'NodeMeshWithRef';

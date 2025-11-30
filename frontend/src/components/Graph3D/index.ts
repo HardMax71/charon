@@ -20,7 +20,7 @@ export { useNodeDrag } from './hooks/useNodeDrag';
 // Canvas components (for advanced customization)
 export { GraphCanvas } from './canvas/GraphCanvas';
 export { SceneSetup } from './canvas/SceneSetup';
-export { NodeMesh, NodeGroup } from './canvas/NodeMesh';
+export { NodeGroup } from './canvas/NodeMesh';
 export { EdgeGroup } from './canvas/EdgeMesh';
 export { ClusterBoxes } from './canvas/ClusterBoxes';
 
