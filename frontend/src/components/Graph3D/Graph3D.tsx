@@ -1,10 +1,7 @@
 /**
- * Graph3D - Refactored implementation
+ * Graph3D - 3D dependency graph visualization
  *
- * This component provides backward compatibility with the old API while
- * using the new architecture internally.
- *
- * New architecture features:
+ * Architecture:
  * - Single source of truth (GraphContext)
  * - Ref-based position updates (no re-renders on drag)
  * - Shared geometry for better performance
@@ -24,9 +21,8 @@ import { NodeMetricsModal } from '../NodeMetricsModal/NodeMetricsModal';
 import { ControlsLegend } from '../ControlsLegend/ControlsLegend';
 import { LanguageLegend } from '../LanguageLegend/LanguageLegend';
 
-// Legacy props interface (backward compatible)
 interface Graph3DProps {
-  // Hide flags (legacy - prefer using children slots)
+  // Visibility flags
   hideLayoutSelector?: boolean;
   hideNodeMetrics?: boolean;
   hideControlsLegend?: boolean;
@@ -54,7 +50,7 @@ interface Graph3DProps {
   // Callbacks
   onNodeDragEnd?: (nodeId: string, position: { x: number; y: number; z: number }) => void;
 
-  // New: children slots for overlays
+  // Custom overlay slots
   children?: ReactNode;
 }
 
@@ -80,10 +76,10 @@ const LayoutSync = memo(({ layout: propLayout }: { layout?: LayoutType }) => {
 LayoutSync.displayName = 'LayoutSync';
 
 /**
- * Graph3D component with backward-compatible API
+ * Graph3D component
  */
 export const Graph3D = memo(({
-  // Legacy hide flags
+  // Visibility flags
   hideLayoutSelector = false,
   hideNodeMetrics = false,
   hideControlsLegend = false,
@@ -150,7 +146,7 @@ export const Graph3D = memo(({
         {/* 3D Canvas */}
         <GraphCanvas hideClusterBoxes={hideClusterBoxes} />
 
-        {/* Legacy overlays (controlled by hide* props) */}
+        {/* Overlays */}
         {!hideNodeMetrics && (
           <div className="absolute top-4 left-4 z-10">
             <NodeMetricsModal position={nodeMetricsPosition} />
@@ -177,7 +173,7 @@ export const Graph3D = memo(({
           <LanguageLegend />
         </div>
 
-        {/* New: children slots for custom overlays */}
+        {/* Custom overlays */}
         {children}
       </GraphProvider>
     </div>

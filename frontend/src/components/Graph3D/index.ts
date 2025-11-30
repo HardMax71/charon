@@ -24,5 +24,4 @@ export { NodeMesh, NodeGroup } from './canvas/NodeMesh';
 export { EdgeGroup } from './canvas/EdgeMesh';
 export { ClusterBoxes } from './canvas/ClusterBoxes';
 
-// Legacy export for backward compatibility during migration
 export { LayoutSelector } from './LayoutSelector';

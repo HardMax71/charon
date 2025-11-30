@@ -110,7 +110,6 @@ function calculateForceLayout(nodes: Node[], edges: Edge[]): Map<string, Vector3
  */
 export function useLayoutEngine() {
   const { layout, setLayout, nodePositionsRef, originalPositionsRef, graph } = useGraphLayout();
-  const isAnimatingRef = useRef(false);
   const prevLayoutRef = useRef<string | null>(null);
 
   // Apply layout when it changes
@@ -159,6 +158,5 @@ export function useLayoutEngine() {
   return {
     layout,
     applyLayout,
-    isAnimating: isAnimatingRef.current,
   };
 }

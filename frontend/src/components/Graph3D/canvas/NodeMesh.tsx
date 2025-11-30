@@ -287,16 +287,9 @@ interface NodeGroupProps {
 }
 
 export const NodeGroup = memo(({ nodes }: NodeGroupProps) => {
-  const modifiers = useGraphModifiers();
-
-  // Filter out removed nodes (but still render them with visual indication if needed)
-  const visibleNodes = useMemo(() => {
-    return nodes.filter(node => !modifiers.removedNodeIds.includes(node.id) || true);
-  }, [nodes, modifiers.removedNodeIds]);
-
   return (
     <group>
-      {visibleNodes.map(node => (
+      {nodes.map(node => (
         <NodeMesh key={node.id} node={node} />
       ))}
     </group>

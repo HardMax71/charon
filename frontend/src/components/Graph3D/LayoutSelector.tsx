@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, ChangeEvent } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
 import { DependencyGraph } from '@/types/graph';
 import { GlobalMetrics } from '@/types/metrics';
+
+type LayoutType = 'hierarchical' | 'force' | 'circular';
 import {
   X,
   Minimize2,
@@ -103,7 +105,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
             <Layout className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-teal-600 transition-colors" />
             <select
               value={currentLayout}
-              onChange={(e) => setCurrentLayout(e.target.value as any)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setCurrentLayout(e.target.value as LayoutType)}
               className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-md py-1.5 pl-8 pr-8 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer hover:bg-white transition-colors"
             >
               {layouts.map((layout) => (

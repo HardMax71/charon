@@ -31,28 +31,12 @@ export const DemoSection = ({ graph, metrics }: DemoSectionProps) => (
         className="absolute top-4 right-4 z-40"
       />
 
-      {/* Top bar with stats and example badge */}
-      <div className="absolute top-4 left-4 right-4 z-10 pointer-events-none flex items-center justify-between">
-        {/* Stats badges - left */}
-        <div className="flex items-center gap-2">
-          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm text-center">
-            <div className="text-lg font-bold text-slate-900 tabular-nums leading-tight">{graph?.nodes?.length || 0}</div>
-            <div className="text-[9px] text-slate-500 uppercase tracking-wider">Modules</div>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm text-center">
-            <div className="text-lg font-bold text-slate-900 tabular-nums leading-tight">{graph?.edges?.length || 0}</div>
-            <div className="text-[9px] text-slate-500 uppercase tracking-wider">Edges</div>
-          </div>
-        </div>
-
-        {/* Example badge - center */}
+      {/* Example badge - top center */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
         <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-2 shadow-sm flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
           <span className="text-xs font-semibold text-slate-900 uppercase tracking-wide">Example Project</span>
         </div>
-
-        {/* Spacer for layout selector on right */}
-        <div className="w-32" />
       </div>
     </div>
   </section>
