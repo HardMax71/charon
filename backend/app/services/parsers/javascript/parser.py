@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tree_sitter import Query, QueryCursor
+from tree_sitter import Query
 
 from app.core import JAVASCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS
 from app.core.models import Language, NodeType
@@ -88,40 +88,48 @@ class BaseJavaScriptParser(TreeSitterParser):
             for imp in imports
         ]
 
-        nodes.append(ParsedNode(
-            id=module_id,
-            name=path.stem,
-            node_type=self._determine_node_type(path, source),
-            language=self.language,
-            file_path=str(path),
-            start_line=1,
-            end_line=tree.root_node.end_point[0] + 1,
-            imports=parsed_imports,
-            exports=exports,
-        ))
+        nodes.append(
+            ParsedNode(
+                id=module_id,
+                name=path.stem,
+                node_type=self._determine_node_type(path, source),
+                language=self.language,
+                file_path=str(path),
+                start_line=1,
+                end_line=tree.root_node.end_point[0] + 1,
+                imports=parsed_imports,
+                exports=exports,
+            )
+        )
 
         for cls in classes:
-            nodes.append(ParsedNode(
-                id=f"{module_id}.{cls['name']}",
-                name=cls["name"],
-                node_type=NodeType.CLASS,
-                language=self.language,
-                file_path=str(path),
-                start_line=cls["start_line"],
-                end_line=cls["end_line"],
-            ))
+            nodes.append(
+                ParsedNode(
+                    id=f"{module_id}.{cls['name']}",
+                    name=cls["name"],
+                    node_type=NodeType.CLASS,
+                    language=self.language,
+                    file_path=str(path),
+                    start_line=cls["start_line"],
+                    end_line=cls["end_line"],
+                )
+            )
 
         for func in functions:
-            node_type = NodeType.HOOK if func["name"].startswith("use") else NodeType.FUNCTION
-            nodes.append(ParsedNode(
-                id=f"{module_id}.{func['name']}",
-                name=func["name"],
-                node_type=node_type,
-                language=self.language,
-                file_path=str(path),
-                start_line=func["start_line"],
-                end_line=func["end_line"],
-            ))
+            node_type = (
+                NodeType.HOOK if func["name"].startswith("use") else NodeType.FUNCTION
+            )
+            nodes.append(
+                ParsedNode(
+                    id=f"{module_id}.{func['name']}",
+                    name=func["name"],
+                    node_type=node_type,
+                    language=self.language,
+                    file_path=str(path),
+                    start_line=func["start_line"],
+                    end_line=func["end_line"],
+                )
+            )
 
         return nodes
 
@@ -147,11 +155,14 @@ class BaseJavaScriptParser(TreeSitterParser):
                     continue
                 seen_sources.add(source_text)
 
-                results.append({
-                    "source": source_text,
-                    "line": node.start_point[0] + 1,
-                    "is_dynamic": node.parent and node.parent.type == "call_expression",
-                })
+                results.append(
+                    {
+                        "source": source_text,
+                        "line": node.start_point[0] + 1,
+                        "is_dynamic": node.parent
+                        and node.parent.type == "call_expression",
+                    }
+                )
 
         return results
 
@@ -160,11 +171,17 @@ class BaseJavaScriptParser(TreeSitterParser):
         for node, capture_name in captures:
             if capture_name == "name":
                 parent = node.parent
-                results.append({
-                    "name": self.get_node_text(node, source),
-                    "start_line": parent.start_point[0] + 1 if parent else node.start_point[0] + 1,
-                    "end_line": parent.end_point[0] + 1 if parent else node.end_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "name": self.get_node_text(node, source),
+                        "start_line": parent.start_point[0] + 1
+                        if parent
+                        else node.start_point[0] + 1,
+                        "end_line": parent.end_point[0] + 1
+                        if parent
+                        else node.end_point[0] + 1,
+                    }
+                )
         return results
 
     def _process_function_captures(self, captures: list, source: bytes) -> list[dict]:
@@ -179,14 +196,24 @@ class BaseJavaScriptParser(TreeSitterParser):
                 seen_names.add(name)
 
                 parent = node.parent
-                while parent and parent.type in ("variable_declarator", "lexical_declaration", "variable_declaration"):
+                while parent and parent.type in (
+                    "variable_declarator",
+                    "lexical_declaration",
+                    "variable_declaration",
+                ):
                     parent = parent.parent
 
-                results.append({
-                    "name": name,
-                    "start_line": parent.start_point[0] + 1 if parent else node.start_point[0] + 1,
-                    "end_line": parent.end_point[0] + 1 if parent else node.end_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "name": name,
+                        "start_line": parent.start_point[0] + 1
+                        if parent
+                        else node.start_point[0] + 1,
+                        "end_line": parent.end_point[0] + 1
+                        if parent
+                        else node.end_point[0] + 1,
+                    }
+                )
         return results
 
     def _extract_exports(self, tree, source: bytes) -> list[str]:
@@ -210,11 +237,17 @@ class BaseJavaScriptParser(TreeSitterParser):
         name = path.stem.lower()
         content = source.decode("utf-8", errors="ignore")
 
-        if name.startswith("use") or f"export function use" in content or f"export const use" in content:
+        if (
+            name.startswith("use")
+            or "export function use" in content
+            or "export const use" in content
+        ):
             return NodeType.HOOK
 
         jsx_indicators = ("<", "React", "jsx", "tsx", "return (")
-        if path.suffix in (".jsx", ".tsx") or any(ind in content for ind in jsx_indicators):
+        if path.suffix in (".jsx", ".tsx") or any(
+            ind in content for ind in jsx_indicators
+        ):
             if "export default" in content or "export function" in content:
                 return NodeType.COMPONENT
 

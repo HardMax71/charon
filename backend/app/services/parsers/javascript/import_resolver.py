@@ -6,15 +6,52 @@ from app.services.parsers.base import ImportResolution, ParsedImport
 
 JS_TS_EXTENSIONS = JAVASCRIPT_EXTENSIONS | TYPESCRIPT_EXTENSIONS
 
-NODE_BUILTINS = frozenset({
-    "assert", "async_hooks", "buffer", "child_process", "cluster",
-    "console", "constants", "crypto", "dgram", "diagnostics_channel",
-    "dns", "domain", "events", "fs", "http", "http2", "https",
-    "inspector", "module", "net", "os", "path", "perf_hooks",
-    "process", "punycode", "querystring", "readline", "repl",
-    "stream", "string_decoder", "sys", "timers", "tls", "trace_events",
-    "tty", "url", "util", "v8", "vm", "wasi", "worker_threads", "zlib",
-})
+NODE_BUILTINS = frozenset(
+    {
+        "assert",
+        "async_hooks",
+        "buffer",
+        "child_process",
+        "cluster",
+        "console",
+        "constants",
+        "crypto",
+        "dgram",
+        "diagnostics_channel",
+        "dns",
+        "domain",
+        "events",
+        "fs",
+        "http",
+        "http2",
+        "https",
+        "inspector",
+        "module",
+        "net",
+        "os",
+        "path",
+        "perf_hooks",
+        "process",
+        "punycode",
+        "querystring",
+        "readline",
+        "repl",
+        "stream",
+        "string_decoder",
+        "sys",
+        "timers",
+        "tls",
+        "trace_events",
+        "tty",
+        "url",
+        "util",
+        "v8",
+        "vm",
+        "wasi",
+        "worker_threads",
+        "zlib",
+    }
+)
 
 
 class JavaScriptImportResolver:
@@ -164,7 +201,9 @@ class JavaScriptImportResolver:
 
         return False
 
-    def _resolve_path_alias(self, import_path: str, from_file: Path) -> ImportResolution | None:
+    def _resolve_path_alias(
+        self, import_path: str, from_file: Path
+    ) -> ImportResolution | None:
         compiler_options = self._tsconfig.get("compilerOptions", {})
         paths = compiler_options.get("paths", {})
         base_url = compiler_options.get("baseUrl", ".")
@@ -174,7 +213,7 @@ class JavaScriptImportResolver:
         for alias, targets in paths.items():
             pattern = alias.rstrip("*")
             if import_path.startswith(pattern):
-                remainder = import_path[len(pattern):]
+                remainder = import_path[len(pattern) :]
 
                 for target in targets:
                     target_path = target.rstrip("*") + remainder

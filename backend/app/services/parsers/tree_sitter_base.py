@@ -2,13 +2,13 @@ from abc import abstractmethod
 from pathlib import Path
 
 from tree_sitter import Query, QueryCursor
-from tree_sitter_language_pack import get_language, get_parser
+from tree_sitter_language_pack import SupportedLanguage, get_language, get_parser
 
-from app.services.parsers.base import BaseParser, ParsedNode
+from app.services.parsers.base import BaseParser
 
 
 class TreeSitterParser(BaseParser):
-    language_name: str
+    language_name: SupportedLanguage
     IMPORT_QUERY: str = ""
     CLASS_QUERY: str = ""
     FUNCTION_QUERY: str = ""
@@ -68,7 +68,7 @@ class TreeSitterParser(BaseParser):
         return self._process_function_captures(captures, source)
 
     def get_node_text(self, node, source: bytes) -> str:
-        return source[node.start_byte:node.end_byte].decode("utf-8")
+        return source[node.start_byte : node.end_byte].decode("utf-8")
 
     @abstractmethod
     def _process_import_captures(self, captures: list, source: bytes) -> list[dict]:

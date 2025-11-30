@@ -80,8 +80,12 @@ class ModuleMetadata(BaseModel):
 
     language: str = Field(description="Programming language")
     file_path: str = Field(description="Original file path")
-    service: str | None = Field(default=None, description="Detected service/package name")
-    node_kind: str = Field(default="module", description="Node type (module, component, hook, etc.)")
+    service: str | None = Field(
+        default=None, description="Detected service/package name"
+    )
+    node_kind: str = Field(
+        default="module", description="Node type (module, component, hook, etc.)"
+    )
 
 
 class DependencyAnalysis(BaseModel):
@@ -109,7 +113,8 @@ class DependencyAnalysis(BaseModel):
         default_factory=list, description="All errors encountered during analysis"
     )
     module_metadata: dict[str, ModuleMetadata] = Field(
-        default_factory=dict, description="Module path -> metadata (language, service, etc.)"
+        default_factory=dict,
+        description="Module path -> metadata (language, service, etc.)",
     )
 
     model_config = ConfigDict(

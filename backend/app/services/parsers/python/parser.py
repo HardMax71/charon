@@ -62,38 +62,44 @@ class PythonParser(TreeSitterParser):
             for imp in imports
         ]
 
-        nodes.append(ParsedNode(
-            id=module_id,
-            name=path.stem,
-            node_type=NodeType.MODULE,
-            language=Language.PYTHON,
-            file_path=str(path),
-            start_line=1,
-            end_line=tree.root_node.end_point[0] + 1,
-            imports=parsed_imports,
-        ))
+        nodes.append(
+            ParsedNode(
+                id=module_id,
+                name=path.stem,
+                node_type=NodeType.MODULE,
+                language=Language.PYTHON,
+                file_path=str(path),
+                start_line=1,
+                end_line=tree.root_node.end_point[0] + 1,
+                imports=parsed_imports,
+            )
+        )
 
         for cls in classes:
-            nodes.append(ParsedNode(
-                id=f"{module_id}.{cls['name']}",
-                name=cls["name"],
-                node_type=NodeType.CLASS,
-                language=Language.PYTHON,
-                file_path=str(path),
-                start_line=cls["start_line"],
-                end_line=cls["end_line"],
-            ))
+            nodes.append(
+                ParsedNode(
+                    id=f"{module_id}.{cls['name']}",
+                    name=cls["name"],
+                    node_type=NodeType.CLASS,
+                    language=Language.PYTHON,
+                    file_path=str(path),
+                    start_line=cls["start_line"],
+                    end_line=cls["end_line"],
+                )
+            )
 
         for func in functions:
-            nodes.append(ParsedNode(
-                id=f"{module_id}.{func['name']}",
-                name=func["name"],
-                node_type=NodeType.FUNCTION,
-                language=Language.PYTHON,
-                file_path=str(path),
-                start_line=func["start_line"],
-                end_line=func["end_line"],
-            ))
+            nodes.append(
+                ParsedNode(
+                    id=f"{module_id}.{func['name']}",
+                    name=func["name"],
+                    node_type=NodeType.FUNCTION,
+                    language=Language.PYTHON,
+                    file_path=str(path),
+                    start_line=func["start_line"],
+                    end_line=func["end_line"],
+                )
+            )
 
         return nodes
 
@@ -132,16 +138,20 @@ class PythonParser(TreeSitterParser):
                                 elif name_node.type == "aliased_import":
                                     for sub in name_node.children:
                                         if sub.type == "dotted_name":
-                                            names.append(self.get_node_text(sub, source))
+                                            names.append(
+                                                self.get_node_text(sub, source)
+                                            )
                                             break
 
-                results.append({
-                    "module": module_text,
-                    "names": names,
-                    "is_relative": False,
-                    "level": 0,
-                    "line": node.start_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "module": module_text,
+                        "names": names,
+                        "is_relative": False,
+                        "level": 0,
+                        "line": node.start_point[0] + 1,
+                    }
+                )
 
             elif capture_name == "relative":
                 parent = node.parent
@@ -162,13 +172,15 @@ class PythonParser(TreeSitterParser):
                                 if name_node.type == "dotted_name":
                                     names.append(self.get_node_text(name_node, source))
 
-                results.append({
-                    "module": module_text,
-                    "names": names,
-                    "is_relative": True,
-                    "level": level,
-                    "line": node.start_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "module": module_text,
+                        "names": names,
+                        "is_relative": True,
+                        "level": level,
+                        "line": node.start_point[0] + 1,
+                    }
+                )
 
             i += 1
 
@@ -179,11 +191,17 @@ class PythonParser(TreeSitterParser):
         for node, capture_name in captures:
             if capture_name == "name":
                 parent = node.parent
-                results.append({
-                    "name": self.get_node_text(node, source),
-                    "start_line": parent.start_point[0] + 1 if parent else node.start_point[0] + 1,
-                    "end_line": parent.end_point[0] + 1 if parent else node.end_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "name": self.get_node_text(node, source),
+                        "start_line": parent.start_point[0] + 1
+                        if parent
+                        else node.start_point[0] + 1,
+                        "end_line": parent.end_point[0] + 1
+                        if parent
+                        else node.end_point[0] + 1,
+                    }
+                )
         return results
 
     def _process_function_captures(self, captures: list, source: bytes) -> list[dict]:
@@ -191,11 +209,17 @@ class PythonParser(TreeSitterParser):
         for node, capture_name in captures:
             if capture_name == "name":
                 parent = node.parent
-                results.append({
-                    "name": self.get_node_text(node, source),
-                    "start_line": parent.start_point[0] + 1 if parent else node.start_point[0] + 1,
-                    "end_line": parent.end_point[0] + 1 if parent else node.end_point[0] + 1,
-                })
+                results.append(
+                    {
+                        "name": self.get_node_text(node, source),
+                        "start_line": parent.start_point[0] + 1
+                        if parent
+                        else node.start_point[0] + 1,
+                        "end_line": parent.end_point[0] + 1
+                        if parent
+                        else node.end_point[0] + 1,
+                    }
+                )
         return results
 
     def _path_to_module_id(self, path: Path) -> str:

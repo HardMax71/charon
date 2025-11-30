@@ -59,7 +59,9 @@ async def analyze_performance(
             tmp.write(await file.read())
             tmp_path = tmp.name
 
-        parser = CProfileParser(tmp_path) if suffix == ".prof" else PySpyParser(tmp_path)
+        parser = (
+            CProfileParser(tmp_path) if suffix == ".prof" else PySpyParser(tmp_path)
+        )
 
         analyzer = PerformanceAnalyzer(
             module_performance=parser.parse(),

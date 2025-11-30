@@ -15,7 +15,7 @@ from app.core.parsing_models import (
     ModuleMetadata,
 )
 from app.services.complexity_service import ComplexityService
-from app.services.parsers import ParserRegistry, ParsedImport
+from app.services.parsers import ParserRegistry
 
 logger = get_logger(__name__)
 
@@ -107,8 +107,7 @@ class MultiLanguageAnalyzer:
                 project_modules.add(module_id)
                 all_modules[module_id] = file.content
 
-            if hasattr(parser, "set_project_modules"):
-                parser.set_project_modules(project_modules)
+            parser.set_project_modules(project_modules)
 
             for file in lang_files:
                 module_id = self._file_to_module_id(file.path, language)
@@ -121,18 +120,27 @@ class MultiLanguageAnalyzer:
                     all_errors.append(error_msg)
                     continue
 
-                module_node = next((n for n in nodes if n.id == module_id or n.name == Path(file.path).stem), None)
+                module_node = next(
+                    (
+                        n
+                        for n in nodes
+                        if n.id == module_id or n.name == Path(file.path).stem
+                    ),
+                    None,
+                )
                 if not module_node:
                     continue
 
                 import_infos = []
                 for parsed_import in module_node.imports:
-                    import_infos.append(ImportInfo(
-                        module=parsed_import.module,
-                        names=parsed_import.names,
-                        level=parsed_import.level,
-                        lineno=1,  # Default line number, actual value not tracked
-                    ))
+                    import_infos.append(
+                        ImportInfo(
+                            module=parsed_import.module,
+                            names=parsed_import.names,
+                            level=parsed_import.level,
+                            lineno=1,  # Default line number, actual value not tracked
+                        )
+                    )
 
                     # Try direct path resolution for relative imports (JS/TS)
                     target = None
@@ -154,7 +162,10 @@ class MultiLanguageAnalyzer:
                             continue
 
                         if resolution.is_external:
-                            pkg = resolution.package_name or parsed_import.module.split(".")[0]
+                            pkg = (
+                                resolution.package_name
+                                or parsed_import.module.split(".")[0]
+                            )
                             target = f"third_party.{pkg}"
                         elif resolution.is_internal and resolution.resolved_path:
                             target = self._resolve_path_to_module(
@@ -169,12 +180,16 @@ class MultiLanguageAnalyzer:
                         key = (module_id, target)
                         if key not in all_import_details:
                             all_import_details[key] = []
-                        all_import_details[key].extend(parsed_import.names or [parsed_import.module])
+                        all_import_details[key].extend(
+                            parsed_import.names or [parsed_import.module]
+                        )
 
                 all_imports[module_id] = import_infos
 
                 if language == Language.PYTHON:
-                    complexity = self._complexity_service.analyze_file(file.path, file.content)
+                    complexity = self._complexity_service.analyze_file(
+                        file.path, file.content
+                    )
                     all_complexity[module_id] = complexity
 
         logger.info(
@@ -211,8 +226,18 @@ class MultiLanguageAnalyzer:
 
         # Common top-level service directories
         top_level_services = {
-            "frontend", "backend", "api", "web", "mobile", "server",
-            "client", "admin", "dashboard", "core", "common", "shared",
+            "frontend",
+            "backend",
+            "api",
+            "web",
+            "mobile",
+            "server",
+            "client",
+            "admin",
+            "dashboard",
+            "core",
+            "common",
+            "shared",
         }
 
         # Monorepo package directories (take next segment as service name)
@@ -243,7 +268,9 @@ class MultiLanguageAnalyzer:
 
         return None
 
-    def _detect_node_kind(self, file_path: str, content: str, language: Language) -> NodeType:
+    def _detect_node_kind(
+        self, file_path: str, content: str, language: Language
+    ) -> NodeType:
         """Detect the type of node based on file path and content."""
         path = Path(file_path)
         name = path.stem.lower()
@@ -251,13 +278,23 @@ class MultiLanguageAnalyzer:
         # JavaScript/TypeScript specific patterns
         if language in (Language.JAVASCRIPT, Language.TYPESCRIPT):
             # React hooks
-            if name.startswith("use") or "export function use" in content or "export const use" in content:
+            if (
+                name.startswith("use")
+                or "export function use" in content
+                or "export const use" in content
+            ):
                 return NodeType.HOOK
 
             # React components (check for JSX indicators)
             jsx_indicators = ["<", "React", "jsx", "tsx", "return ("]
-            if path.suffix in (".jsx", ".tsx") or any(ind in content for ind in jsx_indicators):
-                if "export default" in content or "export function" in content or "export const" in content:
+            if path.suffix in (".jsx", ".tsx") or any(
+                ind in content for ind in jsx_indicators
+            ):
+                if (
+                    "export default" in content
+                    or "export function" in content
+                    or "export const" in content
+                ):
                     return NodeType.COMPONENT
 
             # Service files
@@ -277,7 +314,9 @@ class MultiLanguageAnalyzer:
         # Default to module
         return NodeType.MODULE
 
-    def _group_by_language(self, files: list[FileInput]) -> dict[Language, list[FileInput]]:
+    def _group_by_language(
+        self, files: list[FileInput]
+    ) -> dict[Language, list[FileInput]]:
         result: dict[Language, list[FileInput]] = defaultdict(list)
 
         for file in files:
@@ -300,7 +339,7 @@ class MultiLanguageAnalyzer:
             js_ts_extensions = JAVASCRIPT_EXTENSIONS | TYPESCRIPT_EXTENSIONS
             for ext in js_ts_extensions:
                 if parts[-1].endswith(ext):
-                    parts[-1] = parts[-1][:-len(ext)]
+                    parts[-1] = parts[-1][: -len(ext)]
                     break
             if parts[-1] == "index":
                 parts = parts[:-1]
@@ -346,7 +385,9 @@ class MultiLanguageAnalyzer:
             if candidate in self._path_to_module:
                 return self._path_to_module[candidate]
 
-        logger.debug("Could not resolve JS import '%s' from '%s'", import_path, from_file)
+        logger.debug(
+            "Could not resolve JS import '%s' from '%s'", import_path, from_file
+        )
         return None
 
     def _resolve_path_to_module(
@@ -368,7 +409,9 @@ class MultiLanguageAnalyzer:
 
         # Check if any project module starts with this (package match)
         for proj_mod in project_modules:
-            if proj_mod.startswith(module_id + ".") or module_id.startswith(proj_mod + "."):
+            if proj_mod.startswith(module_id + ".") or module_id.startswith(
+                proj_mod + "."
+            ):
                 return proj_mod
 
         # Unknown internal import - treat as third party

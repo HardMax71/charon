@@ -13,10 +13,7 @@ logger = get_logger(__name__)
 
 
 def _has_multi_language_files(files: list[FileInput]) -> bool:
-    return any(
-        Path(f.path).suffix.lower() in NON_PYTHON_EXTENSIONS
-        for f in files
-    )
+    return any(Path(f.path).suffix.lower() in NON_PYTHON_EXTENSIONS for f in files)
 
 
 async def analyze_files(

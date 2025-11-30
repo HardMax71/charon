@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-from app.core.models import EdgeType, Language, NodeType
+from app.core.models import Language, NodeType
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,19 +45,20 @@ class LanguageParser(Protocol):
     language: Language
     file_extensions: tuple[str, ...]
 
-    def parse_file(self, path: Path, content: str | None = None) -> list[ParsedNode]:
-        ...
+    def parse_file(
+        self, path: Path, content: str | None = None
+    ) -> list[ParsedNode]: ...
 
     def resolve_import(
         self,
         import_stmt: ParsedImport,
         from_file: Path,
         project_root: Path,
-    ) -> ImportResolution:
-        ...
+    ) -> ImportResolution: ...
 
-    def detect_project(self, path: Path) -> bool:
-        ...
+    def detect_project(self, path: Path) -> bool: ...
+
+    def set_project_modules(self, modules: set[str]) -> None: ...
 
 
 class BaseParser(ABC):
@@ -83,3 +84,7 @@ class BaseParser(ABC):
 
     def parse_content(self, content: str, file_path: str) -> list[ParsedNode]:
         return self.parse_file(Path(file_path), content)
+
+    def set_project_modules(self, modules: set[str]) -> None:
+        """Optional hook for parsers that need project module context."""
+        pass

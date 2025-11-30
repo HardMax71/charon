@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, Any
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
@@ -101,9 +101,13 @@ class Node(BaseModel):
     cluster_id: int | None = Field(default=None, description="Cluster ID")
     # Multi-language & monorepo support
     language: Language | None = Field(default=None, description="Programming language")
-    node_kind: NodeType = Field(default=NodeType.MODULE, description="Node type (module, component, hook, etc.)")
+    node_kind: NodeType = Field(
+        default=NodeType.MODULE, description="Node type (module, component, hook, etc.)"
+    )
     file_path: str | None = Field(default=None, description="Original file path")
-    service: str | None = Field(default=None, description="Detected service/package name from path")
+    service: str | None = Field(
+        default=None, description="Detected service/package name from path"
+    )
 
 
 class Edge(BaseModel):

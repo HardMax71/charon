@@ -1,7 +1,7 @@
 from collections.abc import AsyncGenerator
 import networkx as nx
 
-from app.core import get_logger, LANGUAGE_COLORS, THIRD_PARTY_COLOR, DEFAULT_NODE_COLOR
+from app.core import get_logger, THIRD_PARTY_COLOR, DEFAULT_NODE_COLOR
 from app.core.models import (
     AnalyzeRequest,
     GitHubAnalyzeRequest,
@@ -56,7 +56,9 @@ class AnalysisOrchestratorService:
                     project_name = url.split("/")[-1]
 
                     if not files:
-                        logger.warning("No supported source files found in repository: %s", url)
+                        logger.warning(
+                            "No supported source files found in repository: %s", url
+                        )
                         return SourceFilesResult(
                             success=False,
                             error_message="No supported source files found in repository",
