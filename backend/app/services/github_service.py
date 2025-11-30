@@ -6,15 +6,51 @@ from app.core import SUPPORTED_EXTENSIONS
 from app.core.config import settings
 from app.core.models import FileInput
 
-SKIP_DIRS = frozenset({
-    'node_modules', 'dist', 'build', '.git', 'vendor', '__pycache__',
-    'venv', '.venv', 'env', '.env', 'coverage', '.next', 'target',
-    'out', '.cache', 'bower_components', '.tox', 'eggs', '.mypy_cache',
-    '.pytest_cache', '.ruff_cache', 'site-packages', '.gradle',
-    'bin', 'obj', 'packages', '.nuget', 'Debug', 'Release', 'test',
-    'tests', '__tests__', 'spec', 'specs', 'fixtures', '__fixtures__',
-    'mocks', '__mocks__', 'e2e', 'cypress', 'playwright',
-})
+SKIP_DIRS = frozenset(
+    {
+        "node_modules",
+        "dist",
+        "build",
+        ".git",
+        "vendor",
+        "__pycache__",
+        "venv",
+        ".venv",
+        "env",
+        ".env",
+        "coverage",
+        ".next",
+        "target",
+        "out",
+        ".cache",
+        "bower_components",
+        ".tox",
+        "eggs",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        "site-packages",
+        ".gradle",
+        "bin",
+        "obj",
+        "packages",
+        ".nuget",
+        "Debug",
+        "Release",
+        "test",
+        "tests",
+        "__tests__",
+        "spec",
+        "specs",
+        "fixtures",
+        "__fixtures__",
+        "mocks",
+        "__mocks__",
+        "e2e",
+        "cypress",
+        "playwright",
+    }
+)
 
 MAX_FILE_SIZE = 500_000
 
@@ -91,18 +127,17 @@ class GitHubService:
 
         connector = aiohttp.TCPConnector(limit=100, limit_per_host=50)
         headers = {"Authorization": f"token {token}"} if token else {}
-        async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
+        async with aiohttp.ClientSession(
+            connector=connector, headers=headers
+        ) as session:
             tasks = [fetch_one(session, f["path"]) for f in source_files]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
         return [r for r in results if isinstance(r, FileInput)]
 
     def _should_skip_path(self, path: str) -> bool:
-        parts = path.split('/')
-        return any(
-            part in SKIP_DIRS or part.startswith('.')
-            for part in parts[:-1]
-        )
+        parts = path.split("/")
+        return any(part in SKIP_DIRS or part.startswith(".") for part in parts[:-1])
 
     def _is_supported_file(self, path: str) -> bool:
         return any(path.endswith(ext) for ext in SUPPORTED_EXTENSIONS)
@@ -239,7 +274,13 @@ class GitHubService:
                 return data.get("tree", [])
 
     async def _fetch_file_content(
-        self, session: aiohttp.ClientSession, owner: str, repo: str, path: str, ref: str, token: str | None = None
+        self,
+        session: aiohttp.ClientSession,
+        owner: str,
+        repo: str,
+        path: str,
+        ref: str,
+        token: str | None = None,
     ) -> str | None:
         """
         Fetch content of a single file.

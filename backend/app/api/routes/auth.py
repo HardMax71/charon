@@ -78,7 +78,11 @@ async def get_github_auth_data(token: str) -> GitHubAuthData:
         # Fetch repos (owned + accessible)
         async with session.get(
             "https://api.github.com/user/repos",
-            params={"per_page": 100, "sort": "pushed", "affiliation": "owner,collaborator,organization_member"},
+            params={
+                "per_page": 100,
+                "sort": "pushed",
+                "affiliation": "owner,collaborator,organization_member",
+            },
         ) as repos_resp:
             repos_data = await repos_resp.json() if repos_resp.status == 200 else []
 
@@ -115,7 +119,9 @@ async def start_device_flow() -> GitHubDeviceCodeResponse:
             headers={"Accept": "application/json"},
         ) as response:
             if response.status != 200:
-                raise HTTPException(status_code=400, detail="Failed to start device flow")
+                raise HTTPException(
+                    status_code=400, detail="Failed to start device flow"
+                )
 
             data = await response.json()
             return GitHubDeviceCodeResponse(
@@ -128,7 +134,9 @@ async def start_device_flow() -> GitHubDeviceCodeResponse:
 
 
 @router.post("/auth/github/device/poll", response_model=GitHubDevicePollResponse)
-async def poll_device_flow(request: GitHubDevicePollRequest) -> GitHubDevicePollResponse:
+async def poll_device_flow(
+    request: GitHubDevicePollRequest,
+) -> GitHubDevicePollResponse:
     """Poll for device flow token - returns token when user authorizes."""
     if not settings.github_client_id:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
@@ -152,9 +160,13 @@ async def poll_device_flow(request: GitHubDevicePollRequest) -> GitHubDevicePoll
                 elif error == "slow_down":
                     return GitHubDevicePollResponse(status="pending")
                 elif error == "expired_token":
-                    return GitHubDevicePollResponse(status="expired", error="Code expired")
+                    return GitHubDevicePollResponse(
+                        status="expired", error="Code expired"
+                    )
                 else:
-                    return GitHubDevicePollResponse(status="error", error=data.get("error_description", error))
+                    return GitHubDevicePollResponse(
+                        status="error", error=data.get("error_description", error)
+                    )
 
             return GitHubDevicePollResponse(
                 status="success",

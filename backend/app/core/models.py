@@ -279,7 +279,7 @@ class GitHubAnalyzeRequest(BaseModel):
     url: str = Field(description="GitHub repository URL")
     github_token: str | None = Field(
         default=None,
-        description="Optional GitHub token for private repos or higher rate limits"
+        description="Optional GitHub token for private repos or higher rate limits",
     )
 
 
