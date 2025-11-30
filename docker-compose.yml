@@ -8,9 +8,8 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
-    environment:
-      - APP_NAME=Charon
-      - API_PREFIX=/api
+    env_file:
+      - ./backend/.env
     restart: unless-stopped
 
   frontend:

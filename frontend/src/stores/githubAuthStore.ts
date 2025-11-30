@@ -15,26 +15,20 @@ interface GitHubRepo {
   default_branch: string;
 }
 
-interface DeviceFlowState {
-  userCode: string;
-  verificationUri: string;
-  deviceCode: string;
-  interval: number;
-}
-
 interface GitHubAuthState {
   token: string | null;
   user: GitHubUser | null;
   repos: GitHubRepo[];
+  clientId: string | null;
   oauthEnabled: boolean | null;
-  deviceFlow: DeviceFlowState | null;
-  isPolling: boolean;
+  isAuthenticating: boolean;
 
+  // OAuth Web Flow
   checkConfig: () => Promise<boolean>;
-  startDeviceFlow: () => Promise<boolean>;
-  pollForToken: () => Promise<boolean>;
-  cancelDeviceFlow: () => void;
-  setTokenAndFetchData: (token: string) => Promise<boolean>;
+  initiateOAuth: () => void;
+  handleOAuthCallback: (code: string) => Promise<boolean>;
+
+  // Session management
   restoreSession: () => Promise<void>;
   logout: () => void;
 }
@@ -45,15 +39,15 @@ export const useGitHubAuth = create<GitHubAuthState>()(
       token: null,
       user: null,
       repos: [],
+      clientId: null,
       oauthEnabled: null,
-      deviceFlow: null,
-      isPolling: false,
+      isAuthenticating: false,
 
       checkConfig: async () => {
         try {
           const res = await fetch(`${API_BASE}/auth/github/config`);
           const data = await res.json();
-          set({ oauthEnabled: data.enabled });
+          set({ oauthEnabled: data.enabled, clientId: data.client_id });
           return data.enabled;
         } catch {
           set({ oauthEnabled: false });
@@ -61,90 +55,75 @@ export const useGitHubAuth = create<GitHubAuthState>()(
         }
       },
 
-      startDeviceFlow: async () => {
-        try {
-          const res = await fetch(`${API_BASE}/auth/github/device`, { method: 'POST' });
-          if (!res.ok) return false;
+      initiateOAuth: () => {
+        const { clientId } = get();
+        if (!clientId) {
+          console.error('GitHub OAuth not configured');
+          return;
+        }
 
-          const data = await res.json();
-          set({
-            deviceFlow: {
-              userCode: data.user_code,
-              verificationUri: data.verification_uri,
-              deviceCode: data.device_code,
-              interval: data.interval,
-            },
+        // Store current URL to return to after OAuth (if not home)
+        const returnTo = window.location.pathname !== '/' ? window.location.pathname : '';
+        if (returnTo) {
+          sessionStorage.setItem('oauth_return_to', returnTo);
+        }
+
+        // Redirect to GitHub OAuth
+        const redirectUri = `${window.location.origin}/`;
+        const scope = 'repo'; // Access to public and private repos
+        const state = crypto.randomUUID(); // CSRF protection
+        sessionStorage.setItem('oauth_state', state);
+
+        const authUrl = new URL('https://github.com/login/oauth/authorize');
+        authUrl.searchParams.set('client_id', clientId);
+        authUrl.searchParams.set('redirect_uri', redirectUri);
+        authUrl.searchParams.set('scope', scope);
+        authUrl.searchParams.set('state', state);
+
+        window.location.href = authUrl.toString();
+      },
+
+      handleOAuthCallback: async (code: string) => {
+        set({ isAuthenticating: true });
+
+        try {
+          // Exchange code for token via backend
+          const tokenRes = await fetch(`${API_BASE}/auth/github/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
           });
 
-          // Open GitHub auth page
-          window.open(data.verification_uri, '_blank');
-
-          return true;
-        } catch {
-          return false;
-        }
-      },
-
-      pollForToken: async () => {
-        const { deviceFlow } = get();
-        if (!deviceFlow) return false;
-
-        set({ isPolling: true });
-
-        const poll = async (): Promise<boolean> => {
-          const current = get();
-          if (!current.deviceFlow || !current.isPolling) return false;
-
-          try {
-            const res = await fetch(`${API_BASE}/auth/github/device/poll`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ device_code: current.deviceFlow.deviceCode }),
-            });
-
-            const data = await res.json();
-
-            if (data.status === 'success' && data.access_token) {
-              // Fetch user data
-              const meRes = await fetch(`${API_BASE}/auth/github/me?token=${data.access_token}`);
-              if (meRes.ok) {
-                const meData = await meRes.json();
-                set({
-                  token: data.access_token,
-                  user: meData.user,
-                  repos: meData.repos,
-                  deviceFlow: null,
-                  isPolling: false,
-                });
-                return true;
-              }
-            } else if (data.status === 'expired' || data.status === 'error') {
-              set({ deviceFlow: null, isPolling: false });
-              return false;
-            }
-
-            // Still pending - poll again
-            await new Promise(r => setTimeout(r, current.deviceFlow!.interval * 1000));
-            return poll();
-          } catch {
-            set({ isPolling: false });
+          if (!tokenRes.ok) {
+            const error = await tokenRes.json();
+            console.error('Token exchange failed:', error);
+            set({ isAuthenticating: false });
             return false;
           }
-        };
 
-        return poll();
-      },
+          const tokenData = await tokenRes.json();
+          const accessToken = tokenData.access_token;
 
-      cancelDeviceFlow: () => set({ deviceFlow: null, isPolling: false }),
+          // Fetch user data and repos
+          const meRes = await fetch(`${API_BASE}/auth/github/me?token=${accessToken}`);
+          if (!meRes.ok) {
+            console.error('Failed to fetch user data');
+            set({ isAuthenticating: false });
+            return false;
+          }
 
-      setTokenAndFetchData: async (token: string) => {
-        try {
-          const res = await fetch(`${API_BASE}/auth/github/me?token=${token}`);
-          if (!res.ok) return false;
-          const data = await res.json();
-          set({ token, user: data.user, repos: data.repos });
+          const meData = await meRes.json();
+          set({
+            token: accessToken,
+            user: meData.user,
+            repos: meData.repos,
+            isAuthenticating: false,
+          });
+
           return true;
-        } catch {
+        } catch (error) {
+          console.error('OAuth callback error:', error);
+          set({ isAuthenticating: false });
           return false;
         }
       },
@@ -166,7 +145,7 @@ export const useGitHubAuth = create<GitHubAuthState>()(
         }
       },
 
-      logout: () => set({ token: null, user: null, repos: [], deviceFlow: null, isPolling: false }),
+      logout: () => set({ token: null, user: null, repos: [] }),
     }),
     {
       name: 'gh-auth',

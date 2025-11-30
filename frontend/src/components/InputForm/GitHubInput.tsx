@@ -1,21 +1,39 @@
 import { useEffect, useState, useRef } from 'react';
 import { useGitHubAuth } from '@/stores/githubAuthStore';
-import { Github, ChevronDown, LogOut, Lock, Globe } from 'lucide-react';
+import { Github, ChevronDown, LogOut, Lock, Globe, Loader2 } from 'lucide-react';
 
 interface GitHubInputProps {
   onSubmit: (url: string, token: string | null) => void;
 }
 
 export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
-  const { token, user, repos, setTokenAndFetchData, restoreSession, logout } = useGitHubAuth();
+  const {
+    token,
+    user,
+    repos,
+    oauthEnabled,
+    isAuthenticating,
+    checkConfig,
+    initiateOAuth,
+    restoreSession,
+    logout,
+  } = useGitHubAuth();
+
   const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Check OAuth config on mount
+  useEffect(() => {
+    checkConfig();
+  }, [checkConfig]);
+
+  // Restore session if we have a token
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
 
+  // Handle click outside dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -27,17 +45,36 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
   }, []);
 
   const handleConnect = async () => {
-    window.open('https://github.com/settings/tokens/new?scopes=repo&description=Charon', '_blank');
-    const inputToken = window.prompt('After creating your token on GitHub, paste it here:');
-    if (inputToken?.trim()) {
-      await setTokenAndFetchData(inputToken.trim());
+    // Ensure config is loaded
+    let enabled = oauthEnabled;
+    if (enabled === null) {
+      enabled = await checkConfig();
+    }
+
+    if (enabled) {
+      initiateOAuth();
+    } else {
+      // Fallback: show message that OAuth is not configured
+      alert('GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in the backend.');
     }
   };
 
   const isAuthenticated = !!user && !!token;
   const selectedRepoData = repos.find(r => r.full_name === selectedRepo);
 
-  // Authenticated: show repo dropdown (same height as default)
+  // Show loading state during OAuth
+  if (isAuthenticating) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-center gap-2 py-6 text-slate-600">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm font-medium">Connecting to GitHub...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated: show repo dropdown
   if (isAuthenticated) {
     return (
       <form onSubmit={(e) => {
@@ -55,7 +92,7 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
             <span className="flex items-center gap-2">
               {selectedRepoData ? (
                 <>
-                  {selectedRepoData.private ? <Lock className="w-3.5 h-3.5 text-slate-600" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
+                  {selectedRepoData.private ? <Lock className="w-3.5 h-3.5 text-slate-500" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
                   {selectedRepoData.full_name}
                 </>
               ) : (
@@ -67,7 +104,6 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
 
           {dropdownOpen && (
             <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-
               {repos.map((repo) => (
                 <button
                   key={repo.full_name}
@@ -75,7 +111,7 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
                   onClick={() => { setSelectedRepo(repo.full_name); setDropdownOpen(false); }}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 ${selectedRepo === repo.full_name ? 'bg-slate-100' : ''}`}
                 >
-                  {repo.private ? <Lock className="w-3.5 h-3.5 text-slate-600" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
+                  {repo.private ? <Lock className="w-3.5 h-3.5 text-slate-500" /> : <Globe className="w-3.5 h-3.5 text-slate-600" />}
                   <span className="truncate">{repo.full_name}</span>
                 </button>
               ))}
@@ -125,7 +161,7 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
           type="button"
           onClick={handleConnect}
           className="w-10 flex items-center justify-center bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors"
-          title="Connect GitHub for private repos"
+          title="Sign in with GitHub for private repos"
         >
           <Github className="w-4 h-4 text-slate-600" />
         </button>

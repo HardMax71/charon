@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { HomePage } from './pages/HomePage';
@@ -15,10 +15,50 @@ import { ImpactAnalysisModal } from './components/ImpactAnalysisModal/ImpactAnal
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { ToastContainer } from './components/Toast/ToastContainer';
 import { setupGlobalErrorHandler } from './utils/globalErrorHandler';
+import { useGitHubAuth } from './stores/githubAuthStore';
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
+  const handleOAuthCallback = useGitHubAuth((state) => state.handleOAuthCallback);
+
+  // Handle GitHub OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const storedState = sessionStorage.getItem('oauth_state');
+
+    if (code) {
+      // Verify state to prevent CSRF attacks
+      if (state && storedState && state !== storedState) {
+        console.error('OAuth state mismatch - possible CSRF attack');
+        sessionStorage.removeItem('oauth_state');
+        // Clear URL params
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+      }
+
+      // Clear stored state
+      sessionStorage.removeItem('oauth_state');
+
+      // Handle the callback
+      handleOAuthCallback(code).then((success) => {
+        // Clear URL params
+        window.history.replaceState({}, '', window.location.pathname);
+
+        if (success) {
+          // Check if we should return to a specific page
+          const returnTo = sessionStorage.getItem('oauth_return_to');
+          if (returnTo) {
+            sessionStorage.removeItem('oauth_return_to');
+            navigate(returnTo);
+          }
+        }
+      });
+    }
+  }, [handleOAuthCallback, navigate]);
 
   return (
     <div className="w-full h-full flex flex-col bg-background">
