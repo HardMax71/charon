@@ -50,7 +50,8 @@ export const useGitHubAuth = create<GitHubAuthState>()(
           const data = await res.json();
           set({ oauthEnabled: data.enabled, clientId: data.client_id });
           return data.enabled;
-        } catch {
+        } catch (error) {
+          logger.error('Failed to check GitHub OAuth config:', error);
           set({ oauthEnabled: false });
           return false;
         }
@@ -106,7 +107,9 @@ export const useGitHubAuth = create<GitHubAuthState>()(
           const accessToken = tokenData.access_token;
 
           // Fetch user data and repos
-          const meRes = await fetch(`${API_BASE}/auth/github/me?token=${accessToken}`);
+          const meRes = await fetch(`${API_BASE}/auth/github/me`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+          });
           if (!meRes.ok) {
             logger.error('Failed to fetch user data');
             set({ isAuthenticating: false });
@@ -134,14 +137,17 @@ export const useGitHubAuth = create<GitHubAuthState>()(
         if (!token) return;
 
         try {
-          const res = await fetch(`${API_BASE}/auth/github/me?token=${token}`);
+          const res = await fetch(`${API_BASE}/auth/github/me`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
           if (res.ok) {
             const data = await res.json();
             set({ user: data.user, repos: data.repos });
           } else {
             set({ token: null, user: null, repos: [] });
           }
-        } catch {
+        } catch (error) {
+          logger.error('Failed to restore GitHub session:', error);
           set({ token: null, user: null, repos: [] });
         }
       },

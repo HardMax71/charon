@@ -43,57 +43,66 @@ export const TemporalInput = ({
     setIsAnalyzing(true);
     abortControllerRef.current = new AbortController();
 
-    const response = await fetch('/api/temporal-analysis', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-      body: JSON.stringify({
-        repository_url: repoUrl,
-        start_date: startDate || null,
-        end_date: endDate || null,
-        sample_strategy: sampleStrategy,
-      }),
-      signal: abortControllerRef.current.signal,
-    });
+    try {
+      const response = await fetch('/api/temporal-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+        body: JSON.stringify({
+          repository_url: repoUrl,
+          start_date: startDate || null,
+          end_date: endDate || null,
+          sample_strategy: sampleStrategy,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error (${response.status}): ${errorText}`);
-    }
-
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    if (!reader) throw new Error('Stream connection failed');
-
-    let buffer = '';
-    const processLine = (line: string) => {
-      if (!line || !line.startsWith('data:')) return;
-      const payload = line.replace(/^(?:data:\s*)+/, '');
-      if (!payload) return;
-
-      try {
-        const data = JSON.parse(payload);
-        if (data.type === 'result') {
-          onAnalysisComplete(data.data);
-          setIsAnalyzing(false);
-        } else if (data.type === 'error') {
-          setError(data.message);
-          setIsAnalyzing(false);
-        } else if (data.type === 'progress') {
-          setProgressMessage(data.message);
-          if (data.step && data.total) setProgress((data.step / data.total) * 100);
-        }
-      } catch (e) { logger.error('Parse error:', e); }
-    };
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let idx;
-      while ((idx = buffer.indexOf('\n')) !== -1) {
-        processLine(buffer.slice(0, idx));
-        buffer = buffer.slice(idx + 1);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error (${response.status}): ${errorText}`);
       }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      if (!reader) throw new Error('Stream connection failed');
+
+      let buffer = '';
+      const processLine = (line: string) => {
+        if (!line || !line.startsWith('data:')) return;
+        const payload = line.replace(/^(?:data:\s*)+/, '');
+        if (!payload) return;
+
+        try {
+          const data = JSON.parse(payload);
+          if (data.type === 'result') {
+            onAnalysisComplete(data.data);
+          } else if (data.type === 'error') {
+            setError(data.message);
+          } else if (data.type === 'progress') {
+            setProgressMessage(data.message);
+            if (data.step && data.total) setProgress((data.step / data.total) * 100);
+          }
+        } catch (e) { logger.error('SSE parse error:', e); }
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n')) !== -1) {
+          processLine(buffer.slice(0, idx));
+          buffer = buffer.slice(idx + 1);
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      const message = error instanceof Error ? error.message : 'Analysis failed';
+      setError(message);
+      logger.error('Temporal analysis failed:', error);
+    } finally {
+      setIsAnalyzing(false);
+      setProgress(0);
+      setProgressMessage('');
     }
   };
 

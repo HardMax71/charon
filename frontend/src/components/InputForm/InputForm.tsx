@@ -78,14 +78,25 @@ export const InputForm = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const text = await file.text();
-    const data = JSON.parse(text);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
 
-    setGraph(data.graph);
-    setGlobalMetrics(data.global_metrics);
-    setWarnings([]);
-    setAnalysisSource({ type: 'import', fileName: file.name, timestamp: new Date().toISOString() });
-    navigate('/results');
+      if (!data.graph || !data.global_metrics) {
+        throw new Error('Invalid file format: missing graph or metrics data');
+      }
+
+      setGraph(data.graph);
+      setGlobalMetrics(data.global_metrics);
+      setWarnings([]);
+      setAnalysisSource({ type: 'import', fileName: file.name, timestamp: new Date().toISOString() });
+      navigate('/results');
+    } catch (error) {
+      const message = error instanceof SyntaxError
+        ? 'Invalid JSON format'
+        : error instanceof Error ? error.message : 'Failed to import file';
+      toast.error(message);
+    }
   };
 
   return (

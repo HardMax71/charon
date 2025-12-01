@@ -23,7 +23,7 @@ export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] =
   const attraction = 0.01;
   const damping = 0.9;
 
-  let positions = nodes.map((node) => ({
+  const positions = nodes.map((node) => ({
     id: node.id,
     x: node.position.x || Math.random() * 30 - 15,
     y: node.position.y || Math.random() * 30 - 15,
@@ -32,6 +32,9 @@ export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] =
     vy: 0,
     vz: 0,
   }));
+
+  // Build index map once for O(1) lookups (instead of O(n) findIndex per edge)
+  const idToIndex = new Map(positions.map((p, i) => [p.id, i]));
 
   for (let iter = 0; iter < iterations; iter++) {
     // Repulsive forces
@@ -59,10 +62,10 @@ export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] =
 
     // Attractive forces for edges
     edges.forEach((edge) => {
-      const sourceIdx = positions.findIndex((p) => p.id === edge.source);
-      const targetIdx = positions.findIndex((p) => p.id === edge.target);
+      const sourceIdx = idToIndex.get(edge.source);
+      const targetIdx = idToIndex.get(edge.target);
 
-      if (sourceIdx !== -1 && targetIdx !== -1) {
+      if (sourceIdx !== undefined && targetIdx !== undefined) {
         const dx = positions[targetIdx].x - positions[sourceIdx].x;
         const dy = positions[targetIdx].y - positions[sourceIdx].y;
         const dz = positions[targetIdx].z - positions[sourceIdx].z;
@@ -87,8 +90,11 @@ export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] =
     });
   }
 
+  // Build position map for O(1) final lookups
+  const positionMap = new Map(positions.map((p) => [p.id, p]));
+
   return nodes.map((node) => {
-    const pos = positions.find((p) => p.id === node.id);
+    const pos = positionMap.get(node.id);
     return {
       ...node,
       position: pos ? { x: pos.x, y: pos.y, z: pos.z } : node.position,
@@ -97,8 +103,9 @@ export const applyForceDirectedLayout = (nodes: Node[], edges: Edge[]): Node[] =
 };
 
 export const resetToOriginalLayout = (nodes: Node[], originalNodes: Node[]): Node[] => {
+  const originalMap = new Map(originalNodes.map((n) => [n.id, n]));
   return nodes.map((node) => {
-    const original = originalNodes.find((n) => n.id === node.id);
+    const original = originalMap.get(node.id);
     return {
       ...node,
       position: original ? original.position : node.position,

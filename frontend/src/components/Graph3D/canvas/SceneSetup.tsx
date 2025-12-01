@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Vector3 } from 'three';
 import { useGraphContext, useGraphSelection } from '../context/GraphContext';
 
@@ -22,7 +23,7 @@ const CameraFocus = memo(() => {
         const target = pos.clone();
         const offset = new Vector3(40, 40, 40);
 
-        const orbitControls = controls as any;
+        const orbitControls = controls as OrbitControlsImpl;
         if (orbitControls.target) {
           orbitControls.target.copy(target);
           camera.position.copy(target).add(offset);

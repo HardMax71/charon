@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useCallback, useRef, useEffect } from 'react';
+import { useThree, ThreeEvent } from '@react-three/fiber';
 import { Vector3, Vector2, Plane, Raycaster } from 'three';
 import { useGraphContext } from '../context/GraphContext';
 import { useUIStore } from '@/stores/uiStore';
@@ -18,7 +18,7 @@ interface UseNodeDragOptions {
 
 interface UseNodeDragReturn {
   isDragging: boolean;
-  handlePointerDown: (e: any) => void;
+  handlePointerDown: (e: ThreeEvent<PointerEvent>) => void;
   handlePointerUp: () => void;
 }
 
@@ -33,8 +33,14 @@ export function useNodeDrag({ nodeId, enabled = true }: UseNodeDragOptions): Use
 
   const isDraggingRef = useRef(false);
   const dragOffsetRef = useRef(new Vector3());
+  const cleanupRef = useRef<(() => void) | null>(null);
 
-  const handlePointerDown = useCallback((e: any) => {
+  // Cleanup listeners on unmount
+  useEffect(() => {
+    return () => cleanupRef.current?.();
+  }, []);
+
+  const handlePointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
     if (!enabled) return;
 
     e.stopPropagation();
@@ -101,10 +107,14 @@ export function useNodeDrag({ nodeId, enabled = true }: UseNodeDragOptions): Use
       gl.domElement.style.cursor = 'pointer';
       window.removeEventListener('pointermove', handleGlobalMove);
       window.removeEventListener('pointerup', handleGlobalUp);
+      cleanupRef.current = null;
     };
 
     window.addEventListener('pointermove', handleGlobalMove);
     window.addEventListener('pointerup', handleGlobalUp);
+
+    // Store cleanup for unmount
+    cleanupRef.current = handleGlobalUp;
 
   }, [enabled, nodeId, selectedNodeId, selectNode, nodePositionsRef, updateNodePosition, camera, gl, setIsDraggingNode]);
 

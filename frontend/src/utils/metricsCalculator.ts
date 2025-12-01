@@ -1,6 +1,26 @@
 import { DependencyGraph, Node, Edge } from '@/types/graph';
 import { GlobalMetrics, NodeMetrics } from '@/types/metrics';
 
+/** Numeric metric keys that can be compared between before/after states */
+type NumericMetricKey =
+  | 'total_files'
+  | 'total_internal'
+  | 'total_third_party'
+  | 'avg_afferent_coupling'
+  | 'avg_efferent_coupling'
+  | 'coupling_threshold';
+
+interface MetricDelta {
+  label: string;
+  before: number;
+  after: number;
+  delta: number;
+  deltaPercent: number;
+  improved: boolean;
+}
+
+type MetricDeltas = Record<NumericMetricKey | 'circular_dependencies' | 'high_coupling_files', MetricDelta>;
+
 /**
  * Simplified client-side metrics recalculation for "what if" scenarios
  * Note: This is approximate - server-side calculation is more accurate
@@ -118,28 +138,28 @@ const detectCircularDependencies = (graph: DependencyGraph): string[][] => {
   return Array.from(new Set(cycles.map(c => JSON.stringify(c)))).map(c => JSON.parse(c));
 };
 
+/** Numeric metrics to compare with their display labels */
+const NUMERIC_METRICS: ReadonlyArray<{ key: NumericMetricKey; label: string }> = [
+  { key: 'total_files', label: 'Total Files' },
+  { key: 'total_internal', label: 'Internal Files' },
+  { key: 'total_third_party', label: 'Third-Party Deps' },
+  { key: 'avg_afferent_coupling', label: 'Avg Afferent Coupling' },
+  { key: 'avg_efferent_coupling', label: 'Avg Efferent Coupling' },
+  { key: 'coupling_threshold', label: 'Coupling Threshold' },
+];
+
 /**
  * Calculate deltas between two sets of metrics
  */
 export const calculateMetricDeltas = (
   before: GlobalMetrics,
   after: GlobalMetrics
-): Record<string, any> => {
-  const deltas: Record<string, any> = {};
+): MetricDeltas => {
+  const deltas = {} as MetricDeltas;
 
-  // Numeric comparisons
-  const metrics = [
-    { key: 'total_files', label: 'Total Files' },
-    { key: 'total_internal', label: 'Internal Files' },
-    { key: 'total_third_party', label: 'Third-Party Deps' },
-    { key: 'avg_afferent_coupling', label: 'Avg Afferent Coupling' },
-    { key: 'avg_efferent_coupling', label: 'Avg Efferent Coupling' },
-    { key: 'coupling_threshold', label: 'Coupling Threshold' },
-  ];
-
-  metrics.forEach(({ key, label }) => {
-    const beforeVal = (before as any)[key] || 0;
-    const afterVal = (after as any)[key] || 0;
+  NUMERIC_METRICS.forEach(({ key, label }) => {
+    const beforeVal = before[key];
+    const afterVal = after[key];
     const delta = afterVal - beforeVal;
     const deltaPercent = beforeVal !== 0 ? (delta / beforeVal) * 100 : 0;
 

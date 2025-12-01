@@ -1,11 +1,19 @@
 import { memo, useMemo, useRef, useCallback, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { Vector3, Quaternion, ConeGeometry, QuadraticBezierCurve3, Mesh, CatmullRomCurve3 } from 'three';
 import { Edge as EdgeType, Node as NodeType } from '@/types/graph';
 import { useGraphContext, useGraphModifiers, useGraphSelection } from '../context/GraphContext';
 import { useUIStore, GraphFilters } from '@/stores/uiStore';
 import { useGraphStore } from '@/stores/graphStore';
+import { nodeMatchesFilters } from '@/utils/graphFilters';
+
+// Type for Line2 geometry from drei's Line component
+interface LineRef {
+  geometry: {
+    setPositions: (positions: Float32Array | number[]) => void;
+  };
+}
 
 const sharedConeGeometry = new ConeGeometry(0.8, 2, 8);
 const CURVE_SEGMENTS = 12;
@@ -48,7 +56,7 @@ export const EdgeGroup = memo(({ edges, nodes }: EdgeGroupProps) => {
     return map;
   }, [nodes]);
 
-  const edgeRefs = useRef<Map<string, { line: any; arrow: Mesh | null }>>(new Map());
+  const edgeRefs = useRef<Map<string, { line: LineRef | null; arrow: Mesh | null }>>(new Map());
 
   const tempVecs = useRef({
     start: new Vector3(),
@@ -107,7 +115,7 @@ export const EdgeGroup = memo(({ edges, nodes }: EdgeGroupProps) => {
     });
   });
 
-  const registerEdge = useCallback((edgeId: string, line: any, arrow: Mesh | null) => {
+  const registerEdge = useCallback((edgeId: string, line: LineRef | null, arrow: Mesh | null) => {
     if (line) {
       edgeRefs.current.set(edgeId, { line, arrow });
     } else {
@@ -142,7 +150,7 @@ export const EdgeGroup = memo(({ edges, nodes }: EdgeGroupProps) => {
 EdgeGroup.displayName = 'EdgeGroup';
 
 interface EdgeMeshWithRefProps extends EdgeMeshProps {
-  registerEdge: (edgeId: string, line: any, arrow: Mesh | null) => void;
+  registerEdge: (edgeId: string, line: LineRef | null, arrow: Mesh | null) => void;
 }
 
 const EdgeMeshWithRef = memo(({ edge, sourceNode, targetNode, graphFilters, filtersActive, registerEdge }: EdgeMeshWithRefProps) => {
@@ -152,45 +160,23 @@ const EdgeMeshWithRef = memo(({ edge, sourceNode, targetNode, graphFilters, filt
   const selectedModule = useUIStore(state => state.selectedModule);
   const setSelectedEdge = useGraphStore(state => state.setSelectedEdge);
 
-  const lineRef = useRef<any>(null);
+  const lineRef = useRef<LineRef | null>(null);
   const arrowRef = useRef<Mesh>(null);
 
   const isRemoved = modifiers.removedEdgeIds.includes(edge.id);
   const isAdded = modifiers.addedEdgeIds.includes(edge.id);
 
-  const edgeMatchesFilters = useMemo(() => {
-    if (!filtersActive) return true;
-
-    const { languages, services, statuses, thirdPartyOnly } = graphFilters;
-
-    const nodeMatches = (node: NodeType) => {
-      if (thirdPartyOnly) return node.type === 'third_party';
-
-      let matches = true;
-      if (languages.length > 0) {
-        matches = matches && (node.language ? languages.includes(node.language) : false);
-      }
-      if (services.length > 0) {
-        matches = matches && (node.service ? services.includes(node.service) : false);
-      }
-      if (statuses.length > 0) {
-        const nodeStatuses: string[] = [];
-        if (node.metrics.is_hot_zone) nodeStatuses.push('hotZone');
-        if (node.metrics.is_circular) nodeStatuses.push('circular');
-        if (node.metrics.is_high_coupling) nodeStatuses.push('highCoupling');
-        matches = matches && statuses.some(s => nodeStatuses.includes(s));
-      }
-      return matches;
-    };
-
-    return nodeMatches(sourceNode) || nodeMatches(targetNode);
-  }, [sourceNode, targetNode, graphFilters, filtersActive]);
+  const edgeMatchesFilters = useMemo(
+    () => nodeMatchesFilters(sourceNode, graphFilters, filtersActive) ||
+          nodeMatchesFilters(targetNode, graphFilters, filtersActive),
+    [sourceNode, targetNode, graphFilters, filtersActive]
+  );
 
   const pointsRef = useRef<Vector3[]>(
     Array.from({ length: CURVE_SEGMENTS + 1 }, () => new Vector3())
   );
 
-  const handleClick = useCallback((e: any) => {
+  const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectNode(null);
     setSelectedEdge(edge);

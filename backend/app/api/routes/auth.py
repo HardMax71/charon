@@ -1,5 +1,5 @@
 import aiohttp
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 
 from app.core.config import settings
 from app.core.models import (
@@ -61,8 +61,14 @@ async def exchange_github_token(request: GitHubTokenExchange) -> GitHubTokenResp
 
 
 @router.get("/auth/github/me", response_model=GitHubAuthData)
-async def get_github_auth_data(token: str) -> GitHubAuthData:
+async def get_github_auth_data(
+    authorization: str = Header(..., description="Bearer token"),
+) -> GitHubAuthData:
     """Get authenticated user info + their repos in one call."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    token = authorization[7:]  # Remove "Bearer " prefix
+
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github.v3+json",

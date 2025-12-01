@@ -1,5 +1,5 @@
 import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { SphereGeometry, Group } from 'three';
 import { Node as NodeType } from '@/types/graph';
@@ -11,6 +11,7 @@ import {
   THIRD_PARTY_COLOR,
   getLanguageColor,
 } from '@/utils/constants';
+import { nodeMatchesFilters } from '@/utils/graphFilters';
 
 const sharedSphereGeometry = new SphereGeometry(3, 16, 16);
 
@@ -91,35 +92,10 @@ const NodeMeshWithRef = memo(({ node, graphFilters, filtersActive, registerGroup
   const isAdded = modifiers.addedNodeIds.includes(node.id);
   const isRemoved = modifiers.removedNodeIds.includes(node.id);
 
-  const matchesFilters = useMemo(() => {
-    if (!filtersActive) return true;
-
-    const { languages, services, statuses, thirdPartyOnly } = graphFilters;
-
-    if (thirdPartyOnly) {
-      return node.type === 'third_party';
-    }
-
-    let matches = true;
-
-    if (languages.length > 0) {
-      matches = matches && (node.language ? languages.includes(node.language) : false);
-    }
-
-    if (services.length > 0) {
-      matches = matches && (node.service ? services.includes(node.service) : false);
-    }
-
-    if (statuses.length > 0) {
-      const nodeStatuses: string[] = [];
-      if (node.metrics.is_hot_zone) nodeStatuses.push('hotZone');
-      if (node.metrics.is_circular) nodeStatuses.push('circular');
-      if (node.metrics.is_high_coupling) nodeStatuses.push('highCoupling');
-      matches = matches && statuses.some(s => nodeStatuses.includes(s));
-    }
-
-    return matches;
-  }, [node, graphFilters, filtersActive]);
+  const matchesFilters = useMemo(
+    () => nodeMatchesFilters(node, graphFilters, filtersActive),
+    [node, graphFilters, filtersActive]
+  );
 
   const { handlePointerDown } = useNodeDrag({
     nodeId: node.id,
@@ -175,7 +151,7 @@ const NodeMeshWithRef = memo(({ node, graphFilters, filtersActive, registerGroup
     return { fillColor: fill, outlineColor: outline, opacity: op, scale: sc };
   }, [node, isSelected, isAdded, isRemoved, disableImpactAnalysis, matchesFilters]);
 
-  const handleClick = useCallback((e: any) => {
+  const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectNode(node.id);
   }, [node.id, selectNode]);
