@@ -104,7 +104,7 @@ class ComplexityService:
             )
 
         except Exception as e:
-            logger.error("Error analyzing %s: %s", file_path, str(e), exc_info=True)
+            logger.warning("Failed to analyze %s: %s", file_path, e)
             return ComplexityMetrics(
                 cyclomatic_complexity=0,
                 max_complexity=0,
@@ -113,8 +113,8 @@ class ComplexityService:
                 logical_lines=0,
                 source_lines=0,
                 comments=0,
-                complexity_grade="A",
-                maintainability_grade="A",
+                complexity_grade="-",
+                maintainability_grade="-",
                 functions=[],
                 function_count=0,
                 error=str(e),

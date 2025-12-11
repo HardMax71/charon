@@ -52,10 +52,10 @@ class AnalysisOrchestratorService:
             case GitHubAnalyzeRequest(url=url, github_token=token):
                 try:
                     github_service = GitHubService()
-                    files = await github_service.fetch_repository(url, token=token)
+                    result = await github_service.fetch_repository(url, token=token)
                     project_name = url.split("/")[-1]
 
-                    if not files:
+                    if not result.files:
                         logger.warning(
                             "No supported source files found in repository: %s", url
                         )
@@ -64,22 +64,30 @@ class AnalysisOrchestratorService:
                             error_message="No supported source files found in repository",
                         )
 
+                    warnings = []
+                    if result.failed_count > 0:
+                        warnings.append(
+                            f"Failed to fetch {result.failed_count}/{result.total_files} files"
+                        )
+
                     logger.info(
-                        "Successfully fetched %d files from GitHub repo: %s",
-                        len(files),
+                        "Fetched %d/%d files from GitHub repo: %s",
+                        len(result.files),
+                        result.total_files,
                         project_name,
                     )
                     return SourceFilesResult(
-                        success=True, files=files, project_name=project_name
+                        success=True,
+                        files=result.files,
+                        project_name=project_name,
+                        warnings=warnings,
                     )
 
                 except Exception as e:
                     logger.error(
                         "GitHub fetch error for %s: %s", url, str(e), exc_info=True
                     )
-                    return SourceFilesResult(
-                        success=False, error_message=f"GitHub error: {str(e)}"
-                    )
+                    return SourceFilesResult(success=False, error_message=str(e))
 
             case LocalAnalyzeRequest(files=files):
                 logger.info("Using %d local files for analysis", len(files))
@@ -281,13 +289,14 @@ class AnalysisOrchestratorService:
             graph, clustering_result
         )
 
+        all_warnings = source_result.warnings + dependency_data.errors
         result = {
             "graph": {
                 "nodes": [n.model_dump() for n in nodes],
                 "edges": [e.model_dump() for e in edges],
             },
             "global_metrics": global_metrics.model_dump(),
-            "warnings": dependency_data.errors,
+            "warnings": all_warnings,
         }
 
         yield await tracker.emit_step(6)

@@ -190,17 +190,15 @@ class TemporalAnalysisService:
     ) -> dict | None:
         """Analyze dependencies at a specific commit."""
         try:
-            # Fetch files at this commit
-            files = await self.github_service.fetch_repository_at_commit(
+            result = await self.github_service.fetch_repository_at_commit(
                 repo_url, commit["sha"]
             )
 
-            if not files:
+            if not result.files:
                 return None
 
-            # Analyze dependencies
             project_name = repo_url.split("/")[-1]
-            dependency_data = await analyze_files(files, project_name)
+            dependency_data = await analyze_files(result.files, project_name)
 
             # Build graph
             graph = build_graph(dependency_data)

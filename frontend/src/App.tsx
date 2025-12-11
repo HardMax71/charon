@@ -39,8 +39,8 @@ const AppContent = () => {
       }
       sessionStorage.setItem('oauth_processed_code', code);
 
-      if (storedState && state !== storedState) {
-        logger.error('OAuth state mismatch - possible CSRF attack');
+      if (!storedState || state !== storedState) {
+        logger.error('OAuth state validation failed');
         sessionStorage.removeItem('oauth_state');
         sessionStorage.removeItem('oauth_processed_code');
         return;

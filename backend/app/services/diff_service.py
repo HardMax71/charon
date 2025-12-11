@@ -13,7 +13,8 @@ class DiffService:
         repo_url: str, ref: str, github_service: GitHubService
     ) -> list[FileInput]:
         """Fetch files for a specific version/reference from GitHub."""
-        return await github_service.fetch_repository(repo_url, ref)
+        result = await github_service.fetch_repository(repo_url, ref)
+        return result.files
 
     @staticmethod
     async def analyze_and_build_graph(

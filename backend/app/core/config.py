@@ -44,5 +44,8 @@ class Settings(BaseSettings):
     # Metrics thresholds
     high_coupling_percentile: int = 80  # Top 20% = 80th percentile
 
+    # HTTP client settings
+    http_timeout_seconds: int = 30
+
 
 settings = Settings()

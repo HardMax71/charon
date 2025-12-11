@@ -363,6 +363,9 @@ class SourceFilesResult(BaseModel):
     error_message: str | None = Field(
         default=None, description="Error message if failed"
     )
+    warnings: list[str] = Field(
+        default_factory=list, description="Non-fatal warnings during fetch"
+    )
 
 
 class GitHubAnalyzeRequest(BaseModel):

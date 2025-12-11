@@ -1,5 +1,4 @@
 import logging
-import traceback
 from typing import Any
 
 from fastapi import Request, status
@@ -88,23 +87,18 @@ async def http_exception_handler(
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle all unhandled exceptions."""
-    # Get full traceback
-    tb = traceback.format_exc()
-
     logger.error(
-        f"Unhandled exception on {request.method} {request.url.path}: {str(exc)}",
-        extra={
-            "error_type": type(exc).__name__,
-            "path": request.url.path,
-            "method": request.method,
-            "traceback": tb,
-        },
+        "Unhandled exception on %s %s: %s: %s",
+        request.method,
+        request.url.path,
+        type(exc).__name__,
+        str(exc),
+        exc_info=True,
     )
 
     return create_error_response(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        error_type=type(exc).__name__,
-        message="An unexpected error occurred. Please check server logs.",
-        details=str(exc),
+        error_type="InternalServerError",
+        message="An unexpected error occurred",
         path=str(request.url.path),
     )

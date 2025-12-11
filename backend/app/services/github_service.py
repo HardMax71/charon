@@ -1,12 +1,28 @@
 import asyncio
+from dataclasses import dataclass
 
 import aiohttp
 
 from app.core import SUPPORTED_EXTENSIONS, get_logger
 from app.core.config import settings
+from app.core.exceptions import (
+    GitHubError,
+    RateLimitError,
+    RepositoryNotFoundError,
+)
 from app.core.models import FileInput
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class FetchResult:
+    """Result of fetching repository files."""
+
+    files: list[FileInput]
+    total_files: int
+    failed_count: int
+
 
 SKIP_DIRS = frozenset(
     {
@@ -71,21 +87,24 @@ class GitHubService:
         url = f"{self.api_base}/repos/{owner}/{repo}"
         headers = {"Authorization": f"token {token}"} if token else {}
 
-        async with aiohttp.ClientSession(headers=headers) as session:
+        timeout = aiohttp.ClientTimeout(total=settings.http_timeout_seconds)
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
             async with session.get(url) as response:
                 if response.status == 404:
-                    raise Exception(
-                        f"Repository '{owner}/{repo}' not found. Make sure the repository exists and you have access."
+                    raise RepositoryNotFoundError(
+                        f"Repository '{owner}/{repo}' not found or not accessible"
                     )
+                elif response.status == 403:
+                    raise RateLimitError("GitHub API rate limit exceeded")
                 elif response.status != 200:
-                    return "main"  # Fallback
+                    return "main"
 
                 data = await response.json()
                 return data.get("default_branch", "main")
 
     async def fetch_repository(
         self, url: str, ref: str | None = None, token: str | None = None
-    ) -> list[FileInput]:
+    ) -> FetchResult:
         """
         Fetch all supported source files from a GitHub repository.
 
@@ -97,11 +116,10 @@ class GitHubService:
             token: Optional GitHub token for private repos / higher rate limits
 
         Returns:
-            List of FileInput objects
+            FetchResult with files and failure statistics
         """
         owner, repo = self._parse_github_url(url)
 
-        # Auto-detect default branch if not specified
         if ref is None:
             ref = await self._get_default_branch(owner, repo, token)
 
@@ -116,6 +134,7 @@ class GitHubService:
             and not self._should_skip_path(item["path"])
         ]
 
+        total_files = len(source_files)
         sem = asyncio.Semaphore(100)
 
         async def fetch_one(
@@ -129,13 +148,28 @@ class GitHubService:
 
         connector = aiohttp.TCPConnector(limit=100, limit_per_host=50)
         headers = {"Authorization": f"token {token}"} if token else {}
+        timeout = aiohttp.ClientTimeout(total=settings.http_timeout_seconds)
         async with aiohttp.ClientSession(
-            connector=connector, headers=headers
+            connector=connector, headers=headers, timeout=timeout
         ) as session:
             tasks = [fetch_one(session, f["path"]) for f in source_files]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        return [r for r in results if isinstance(r, FileInput)]
+        files = [r for r in results if isinstance(r, FileInput)]
+        failed_count = total_files - len(files)
+
+        if failed_count > 0:
+            logger.warning(
+                "Failed to fetch %d/%d files from %s/%s",
+                failed_count,
+                total_files,
+                owner,
+                repo,
+            )
+
+        return FetchResult(
+            files=files, total_files=total_files, failed_count=failed_count
+        )
 
     def _should_skip_path(self, path: str) -> bool:
         parts = path.split("/")
@@ -177,12 +211,16 @@ class GitHubService:
             params["until"] = end_date
 
         commits = []
-        async with aiohttp.ClientSession(headers=headers) as session:
+        timeout = aiohttp.ClientTimeout(total=settings.http_timeout_seconds)
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
             async with session.get(api_url, params=params) as response:
-                if response.status != 200:
-                    error_text = await response.text()
-                    raise Exception(
-                        f"Failed to fetch commits (status {response.status}): {error_text}"
+                if response.status == 404:
+                    raise RepositoryNotFoundError("Repository not found")
+                elif response.status == 403:
+                    raise RateLimitError("GitHub API rate limit exceeded")
+                elif response.status != 200:
+                    raise GitHubError(
+                        f"Failed to fetch commits (status {response.status})"
                     )
 
                 data = await response.json()
@@ -203,7 +241,7 @@ class GitHubService:
 
     async def fetch_repository_at_commit(
         self, url: str, commit_sha: str, token: str | None = None
-    ) -> list[FileInput]:
+    ) -> FetchResult:
         """
         Fetch repository files at a specific commit.
 
@@ -213,7 +251,7 @@ class GitHubService:
             token: Optional GitHub token for authentication
 
         Returns:
-            List of FileInput objects
+            FetchResult with files and failure statistics
         """
         return await self.fetch_repository(url, ref=commit_sha, token=token)
 
@@ -255,21 +293,19 @@ class GitHubService:
         """
         url = f"{self.api_base}/repos/{owner}/{repo}/git/trees/{ref}?recursive=1"
         headers = {"Authorization": f"token {token}"} if token else {}
+        timeout = aiohttp.ClientTimeout(total=settings.http_timeout_seconds)
 
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
             async with session.get(url) as response:
                 if response.status == 404:
-                    raise Exception(
-                        f"Repository '{owner}/{repo}' not found or ref '{ref}' doesn't exist. Make sure the repository is public."
+                    raise RepositoryNotFoundError(
+                        f"Repository '{owner}/{repo}' or ref '{ref}' not found"
                     )
                 elif response.status == 403:
-                    raise Exception(
-                        "GitHub API rate limit exceeded. Try again later or use a GitHub token."
-                    )
+                    raise RateLimitError("GitHub API rate limit exceeded")
                 elif response.status != 200:
-                    error_text = await response.text()
-                    raise Exception(
-                        f"Failed to fetch repository (status {response.status}): {error_text}"
+                    raise GitHubError(
+                        f"Failed to fetch repository tree (status {response.status})"
                     )
 
                 data = await response.json()
@@ -303,7 +339,8 @@ class GitHubService:
             async with session.get(url) as response:
                 if response.status == 200:
                     return await response.text()
+                logger.warning("Failed to fetch %s: HTTP %d", path, response.status)
                 return None
         except aiohttp.ClientError as e:
-            logger.debug("Failed to fetch file %s: %s", path, e)
+            logger.warning("Failed to fetch %s: %s", path, e)
             return None

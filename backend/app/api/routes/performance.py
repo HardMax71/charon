@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
+from app.core.config import settings
 from app.core.models import DependencyGraph
 from app.core.parsing_models import (
     PerformanceAnalysisResult,
@@ -43,6 +44,18 @@ async def analyze_performance(
     Combines performance metrics with architectural metrics (coupling, complexity)
     to calculate priority scores and identify optimization targets.
     """
+    max_size = settings.max_upload_size_mb * 1024 * 1024
+    if len(graph_json) > max_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Graph JSON exceeds maximum size ({settings.max_upload_size_mb}MB)",
+        )
+    if weights_json and len(weights_json) > max_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Weights JSON exceeds maximum size ({settings.max_upload_size_mb}MB)",
+        )
+
     graph = DependencyGraph(**json.loads(graph_json))
     weights = PriorityWeights(**json.loads(weights_json)) if weights_json else None
 
