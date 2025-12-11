@@ -6,6 +6,7 @@ from app.core.models import (
     DependencyGraph,
     GlobalMetrics,
     SaveResultResponse,
+    SafeProjectName,
 )
 from app.services import FitnessOrchestratorService
 from fastapi import APIRouter
@@ -55,37 +56,33 @@ async def validate_from_config(
 
 @router.post("/fitness/save-result", response_model=SaveResultResponse)
 async def save_validation_result(
-    project_name: str,
+    project_name: SafeProjectName,
     result: FitnessValidationResult,
-    storage_path: str | None = None,
 ) -> SaveResultResponse:
     """Save fitness validation result for historical tracking.
 
     Results are saved to a JSON file in the format:
-    {storage_path}/{project_name}/fitness_history.jsonl
+    {FITNESS_STORAGE_PATH}/{project_name}/fitness_history.jsonl
 
     Each validation result is appended as a new line to enable trend analysis.
+    Storage path is configured via FITNESS_STORAGE_PATH environment variable.
     """
-    return FitnessOrchestratorService.save_validation_result(
-        project_name, result, storage_path
-    )
+    return FitnessOrchestratorService.save_validation_result(project_name, result)
 
 
 @router.get("/fitness/trend/{project_name}", response_model=FitnessTrendResponse)
 async def get_fitness_trend(
-    project_name: str,
+    project_name: SafeProjectName,
     rule_id: str | None = None,
-    storage_path: str | None = None,
     limit: int = 100,
 ) -> FitnessTrendResponse:
     """Get historical fitness trend data for a project.
 
     Returns a time series of validation results, optionally filtered by rule_id.
     Useful for tracking architectural health over time and identifying regressions.
+    Storage path is configured via FITNESS_STORAGE_PATH environment variable.
     """
-    return FitnessOrchestratorService.get_fitness_trend(
-        project_name, rule_id, storage_path, limit
-    )
+    return FitnessOrchestratorService.get_fitness_trend(project_name, rule_id, limit)
 
 
 @router.get("/fitness/config/example", response_model=FitnessRuleConfig)

@@ -1,6 +1,17 @@
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, Field
+
+
+# Validated project name type - prevents path traversal attacks
+# Rules: starts with alphanumeric, contains only alphanumeric/underscore/hyphen, max 128 chars
+SafeProjectName = Annotated[
+    str,
+    Field(
+        pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$",
+        description="Project name (alphanumeric, underscore, hyphen only, max 128 chars)",
+    ),
+]
 
 
 class Language(str, Enum):
@@ -393,7 +404,7 @@ class ExportRequest(BaseModel):
     graph: DependencyGraph
     global_metrics: GlobalMetrics
     format: Literal["json", "toml"]
-    project_name: str
+    project_name: SafeProjectName
 
 
 class ExportDiagramRequest(BaseModel):
@@ -410,7 +421,7 @@ class ExportDocumentationRequest(BaseModel):
     graph: DependencyGraph
     global_metrics: GlobalMetrics
     format: Literal["md", "html", "pdf"]
-    project_name: str = "Project"
+    project_name: SafeProjectName = "Project"
 
 
 class TemporalAnalysisRequest(BaseModel):
@@ -682,56 +693,35 @@ class TemporalAnalysisResponse(BaseModel):
     )
 
 
-# GitHub OAuth Models
-
-
 class GitHubAuthConfig(BaseModel):
-    """GitHub OAuth configuration for frontend."""
-
     client_id: str | None
     enabled: bool
 
 
 class GitHubTokenExchange(BaseModel):
-    """Request to exchange OAuth code for token."""
-
     code: str
 
 
-class GitHubTokenResponse(BaseModel):
-    """Response with access token."""
-
-    access_token: str
-    token_type: str
-    scope: str
-
-
 class GitHubUser(BaseModel):
-    """GitHub user info."""
-
     login: str
     avatar_url: str
     name: str | None
 
 
 class GitHubRepo(BaseModel):
-    """GitHub repository."""
-
     full_name: str
     private: bool
     default_branch: str
 
 
-class GitHubAuthData(BaseModel):
-    """GitHub user with their repos - returned after auth."""
-
-    user: GitHubUser
-    repos: list[GitHubRepo]
+class GitHubSessionResponse(BaseModel):
+    success: bool
+    user: GitHubUser | None = None
+    repos: list[GitHubRepo] = []
+    message: str | None = None
 
 
 class GitHubDeviceCodeResponse(BaseModel):
-    """Response from GitHub device code request."""
-
     device_code: str
     user_code: str
     verification_uri: str
@@ -740,14 +730,9 @@ class GitHubDeviceCodeResponse(BaseModel):
 
 
 class GitHubDevicePollRequest(BaseModel):
-    """Request to poll for device flow token."""
-
     device_code: str
 
 
 class GitHubDevicePollResponse(BaseModel):
-    """Response from device flow polling."""
-
     status: Literal["pending", "success", "expired", "error"]
-    access_token: str | None = None
     error: str | None = None

@@ -5,6 +5,7 @@ from app.core.parsing_models import DependencyAnalysis
 from app.services.complexity_service import ComplexityService
 from app.services.github_service import GitHubService
 from app.services.progress_service import ProgressTracker
+from app.services.session_service import SessionService
 from app.services.layout_service import (
     apply_layout,
     hierarchical_layout_3d,
@@ -55,6 +56,7 @@ __all__ = [
     "HealthScoreService",
     "RefactoringService",
     "FitnessService",
+    "SessionService",
     "AnalysisOrchestratorService",
     "DiffService",
     "FitnessOrchestratorService",

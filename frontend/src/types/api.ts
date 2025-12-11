@@ -10,7 +10,6 @@ export interface AnalyzeRequest {
   url?: string;
   files?: FileInput[];
   data?: AnalysisResult;
-  github_token?: string;
 }
 
 export interface ProgressUpdate {

@@ -22,6 +22,7 @@ export const analyzeCode = (
       'Content-Type': 'application/json',
       'Accept': 'text/event-stream',
     },
+    credentials: 'include',
     body: JSON.stringify(request),
   }).then(async (response) => {
     logger.debug('Response status:', response.status);

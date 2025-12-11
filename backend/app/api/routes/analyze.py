@@ -1,5 +1,11 @@
+from fastapi import APIRouter, Cookie
+from sse_starlette.sse import EventSourceResponse
+
+from app.api.routes.auth import get_session_token
+from app.core.config import settings
 from app.core.models import (
     AnalyzeRequest,
+    GitHubAnalyzeRequest,
     ImpactAnalysisRequest,
     ImpactAnalysisResponse,
     HealthScoreResponse,
@@ -12,28 +18,32 @@ from app.services import (
     AnalysisOrchestratorService,
     ProgressTracker,
 )
-from fastapi import APIRouter
-from sse_starlette.sse import EventSourceResponse
 
 router = APIRouter()
 
 
 @router.post("/analyze")
-async def analyze_code(request: AnalyzeRequest) -> EventSourceResponse:
-    """
-    Analyze code and return dependency graph with metrics.
+async def analyze_code(
+    request: AnalyzeRequest,
+    session_id: str | None = Cookie(default=None, alias=settings.session_cookie_name),
+) -> EventSourceResponse:
+    effective_request: AnalyzeRequest = request
 
-    Supports three input sources:
-    - github: Fetch from GitHub repository
-    - local: Uploaded files
-    - import: Previously exported data
-    """
+    match request.source:
+        case "github" if not request.github_token:  # type: ignore[union-attr]
+            token = get_session_token(session_id)
+            if token:
+                effective_request = GitHubAnalyzeRequest(
+                    source="github",
+                    url=request.url,  # type: ignore[union-attr]
+                    github_token=token,
+                )
 
     async def generate():
         tracker = ProgressTracker()
         try:
             async for event in AnalysisOrchestratorService.perform_analysis(
-                request, tracker
+                effective_request, tracker
             ):
                 yield event
         except Exception as e:
@@ -44,12 +54,6 @@ async def analyze_code(request: AnalyzeRequest) -> EventSourceResponse:
 
 @router.post("/impact-analysis", response_model=ImpactAnalysisResponse)
 async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisResponse:
-    """
-    Analyze the impact of changes to a specific node.
-
-    Calculates transitive dependencies to understand what would be affected
-    if this node is modified.
-    """
     graph_data = request.graph.model_dump()
     impact_service = ImpactAnalysisService(graph_data)
     result = impact_service.calculate_impact(request.node_id, request.max_depth)
@@ -60,18 +64,6 @@ async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisRespon
 async def calculate_health_score(
     graph: DependencyGraph, global_metrics: GlobalMetrics
 ) -> HealthScoreResponse:
-    """
-    Calculate comprehensive health score for the project.
-
-    Analyzes multiple architectural quality factors:
-    - Circular dependencies (20%)
-    - Coupling levels (20%)
-    - Code complexity and maintainability (30%)
-    - Architecture quality / god objects (20%)
-    - Instability distribution (10%)
-
-    Returns a 0-100 score with grade and actionable recommendations.
-    """
     nx_graph = AnalysisOrchestratorService.build_networkx_graph(graph)
     health_service = HealthScoreService(nx_graph, global_metrics)
     return health_service.calculate_health_score()

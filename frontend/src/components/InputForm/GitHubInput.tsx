@@ -3,37 +3,24 @@ import { useGitHubAuth } from '@/stores/githubAuthStore';
 import { Github, ChevronDown, LogOut, Lock, Globe, Loader2 } from 'lucide-react';
 
 interface GitHubInputProps {
-  onSubmit: (url: string, token: string | null) => void;
+  onSubmit: (url: string) => void;
 }
 
 export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
-  const {
-    token,
-    user,
-    repos,
-    oauthEnabled,
-    isAuthenticating,
-    checkConfig,
-    initiateOAuth,
-    restoreSession,
-    logout,
-  } = useGitHubAuth();
+  const { user, repos, oauthEnabled, isAuthenticating, checkConfig, initiateOAuth, checkSession, logout } = useGitHubAuth();
 
   const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Check OAuth config on mount
   useEffect(() => {
     checkConfig();
   }, [checkConfig]);
 
-  // Restore session if we have a token
   useEffect(() => {
-    restoreSession();
-  }, [restoreSession]);
+    checkSession();
+  }, [checkSession]);
 
-  // Handle click outside dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -45,24 +32,20 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
   }, []);
 
   const handleConnect = async () => {
-    // Ensure config is loaded
     let enabled = oauthEnabled;
     if (enabled === null) {
       enabled = await checkConfig();
     }
-
     if (enabled) {
       initiateOAuth();
     } else {
-      // Fallback: show message that OAuth is not configured
       alert('GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in the backend.');
     }
   };
 
-  const isAuthenticated = !!user && !!token;
+  const isAuthenticated = !!user;
   const selectedRepoData = repos.find(r => r.full_name === selectedRepo);
 
-  // Show loading state during OAuth
   if (isAuthenticating) {
     return (
       <div className="space-y-3">
@@ -74,13 +57,12 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
     );
   }
 
-  // Authenticated: show repo dropdown
   if (isAuthenticated) {
     return (
       <form onSubmit={(e) => {
         e.preventDefault();
         if (selectedRepo) {
-          onSubmit(`https://github.com/${selectedRepo}`, token);
+          onSubmit(`https://github.com/${selectedRepo}`);
         }
       }} className="space-y-3">
         <div className="relative" ref={dropdownRef}>
@@ -136,14 +118,13 @@ export const GitHubInput = ({ onSubmit }: GitHubInputProps) => {
     );
   }
 
-  // Default: URL input + Analyze button with GitHub auth on same row
   return (
     <form onSubmit={(e) => {
       e.preventDefault();
       const form = e.target as HTMLFormElement;
       const input = form.querySelector('input') as HTMLInputElement;
       if (input.value.trim()) {
-        onSubmit(input.value.trim(), token);
+        onSubmit(input.value.trim());
       }
     }} className="space-y-3">
       <input

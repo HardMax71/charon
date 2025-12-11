@@ -24,7 +24,6 @@ const AppContent = () => {
   const isHomePage = location.pathname === '/';
   const handleOAuthCallback = useGitHubAuth((state) => state.handleOAuthCallback);
 
-  // Handle GitHub OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
@@ -32,17 +31,14 @@ const AppContent = () => {
     const storedState = sessionStorage.getItem('oauth_state');
 
     if (code) {
-      // Clear URL params IMMEDIATELY to prevent reuse on refresh
       window.history.replaceState({}, '', window.location.pathname);
 
-      // Check if we already processed this code
       const processedCode = sessionStorage.getItem('oauth_processed_code');
       if (processedCode === code) {
-        return; // Already processed
+        return;
       }
       sessionStorage.setItem('oauth_processed_code', code);
 
-      // Verify state to prevent CSRF attacks (only if we initiated the flow)
       if (storedState && state !== storedState) {
         logger.error('OAuth state mismatch - possible CSRF attack');
         sessionStorage.removeItem('oauth_state');
@@ -50,16 +46,12 @@ const AppContent = () => {
         return;
       }
 
-      // Clear stored state
       sessionStorage.removeItem('oauth_state');
 
-      // Handle the callback
       handleOAuthCallback(code).then((success) => {
-        // Clear processed code marker after a delay (allow for retries on different codes)
         setTimeout(() => sessionStorage.removeItem('oauth_processed_code'), 5000);
 
         if (success) {
-          // Check if we should return to a specific page
           const returnTo = sessionStorage.getItem('oauth_return_to');
           if (returnTo) {
             sessionStorage.removeItem('oauth_return_to');

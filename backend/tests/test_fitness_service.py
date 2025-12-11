@@ -14,7 +14,6 @@ from app.services import FitnessService
 
 @pytest.fixture
 def sample_graph():
-    """Create a sample dependency graph for testing."""
     nodes = [
         Node(
             id="app.api.users",
@@ -27,6 +26,8 @@ def sample_graph():
                 afferent_coupling=2,
                 efferent_coupling=3,
                 instability=0.6,
+                cyclomatic_complexity=5,
+                maintainability_index=80,
             ),
         ),
         Node(
@@ -40,6 +41,8 @@ def sample_graph():
                 afferent_coupling=3,
                 efferent_coupling=2,
                 instability=0.4,
+                cyclomatic_complexity=5,
+                maintainability_index=80,
             ),
         ),
         Node(
@@ -53,6 +56,8 @@ def sample_graph():
                 afferent_coupling=5,
                 efferent_coupling=0,
                 instability=0.0,
+                cyclomatic_complexity=5,
+                maintainability_index=80,
             ),
         ),
         Node(

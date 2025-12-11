@@ -20,15 +20,11 @@ export const InputForm = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
-  const handleGitHubSubmit = (url: string, token: string | null) => {
+  const handleGitHubSubmit = (url: string) => {
     setLoading(true);
 
-    const request = token
-      ? { source: 'github' as const, url, github_token: token }
-      : { source: 'github' as const, url };
-
     analyzeCode(
-      request,
+      { source: 'github', url },
       (event) => {
         if (event.message && event.progress !== undefined) {
           setLoadingProgress(event.progress, event.message);
@@ -110,7 +106,6 @@ export const InputForm = () => {
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="flex p-1 bg-slate-100/80 rounded-xl mb-8 border border-slate-200/50 backdrop-blur-sm">
         <button
           onClick={() => setActiveTab('github')}
@@ -144,7 +139,6 @@ export const InputForm = () => {
         </button>
       </div>
 
-      {/* Content - min height for consistency, overflow visible for dropdowns */}
       <div className="relative min-h-[120px]">
         {activeTab === 'github' && (
           <div className="min-h-[118px] flex flex-col justify-center overflow-visible">

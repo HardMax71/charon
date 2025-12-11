@@ -51,11 +51,9 @@ class FitnessOrchestratorService:
     def save_validation_result(
         project_name: str,
         result: FitnessValidationResult,
-        storage_path: str | None = None,
     ) -> SaveResultResponse:
         """Save fitness validation result for historical tracking."""
-        if storage_path is None:
-            storage_path = os.getenv("FITNESS_STORAGE_PATH", ".charon_fitness")
+        storage_path = os.getenv("FITNESS_STORAGE_PATH", ".charon_fitness")
 
         project_dir = Path(storage_path) / project_name
         project_dir.mkdir(parents=True, exist_ok=True)
@@ -76,12 +74,10 @@ class FitnessOrchestratorService:
     def get_fitness_trend(
         project_name: str,
         rule_id: str | None = None,
-        storage_path: str | None = None,
         limit: int = 100,
     ) -> FitnessTrendResponse:
         """Get historical fitness trend data for a project."""
-        if storage_path is None:
-            storage_path = os.getenv("FITNESS_STORAGE_PATH", ".charon_fitness")
+        storage_path = os.getenv("FITNESS_STORAGE_PATH", ".charon_fitness")
 
         project_dir = Path(storage_path) / project_name
         history_file = project_dir / "fitness_history.jsonl"
