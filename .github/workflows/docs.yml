@@ -26,7 +26,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install mkdocs-material
+        run: pip install mkdocs-material mkdocs-kroki-plugin mkdocs-swagger-ui-tag
 
       - name: Build docs
         run: mkdocs build --strict

@@ -2,22 +2,22 @@
 
 **3D Python Code Dependency Visualizer**
 
-Ever wondered what your codebase actually looks like? Not the syntax, but the structure. The dependencies. The tangled mess of imports that somehow became your architecture. Charon shows you exactly that, in 3D, so you can finally see where things went wrong (or right).
+You know that feeling when you're staring at a codebase trying to understand how everything connects? Charon turns that mental model into something you can actually see: a 3D graph where files are nodes, imports are edges, and architectural problems light up in red.
 
 ## Getting Started
 
-The fastest way to see what Charon does is to just run it with Docker:
+Quickest way to try it:
 
 ```bash
 docker compose up
 ```
 
-Then open http://localhost:5173 and paste in a GitHub repo URL. Within seconds you'll see your (or someone else's) codebase rendered as a 3D graph. Red nodes are circular dependencies, orange ones are highly coupled, and the arrows show who imports what.
+Open [http://localhost:5173](http://localhost:5173), paste a GitHub repo URL, and watch it render. Red nodes mean circular dependencies, orange means high coupling, arrows show import direction.
 
-If you don't want Docker, you can run the backend and frontend separately:
+No Docker? Run backend and frontend separately:
 
 ```bash
-# Backend (FastAPI with uv)
+# Backend (FastAPI + uv)
 cd backend
 uv sync
 uv run uvicorn app.main:app --reload
@@ -28,53 +28,61 @@ npm install
 npm run dev
 ```
 
-Backend runs on port 8000, frontend on 5173. Both need to be running at the same time. The backend uses [uv](https://docs.astral.sh/uv/) for faster dependency management instead of pip.
+Backend listens on port 8000, frontend on 5173. You need both running. We use [uv](https://docs.astral.sh/uv/) instead of pip because it's faster.
 
-### Using Published Docker Images
+### Pre-built Docker Images
 
-Pre-built images are automatically published to GitHub Container Registry on every commit to main:
+Every commit to main publishes images to [GitHub Container Registry](https://github.com/HardMax71/charon/pkgs/container/charon-backend):
 
 ```bash
-# Pull latest images
 docker pull ghcr.io/hardmax71/charon-backend:latest
 docker pull ghcr.io/hardmax71/charon-frontend:latest
 
-# Or use specific commit SHA
+# Or pin to a specific commit
 docker pull ghcr.io/hardmax71/charon-backend:main-abc1234
 ```
 
-Images are also tagged with release versions when tags are pushed (e.g., `v0.0.8`).
+Release tags work too (e.g., `v0.0.8`).
 
-## What It Does
+## What You Get
 
-Charon takes Python code and turns it into a graph. Each file becomes a node, each import becomes an edge. Then it calculates coupling metrics, detects circular dependencies, and positions everything in 3D space. You can analyze code three ways: paste a GitHub URL, drag and drop a local folder (10MB max), or import a saved analysis file.
+Charon parses Python code and builds a dependency graph. You can feed it code three ways: GitHub URL, drag-and-drop a folder (10MB limit), or import a previous analysis.
 
-The visualization is interactive. Drag to rotate, scroll to zoom, click nodes for metrics, click arrows for import details. Three layout modes available: hierarchical, force-directed, and circular. Colors show module boundaries (files in same module get similar colors), with red for circular dependencies and orange for high coupling.
+The visualization is fully interactive. Drag to rotate, scroll to zoom, click nodes for metrics, click edges for import details. Three layout modes: hierarchical, force-directed, and circular. Files in the same module get similar colors.
 
-Beyond basic visualization, there's temporal analysis (watch dependencies evolve over git history), fitness functions (enforce architectural rules in CI/CD), health scoring (single number for codebase health), cluster detection (find natural groupings for package boundaries), refactoring suggestions (spot god objects and code smells), impact analysis (see blast radius of changes), what-if mode (test refactoring ideas by editing the graph), export tools (generate diagrams and docs), and complexity integration (hot zones where high complexity meets high coupling).
+Beyond the pretty graph:
 
-## How It Works Under The Hood
+- **Temporal analysis**: see how dependencies evolved across git history
+- **Fitness functions**: enforce architectural rules in CI/CD
+- **Health scoring**: one number summarizing codebase quality
+- **Cluster detection**: find natural package boundaries
+- **Refactoring hints**: spot god objects and code smells
+- **Impact analysis**: understand blast radius before changing things
+- **What-if mode**: test refactoring ideas by editing the graph directly
+- **Export**: generate diagrams and documentation
 
-The backend uses Python's AST module to parse source files without executing them. It walks the AST looking for import statements, resolves them (including relative imports), and classifies them as internal or third-party. Then it builds a directed graph with NetworkX and runs algorithms for cycle detection, clustering, and metrics calculation.
+## Under the Hood
 
-Positions in 3D space are computed using a hierarchical layout algorithm that places files in layers based on their position in the dependency tree. Third-party libraries go at the bottom, application code goes on top, and everything in between gets arranged to minimize edge crossings.
+The backend uses Python's [ast](https://docs.python.org/3/library/ast.html) module to parse source files without executing them. It finds imports, resolves relative paths, classifies dependencies as internal or third-party, then builds a [NetworkX](https://networkx.org/) graph. From there: cycle detection, clustering, metrics.
 
-The frontend is React with Three.js (via React Three Fiber) for 3D rendering. State management uses Zustand. The UI is Tailwind CSS with some custom components. Communication with the backend uses REST for most things and Server-Sent Events for progress updates during long-running analyses.
+3D positioning uses a hierarchical layout. Third-party stuff at the bottom, your code on top, arranged to minimize edge crossings.
 
-Everything is stateless. The backend doesn't store anything. Each analysis is done from scratch, which keeps things simple but means you should export results if you want to save them.
+Frontend is [React](https://react.dev/) with [Three.js](https://threejs.org/) (via [React Three Fiber](https://r3f.docs.pmnd.rs/)) for rendering. State lives in [Zustand](https://zustand-demo.pmnd.rs/). Styling is [Tailwind](https://tailwindcss.com/). Backend communication is REST plus [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) for progress updates.
 
-## Limitations Worth Knowing
+Everything is stateless. Nothing persists between requests. Simple, but it means you should export results if you want to keep them.
 
-- **GitHub API rate limit** is 60 requests per hour without authentication. If you're analyzing lots of repos, you'll hit it. The solution is to clone locally or set up a GitHub token.
-- **File uploads** are capped at 10MB to avoid memory issues. Larger projects should be analyzed via GitHub URL instead.
-- **Only Python files** are analyzed. If your project is multi-language, only the Python parts will show up.
-- **Standard library imports** are ignored because they're not part of your architecture. Third-party libraries are included but separated visually.
-- **Syntax errors** in source files get skipped with a warning. If you have broken Python files, they won't appear in the graph.
+## Limitations
+
+- **GitHub rate limit**: 60 requests/hour without auth. Clone locally or set up a token if you're hitting it.
+- **Upload cap**: 10MB max for drag-and-drop. Use GitHub URL for bigger projects.
+- **Python only**: other languages in your repo won't show up.
+- **No stdlib**: standard library imports are filtered out (they're not your architecture).
+- **Syntax errors**: broken files get skipped with a warning.
 
 ## Contributing
 
-This is an open source project. If you find bugs, open an issue. If you want to add features, open a PR. The code is split between backend (FastAPI, Python) and frontend (React, TypeScript), so pick whichever you're comfortable with.
+Found a bug? [Open an issue](https://github.com/HardMax71/charon/issues). Want to add something? [Send a PR](https://github.com/HardMax71/charon/pulls). Backend is Python/FastAPI, frontend is TypeScript/React. Pick your poison.
 
 ## License
 
-[MIT](https://github.com/HardMax71/charon/blob/main/LICENSE). Do whatever you want with it.
+[MIT](https://github.com/HardMax71/charon/blob/main/LICENSE). Do what you want.

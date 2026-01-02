@@ -1,0 +1,3830 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Charon",
+    "description": "3D dependency visualizer for Python projects",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/analyze": {
+      "post": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Analyze Code",
+        "operationId": "analyze_code_api_analyze_post",
+        "parameters": [
+          {
+            "name": "charon_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Charon Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GitHubAnalyzeRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/LocalAnalyzeRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImportAnalyzeRequest"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/impact-analysis": {
+      "post": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Analyze Impact",
+        "operationId": "analyze_impact_api_impact_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImpactAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpactAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health-score": {
+      "post": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Calculate Health Score",
+        "operationId": "calculate_health_score_api_health_score_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_calculate_health_score_api_health_score_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/config": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get Config",
+        "operationId": "get_config_api_auth_github_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubAuthConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/callback": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Oauth Callback",
+        "operationId": "oauth_callback_api_auth_github_callback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitHubTokenExchange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/session": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get Session",
+        "operationId": "get_session_api_auth_github_session_get",
+        "parameters": [
+          {
+            "name": "charon_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Charon Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_auth_github_logout_post",
+        "parameters": [
+          {
+            "name": "charon_session",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Charon Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/device": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Start Device Flow",
+        "operationId": "start_device_flow_api_auth_github_device_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubDeviceCodeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/github/device/poll": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Poll Device Flow",
+        "operationId": "poll_device_flow_api_auth_github_device_poll_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitHubDevicePollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitHubDevicePollResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export": {
+      "post": {
+        "tags": [
+          "export"
+        ],
+        "summary": "Export Analysis",
+        "description": "Export analysis results to JSON or TOML.\n\nArgs:\n    request: Export request with graph, metrics, format, and project name\n\nReturns:\n    File download response",
+        "operationId": "export_analysis_api_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/diff": {
+      "post": {
+        "tags": [
+          "diff"
+        ],
+        "summary": "Diff Versions",
+        "description": "Compare dependencies between two versions of a repository.\n\nArgs:\n    request: Diff request with repo and two references\n\nReturns:\n    SSE stream with diff results",
+        "operationId": "diff_versions_api_diff_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiffRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export-diagram": {
+      "post": {
+        "tags": [
+          "diagram"
+        ],
+        "summary": "Export Diagram",
+        "description": "Export dependency graph to various diagram formats.\n\nArgs:\n    graph_data: The dependency graph data\n    format: Diagram format (plantuml, c4, mermaid, uml, drawio)\n    system_name: Name of the software system (for C4 diagrams)\n\nReturns:\n    Diagram source code or XML",
+        "operationId": "export_diagram_api_export_diagram_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportDiagramRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/temporal-analysis": {
+      "post": {
+        "tags": [
+          "temporal"
+        ],
+        "summary": "Start Temporal Analysis",
+        "description": "Start temporal analysis for a GitHub repository with SSE progress updates.\n\nArgs:\n    repository_url: GitHub repository URL\n    start_date: Optional start date (ISO format)\n    end_date: Optional end date (ISO format)\n    sample_strategy: How to sample commits (\"all\", \"daily\", \"weekly\", \"monthly\")\n\nReturns:\n    Server-Sent Events stream with progress updates",
+        "operationId": "start_temporal_analysis_api_temporal_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemporalAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/temporal-analysis/{analysis_id}": {
+      "get": {
+        "tags": [
+          "temporal"
+        ],
+        "summary": "Get Temporal Analysis",
+        "description": "Retrieve cached temporal analysis results.\n\nArgs:\n    analysis_id: Analysis ID from previous analysis\n\nReturns:\n    Cached temporal analysis results",
+        "operationId": "get_temporal_analysis_api_temporal_analysis__analysis_id__get",
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalAnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/export-documentation": {
+      "post": {
+        "tags": [
+          "documentation"
+        ],
+        "summary": "Export Documentation",
+        "description": "Export architectural documentation in specified format.\n\nArgs:\n    request: Export request with graph data, metrics, format, and project name\n\nReturns:\n    Documentation file in requested format",
+        "operationId": "export_documentation_api_export_documentation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportDocumentationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fitness/validate": {
+      "post": {
+        "tags": [
+          "fitness"
+        ],
+        "summary": "Validate Fitness Functions",
+        "description": "Validate architectural fitness functions against a dependency graph.\n\nThis endpoint evaluates a set of architectural rules against the provided\ndependency graph and returns a detailed validation report.\n\nThe validation can be configured to fail on errors, warnings, or both.\nThis is useful for CI/CD integration where you want to fail builds based\non architectural rule violations.\n\nExample rules:\n- No modules in /api may import from /database directly\n- Maximum efferent coupling: 10\n- No circular dependencies allowed\n- Third-party dependencies must be < 20% of total imports",
+        "operationId": "validate_fitness_functions_api_fitness_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FitnessValidationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FitnessValidationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fitness/validate-from-config": {
+      "post": {
+        "tags": [
+          "fitness"
+        ],
+        "summary": "Validate From Config",
+        "description": "Validate using a fitness rule configuration file.\n\nThis endpoint accepts a FitnessRuleConfig object instead of individual rules,\nmaking it easier to maintain rules in a version-controlled configuration file.",
+        "operationId": "validate_from_config_api_fitness_validate_from_config_post",
+        "parameters": [
+          {
+            "name": "fail_on_error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Fail On Error"
+            }
+          },
+          {
+            "name": "fail_on_warning",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Fail On Warning"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_validate_from_config_api_fitness_validate_from_config_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FitnessValidationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fitness/save-result": {
+      "post": {
+        "tags": [
+          "fitness"
+        ],
+        "summary": "Save Validation Result",
+        "description": "Save fitness validation result for historical tracking.\n\nResults are saved to a JSON file in the format:\n{FITNESS_STORAGE_PATH}/{project_name}/fitness_history.jsonl\n\nEach validation result is appended as a new line to enable trend analysis.\nStorage path is configured via FITNESS_STORAGE_PATH environment variable.",
+        "operationId": "save_validation_result_api_fitness_save_result_post",
+        "parameters": [
+          {
+            "name": "project_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$",
+              "description": "Project name (alphanumeric, underscore, hyphen only, max 128 chars)",
+              "title": "Project Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FitnessValidationResult"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fitness/trend/{project_name}": {
+      "get": {
+        "tags": [
+          "fitness"
+        ],
+        "summary": "Get Fitness Trend",
+        "description": "Get historical fitness trend data for a project.\n\nReturns a time series of validation results, optionally filtered by rule_id.\nUseful for tracking architectural health over time and identifying regressions.\nStorage path is configured via FITNESS_STORAGE_PATH environment variable.",
+        "operationId": "get_fitness_trend_api_fitness_trend__project_name__get",
+        "parameters": [
+          {
+            "name": "project_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$",
+              "description": "Project name (alphanumeric, underscore, hyphen only, max 128 chars)",
+              "title": "Project Name"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rule Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FitnessTrendResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fitness/config/example": {
+      "get": {
+        "tags": [
+          "fitness"
+        ],
+        "summary": "Get Example Config",
+        "description": "Get an example fitness rule configuration.\n\nThis returns a sample configuration demonstrating all supported rule types.\nUse this as a starting point for creating your own fitness rules.",
+        "operationId": "get_example_config_api_fitness_config_example_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FitnessRuleConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/performance/analyze": {
+      "post": {
+        "tags": [
+          "performance"
+        ],
+        "summary": "Analyze Performance",
+        "description": "Analyze performance profiling data in context of dependency graph.\n\nAccepts profiling files from:\n- cProfile (.prof files)\n- py-spy (.json speedscope files)\n\nCombines performance metrics with architectural metrics (coupling, complexity)\nto calculate priority scores and identify optimization targets.",
+        "operationId": "analyze_performance_api_performance_analyze_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_analyze_performance_api_performance_analyze_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PerformanceAnalysisResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/performance/health": {
+      "get": {
+        "tags": [
+          "performance"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint for performance service.\n\nReturns:\n    Status information",
+        "operationId": "health_check_api_performance_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Api Performance Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AffectedNodeDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "module": {
+            "type": "string",
+            "title": "Module"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "internal",
+              "third_party"
+            ],
+            "title": "Type"
+          },
+          "distance": {
+            "type": "integer",
+            "title": "Distance"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "module",
+          "type",
+          "distance",
+          "color"
+        ],
+        "title": "AffectedNodeDetail",
+        "description": "Details about an affected node."
+      },
+      "AnalysisResult": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics"
+        ],
+        "title": "AnalysisResult",
+        "description": "Complete analysis result."
+      },
+      "Body_analyze_performance_api_performance_analyze_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Profiling file (.prof or .json)"
+          },
+          "graph_json": {
+            "type": "string",
+            "title": "Graph Json",
+            "description": "Dependency graph as JSON string"
+          },
+          "weights_json": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weights Json",
+            "description": "Optional priority weights as JSON string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "graph_json"
+        ],
+        "title": "Body_analyze_performance_api_performance_analyze_post"
+      },
+      "Body_calculate_health_score_api_health_score_post": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics"
+        ],
+        "title": "Body_calculate_health_score_api_health_score_post"
+      },
+      "Body_validate_from_config_api_fitness_validate_from_config_post": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics"
+          },
+          "config": {
+            "$ref": "#/components/schemas/FitnessRuleConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics",
+          "config"
+        ],
+        "title": "Body_validate_from_config_api_fitness_validate_from_config_post"
+      },
+      "CircularDependency": {
+        "properties": {
+          "cycle": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cycle",
+            "description": "List of node IDs forming the cycle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cycle"
+        ],
+        "title": "CircularDependency",
+        "description": "Circular dependency cycle."
+      },
+      "ClusterMetrics": {
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "title": "Cluster Id",
+            "description": "Cluster identifier"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "description": "Number of nodes in cluster"
+          },
+          "internal_edges": {
+            "type": "integer",
+            "title": "Internal Edges",
+            "description": "Edges within cluster"
+          },
+          "external_edges": {
+            "type": "integer",
+            "title": "External Edges",
+            "description": "Edges crossing cluster boundary"
+          },
+          "cohesion": {
+            "type": "number",
+            "title": "Cohesion",
+            "description": "Internal/total edges ratio"
+          },
+          "modularity_contribution": {
+            "type": "number",
+            "title": "Modularity Contribution",
+            "description": "Modularity score"
+          },
+          "avg_internal_coupling": {
+            "type": "number",
+            "title": "Avg Internal Coupling",
+            "description": "Average coupling within cluster"
+          },
+          "is_package_candidate": {
+            "type": "boolean",
+            "title": "Is Package Candidate",
+            "description": "Suggests good package boundary"
+          },
+          "nodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Nodes",
+            "description": "Node IDs in this cluster"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "size",
+          "internal_edges",
+          "external_edges",
+          "cohesion",
+          "modularity_contribution",
+          "avg_internal_coupling",
+          "is_package_candidate",
+          "nodes"
+        ],
+        "title": "ClusterMetrics",
+        "description": "Metrics for a single cluster."
+      },
+      "DependencyGraph": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/Node"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "title": "DependencyGraph",
+        "description": "Complete dependency graph with metrics."
+      },
+      "DiffRequest": {
+        "properties": {
+          "repo": {
+            "type": "string",
+            "title": "Repo",
+            "description": "GitHub repo (owner/repo)"
+          },
+          "ref1": {
+            "type": "string",
+            "title": "Ref1",
+            "description": "First reference (commit/branch/tag)"
+          },
+          "ref2": {
+            "type": "string",
+            "title": "Ref2",
+            "description": "Second reference (commit/branch/tag)"
+          },
+          "ref_type": {
+            "type": "string",
+            "enum": [
+              "commit",
+              "branch",
+              "tag"
+            ],
+            "title": "Ref Type",
+            "default": "commit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repo",
+          "ref1",
+          "ref2"
+        ],
+        "title": "DiffRequest",
+        "description": "Request to compare two versions."
+      },
+      "DistanceBreakdown": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "percentage",
+          "label"
+        ],
+        "title": "DistanceBreakdown",
+        "description": "Breakdown of impact by distance."
+      },
+      "Edge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique edge identifier"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Source node ID"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target",
+            "description": "Target node ID"
+          },
+          "imports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Imports",
+            "description": "List of imported names"
+          },
+          "weight": {
+            "type": "integer",
+            "title": "Weight",
+            "description": "Number of imports"
+          },
+          "thickness": {
+            "type": "number",
+            "title": "Thickness",
+            "description": "Visual thickness for rendering"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "target",
+          "imports",
+          "weight",
+          "thickness"
+        ],
+        "title": "Edge",
+        "description": "Graph edge representing a dependency."
+      },
+      "ExportDiagramRequest": {
+        "properties": {
+          "graph_data": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "plantuml",
+              "c4",
+              "mermaid",
+              "uml",
+              "drawio"
+            ],
+            "title": "Format",
+            "default": "plantuml"
+          },
+          "system_name": {
+            "type": "string",
+            "title": "System Name",
+            "default": "Software System"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph_data"
+        ],
+        "title": "ExportDiagramRequest",
+        "description": "Request model for diagram export."
+      },
+      "ExportDocumentationRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "md",
+              "html",
+              "pdf"
+            ],
+            "title": "Format"
+          },
+          "project_name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$",
+            "title": "Project Name",
+            "description": "Project name (alphanumeric, underscore, hyphen only, max 128 chars)",
+            "default": "Project"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics",
+          "format"
+        ],
+        "title": "ExportDocumentationRequest",
+        "description": "Request model for documentation export."
+      },
+      "ExportRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "json",
+              "toml"
+            ],
+            "title": "Format"
+          },
+          "project_name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$",
+            "title": "Project Name",
+            "description": "Project name (alphanumeric, underscore, hyphen only, max 128 chars)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics",
+          "format",
+          "project_name"
+        ],
+        "title": "ExportRequest",
+        "description": "Request to export analysis."
+      },
+      "FileInput": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "title": "FileInput",
+        "description": "Uploaded file content."
+      },
+      "FitnessRule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique rule identifier"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Human-readable rule name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Detailed description of the rule"
+          },
+          "rule_type": {
+            "type": "string",
+            "enum": [
+              "import_restriction",
+              "max_coupling",
+              "no_circular",
+              "max_third_party_percent",
+              "max_depth",
+              "max_complexity"
+            ],
+            "title": "Rule Type",
+            "description": "Type of rule"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "description": "Violation severity",
+            "default": "error"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether the rule is active",
+            "default": true
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters",
+            "description": "Rule-specific parameters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "rule_type",
+          "parameters"
+        ],
+        "title": "FitnessRule",
+        "description": "Architectural fitness function rule."
+      },
+      "FitnessRuleConfig": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Config version",
+            "default": "1.0"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/FitnessRule"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "List of fitness rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rules"
+        ],
+        "title": "FitnessRuleConfig",
+        "description": "Configuration file for fitness functions."
+      },
+      "FitnessTrendPoint": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "errors": {
+            "type": "integer",
+            "title": "Errors"
+          },
+          "warnings": {
+            "type": "integer",
+            "title": "Warnings"
+          },
+          "infos": {
+            "type": "integer",
+            "title": "Infos"
+          },
+          "total_violations": {
+            "type": "integer",
+            "title": "Total Violations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "passed",
+          "errors",
+          "warnings",
+          "infos",
+          "total_violations"
+        ],
+        "title": "FitnessTrendPoint",
+        "description": "Single point in fitness trend history."
+      },
+      "FitnessTrendResponse": {
+        "properties": {
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Id",
+            "description": "Optional filter by rule"
+          },
+          "data_points": {
+            "items": {
+              "$ref": "#/components/schemas/FitnessTrendPoint"
+            },
+            "type": "array",
+            "title": "Data Points"
+          },
+          "summary": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_name",
+          "data_points",
+          "summary"
+        ],
+        "title": "FitnessTrendResponse",
+        "description": "Historical fitness trend data."
+      },
+      "FitnessValidationRequest": {
+        "properties": {
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph",
+            "description": "Dependency graph to validate"
+          },
+          "global_metrics": {
+            "$ref": "#/components/schemas/GlobalMetrics",
+            "description": "Global metrics"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/FitnessRule"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Rules to validate against"
+          },
+          "fail_on_error": {
+            "type": "boolean",
+            "title": "Fail On Error",
+            "description": "Fail if errors found",
+            "default": true
+          },
+          "fail_on_warning": {
+            "type": "boolean",
+            "title": "Fail On Warning",
+            "description": "Fail if warnings found",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph",
+          "global_metrics",
+          "rules"
+        ],
+        "title": "FitnessValidationRequest",
+        "description": "Request to validate fitness functions."
+      },
+      "FitnessValidationResult": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed",
+            "description": "Whether all rules passed"
+          },
+          "total_rules": {
+            "type": "integer",
+            "title": "Total Rules",
+            "description": "Total number of rules evaluated"
+          },
+          "violations": {
+            "items": {
+              "$ref": "#/components/schemas/FitnessViolation"
+            },
+            "type": "array",
+            "title": "Violations"
+          },
+          "errors": {
+            "type": "integer",
+            "title": "Errors",
+            "description": "Number of error-level violations",
+            "default": 0
+          },
+          "warnings": {
+            "type": "integer",
+            "title": "Warnings",
+            "description": "Number of warning-level violations",
+            "default": 0
+          },
+          "infos": {
+            "type": "integer",
+            "title": "Infos",
+            "description": "Number of info-level violations",
+            "default": 0
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "Validation timestamp"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Summary of validation results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passed",
+          "total_rules",
+          "timestamp",
+          "summary"
+        ],
+        "title": "FitnessValidationResult",
+        "description": "Result of fitness function validation."
+      },
+      "FitnessViolation": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id",
+            "description": "ID of the violated rule"
+          },
+          "rule_name": {
+            "type": "string",
+            "title": "Rule Name",
+            "description": "Name of the violated rule"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable violation message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details",
+            "description": "Additional context about the violation"
+          },
+          "affected_modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Modules",
+            "description": "Modules involved in violation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_id",
+          "rule_name",
+          "severity",
+          "message",
+          "details"
+        ],
+        "title": "FitnessViolation",
+        "description": "Violation of an architectural fitness function."
+      },
+      "FunctionProfile": {
+        "properties": {
+          "function_name": {
+            "type": "string",
+            "title": "Function Name",
+            "description": "Function name (e.g., 'calculate_metrics')"
+          },
+          "module": {
+            "type": "string",
+            "title": "Module",
+            "description": "Module path (e.g., 'app.services.metrics_service')"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename",
+            "description": "Source file path"
+          },
+          "lineno": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Lineno",
+            "description": "Line number where function is defined"
+          },
+          "total_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Total Time",
+            "description": "Total time including subcalls"
+          },
+          "self_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Self Time",
+            "description": "Time excluding subcalls"
+          },
+          "cumulative_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Cumulative Time",
+            "description": "Cumulative time across all calls"
+          },
+          "avg_time_per_call": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Avg Time Per Call",
+            "description": "Average time per call"
+          },
+          "time_percentage": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Time Percentage",
+            "description": "% of total execution time"
+          },
+          "call_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Call Count",
+            "description": "Number of times called"
+          },
+          "primitive_calls": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Primitive Calls",
+            "description": "Non-recursive calls"
+          },
+          "memory_usage_mb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Usage Mb",
+            "description": "Memory usage in MB"
+          },
+          "memory_peak_mb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Peak Mb",
+            "description": "Peak memory usage in MB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "function_name",
+          "module",
+          "filename",
+          "lineno",
+          "total_time",
+          "self_time",
+          "cumulative_time",
+          "avg_time_per_call",
+          "time_percentage",
+          "call_count",
+          "primitive_calls"
+        ],
+        "title": "FunctionProfile",
+        "description": "Performance profile for a single function.\n\nExtracted from profiling tools like cProfile, py-spy, or scalene."
+      },
+      "GitHubAnalyzeRequest": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "const": "github",
+            "title": "Source"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://(?:www\\.)?github\\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+/?$",
+            "title": "Url",
+            "description": "GitHub repository URL (e.g., https://github.com/owner/repo)"
+          },
+          "github_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Github Token",
+            "description": "Optional GitHub token for private repos or higher rate limits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "url"
+        ],
+        "title": "GitHubAnalyzeRequest",
+        "description": "Request to analyze code from GitHub."
+      },
+      "GitHubAuthConfig": {
+        "properties": {
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "enabled"
+        ],
+        "title": "GitHubAuthConfig"
+      },
+      "GitHubDeviceCodeResponse": {
+        "properties": {
+          "device_code": {
+            "type": "string",
+            "title": "Device Code"
+          },
+          "user_code": {
+            "type": "string",
+            "title": "User Code"
+          },
+          "verification_uri": {
+            "type": "string",
+            "title": "Verification Uri"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "interval": {
+            "type": "integer",
+            "title": "Interval"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_code",
+          "user_code",
+          "verification_uri",
+          "expires_in",
+          "interval"
+        ],
+        "title": "GitHubDeviceCodeResponse"
+      },
+      "GitHubDevicePollRequest": {
+        "properties": {
+          "device_code": {
+            "type": "string",
+            "title": "Device Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_code"
+        ],
+        "title": "GitHubDevicePollRequest"
+      },
+      "GitHubDevicePollResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "success",
+              "expired",
+              "error"
+            ],
+            "title": "Status"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "GitHubDevicePollResponse"
+      },
+      "GitHubRepo": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "private": {
+            "type": "boolean",
+            "title": "Private"
+          },
+          "default_branch": {
+            "type": "string",
+            "title": "Default Branch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "private",
+          "default_branch"
+        ],
+        "title": "GitHubRepo"
+      },
+      "GitHubSessionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "user": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GitHubUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repos": {
+            "items": {
+              "$ref": "#/components/schemas/GitHubRepo"
+            },
+            "type": "array",
+            "title": "Repos",
+            "default": []
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "GitHubSessionResponse"
+      },
+      "GitHubTokenExchange": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "GitHubTokenExchange"
+      },
+      "GitHubUser": {
+        "properties": {
+          "login": {
+            "type": "string",
+            "title": "Login"
+          },
+          "avatar_url": {
+            "type": "string",
+            "title": "Avatar Url"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "login",
+          "avatar_url",
+          "name"
+        ],
+        "title": "GitHubUser"
+      },
+      "GlobalMetrics": {
+        "properties": {
+          "total_files": {
+            "type": "integer",
+            "title": "Total Files"
+          },
+          "total_internal": {
+            "type": "integer",
+            "title": "Total Internal"
+          },
+          "total_third_party": {
+            "type": "integer",
+            "title": "Total Third Party"
+          },
+          "avg_afferent_coupling": {
+            "type": "number",
+            "title": "Avg Afferent Coupling"
+          },
+          "avg_efferent_coupling": {
+            "type": "number",
+            "title": "Avg Efferent Coupling"
+          },
+          "circular_dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/CircularDependency"
+            },
+            "type": "array",
+            "title": "Circular Dependencies"
+          },
+          "high_coupling_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "High Coupling Files"
+          },
+          "coupling_threshold": {
+            "type": "number",
+            "title": "Coupling Threshold"
+          },
+          "avg_complexity": {
+            "type": "number",
+            "title": "Avg Complexity",
+            "description": "Average cyclomatic complexity",
+            "default": 0
+          },
+          "avg_maintainability": {
+            "type": "number",
+            "title": "Avg Maintainability",
+            "description": "Average maintainability index",
+            "default": 0
+          },
+          "hot_zone_files": {
+            "items": {
+              "$ref": "#/components/schemas/HotZoneFile"
+            },
+            "type": "array",
+            "title": "Hot Zone Files",
+            "description": "Files with high complexity and coupling"
+          },
+          "clusters": {
+            "items": {
+              "$ref": "#/components/schemas/ClusterMetrics"
+            },
+            "type": "array",
+            "title": "Clusters",
+            "description": "Detected clusters"
+          },
+          "package_suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSuggestion"
+            },
+            "type": "array",
+            "title": "Package Suggestions",
+            "description": "Package reorganization suggestions"
+          },
+          "refactoring_suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/RefactoringSuggestion"
+            },
+            "type": "array",
+            "title": "Refactoring Suggestions",
+            "description": "Automated refactoring suggestions"
+          },
+          "refactoring_summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefactoringSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Refactoring analysis summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_files",
+          "total_internal",
+          "total_third_party",
+          "avg_afferent_coupling",
+          "avg_efferent_coupling",
+          "circular_dependencies",
+          "high_coupling_files",
+          "coupling_threshold"
+        ],
+        "title": "GlobalMetrics",
+        "description": "Global project metrics."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthScoreComponent": {
+        "properties": {
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Score from 0-100"
+          },
+          "grade": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "F"
+            ],
+            "title": "Grade"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "grade",
+          "details"
+        ],
+        "title": "HealthScoreComponent",
+        "description": "Individual health score component."
+      },
+      "HealthScoreComponents": {
+        "properties": {
+          "circular_dependencies": {
+            "$ref": "#/components/schemas/HealthScoreComponent"
+          },
+          "coupling_health": {
+            "$ref": "#/components/schemas/HealthScoreComponent"
+          },
+          "complexity_health": {
+            "$ref": "#/components/schemas/HealthScoreComponent"
+          },
+          "architecture_health": {
+            "$ref": "#/components/schemas/HealthScoreComponent"
+          },
+          "stability_distribution": {
+            "$ref": "#/components/schemas/HealthScoreComponent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "circular_dependencies",
+          "coupling_health",
+          "complexity_health",
+          "architecture_health",
+          "stability_distribution"
+        ],
+        "title": "HealthScoreComponents",
+        "description": "All health score components."
+      },
+      "HealthScoreResponse": {
+        "properties": {
+          "overall_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Overall Score",
+            "description": "Overall health score from 0-100"
+          },
+          "overall_grade": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "F"
+            ],
+            "title": "Overall Grade"
+          },
+          "components": {
+            "$ref": "#/components/schemas/HealthScoreComponents"
+          },
+          "weights": {
+            "$ref": "#/components/schemas/HealthScoreWeights"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overall_score",
+          "overall_grade",
+          "components",
+          "weights",
+          "summary",
+          "recommendations"
+        ],
+        "title": "HealthScoreResponse",
+        "description": "Complete health score response."
+      },
+      "HealthScoreWeights": {
+        "properties": {
+          "circular": {
+            "type": "number",
+            "title": "Circular",
+            "description": "Circular dependencies weight",
+            "default": 0.2
+          },
+          "coupling": {
+            "type": "number",
+            "title": "Coupling",
+            "description": "Coupling health weight",
+            "default": 0.2
+          },
+          "complexity": {
+            "type": "number",
+            "title": "Complexity",
+            "description": "Complexity health weight",
+            "default": 0.3
+          },
+          "architecture": {
+            "type": "number",
+            "title": "Architecture",
+            "description": "Architecture health weight",
+            "default": 0.2
+          },
+          "stability": {
+            "type": "number",
+            "title": "Stability",
+            "description": "Stability distribution weight",
+            "default": 0.1
+          }
+        },
+        "type": "object",
+        "title": "HealthScoreWeights",
+        "description": "Weights for health score components."
+      },
+      "HotZoneFile": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File",
+            "description": "Module path"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "warning",
+              "info",
+              "ok"
+            ],
+            "title": "Severity",
+            "description": "Severity level"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score",
+            "description": "Hot zone score (0-100)"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "Reason for classification"
+          },
+          "complexity": {
+            "type": "number",
+            "title": "Complexity",
+            "description": "Cyclomatic complexity"
+          },
+          "coupling": {
+            "type": "integer",
+            "title": "Coupling",
+            "description": "Total coupling (afferent + efferent)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "severity",
+          "score",
+          "reason",
+          "complexity",
+          "coupling"
+        ],
+        "title": "HotZoneFile",
+        "description": "Hot zone file with high complexity and coupling."
+      },
+      "ImpactAnalysisRequest": {
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "title": "Node Id",
+            "description": "ID of the node to analyze"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/DependencyGraph",
+            "description": "Current dependency graph"
+          },
+          "max_depth": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Max Depth",
+            "description": "Maximum depth for transitive search",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "node_id",
+          "graph"
+        ],
+        "title": "ImpactAnalysisRequest",
+        "description": "Request to analyze impact of changes to a node."
+      },
+      "ImpactAnalysisResponse": {
+        "properties": {
+          "selected_node": {
+            "$ref": "#/components/schemas/SelectedNodeInfo"
+          },
+          "affected_nodes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Affected Nodes",
+            "description": "Mapping of node_id to distance"
+          },
+          "impact_levels": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Impact Levels",
+            "description": "Mapping of distance to list of node_ids"
+          },
+          "affected_node_details": {
+            "items": {
+              "$ref": "#/components/schemas/AffectedNodeDetail"
+            },
+            "type": "array",
+            "title": "Affected Node Details"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/ImpactMetrics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selected_node",
+          "affected_nodes",
+          "impact_levels",
+          "affected_node_details",
+          "metrics"
+        ],
+        "title": "ImpactAnalysisResponse",
+        "description": "Response from impact analysis."
+      },
+      "ImpactMetrics": {
+        "properties": {
+          "total_nodes": {
+            "type": "integer",
+            "title": "Total Nodes"
+          },
+          "total_affected": {
+            "type": "integer",
+            "title": "Total Affected"
+          },
+          "impact_percentage": {
+            "type": "number",
+            "title": "Impact Percentage"
+          },
+          "max_depth_reached": {
+            "type": "integer",
+            "title": "Max Depth Reached"
+          },
+          "distance_breakdown": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DistanceBreakdown"
+            },
+            "type": "object",
+            "title": "Distance Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_nodes",
+          "total_affected",
+          "impact_percentage",
+          "max_depth_reached",
+          "distance_breakdown"
+        ],
+        "title": "ImpactMetrics",
+        "description": "Impact analysis metrics."
+      },
+      "ImportAnalyzeRequest": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "const": "import",
+            "title": "Source"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AnalysisResult",
+            "description": "Previously analyzed data to import"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "data"
+        ],
+        "title": "ImportAnalyzeRequest",
+        "description": "Request to import previously analyzed data."
+      },
+      "Language": {
+        "type": "string",
+        "enum": [
+          "python",
+          "javascript",
+          "typescript",
+          "java",
+          "go",
+          "rust"
+        ],
+        "title": "Language"
+      },
+      "LocalAnalyzeRequest": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "const": "local",
+            "title": "Source"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileInput"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "List of files to analyze"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "files"
+        ],
+        "title": "LocalAnalyzeRequest",
+        "description": "Request to analyze local code files."
+      },
+      "ModulePerformance": {
+        "properties": {
+          "module_path": {
+            "type": "string",
+            "title": "Module Path",
+            "description": "Module path (e.g., 'app/services/metrics_service.py')"
+          },
+          "total_execution_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Total Execution Time",
+            "description": "Total time spent in this module (seconds)"
+          },
+          "self_execution_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Self Execution Time",
+            "description": "Time excluding subcalls (seconds)"
+          },
+          "time_percentage": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Time Percentage",
+            "description": "% of total program execution time"
+          },
+          "total_calls": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Calls",
+            "description": "Total function calls in this module"
+          },
+          "unique_functions": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unique Functions",
+            "description": "Number of unique functions"
+          },
+          "total_memory_mb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Memory Mb",
+            "description": "Total memory usage (MB)"
+          },
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionProfile"
+            },
+            "type": "array",
+            "title": "Functions",
+            "description": "Individual function profiles"
+          },
+          "is_cpu_bottleneck": {
+            "type": "boolean",
+            "title": "Is Cpu Bottleneck",
+            "description": "Identified as CPU bottleneck",
+            "default": false
+          },
+          "is_memory_bottleneck": {
+            "type": "boolean",
+            "title": "Is Memory Bottleneck",
+            "description": "Identified as memory bottleneck",
+            "default": false
+          },
+          "is_io_bottleneck": {
+            "type": "boolean",
+            "title": "Is Io Bottleneck",
+            "description": "Identified as I/O bottleneck",
+            "default": false
+          },
+          "performance_severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "normal"
+            ],
+            "title": "Performance Severity",
+            "description": "Performance issue severity",
+            "default": "normal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module_path",
+          "total_execution_time",
+          "self_execution_time",
+          "time_percentage",
+          "total_calls",
+          "unique_functions"
+        ],
+        "title": "ModulePerformance",
+        "description": "Aggregated performance metrics for a module.\n\nCombines all function-level metrics for a single module/file."
+      },
+      "Node": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique identifier (module path)"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Display name (filename)"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "internal",
+              "third_party"
+            ],
+            "title": "Type",
+            "description": "Node classification"
+          },
+          "module": {
+            "type": "string",
+            "title": "Module",
+            "description": "Parent module path"
+          },
+          "position": {
+            "$ref": "#/components/schemas/Position3D"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color",
+            "description": "Hex color code"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/NodeMetrics"
+          },
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id",
+            "description": "Cluster ID"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Language"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Programming language"
+          },
+          "node_kind": {
+            "$ref": "#/components/schemas/NodeType",
+            "description": "Node type (module, component, hook, etc.)",
+            "default": "module"
+          },
+          "file_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Path",
+            "description": "Original file path"
+          },
+          "service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service",
+            "description": "Detected service/package name from path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "type",
+          "module",
+          "position",
+          "color",
+          "metrics"
+        ],
+        "title": "Node",
+        "description": "Graph node representing a file/module."
+      },
+      "NodeMetrics": {
+        "properties": {
+          "afferent_coupling": {
+            "type": "integer",
+            "title": "Afferent Coupling",
+            "description": "Number of modules that depend on this one"
+          },
+          "efferent_coupling": {
+            "type": "integer",
+            "title": "Efferent Coupling",
+            "description": "Number of modules this one depends on"
+          },
+          "instability": {
+            "type": "number",
+            "title": "Instability",
+            "description": "Ce / (Ca + Ce)"
+          },
+          "is_circular": {
+            "type": "boolean",
+            "title": "Is Circular",
+            "description": "Part of circular dependency",
+            "default": false
+          },
+          "is_high_coupling": {
+            "type": "boolean",
+            "title": "Is High Coupling",
+            "description": "In top 20% of coupling",
+            "default": false
+          },
+          "cyclomatic_complexity": {
+            "type": "number",
+            "title": "Cyclomatic Complexity",
+            "description": "Average cyclomatic complexity",
+            "default": 0
+          },
+          "max_complexity": {
+            "type": "integer",
+            "title": "Max Complexity",
+            "description": "Maximum function complexity",
+            "default": 0
+          },
+          "maintainability_index": {
+            "type": "number",
+            "title": "Maintainability Index",
+            "description": "Maintainability index (0-100)",
+            "default": 0
+          },
+          "lines_of_code": {
+            "type": "integer",
+            "title": "Lines Of Code",
+            "description": "Total lines of code",
+            "default": 0
+          },
+          "complexity_grade": {
+            "type": "string",
+            "title": "Complexity Grade",
+            "description": "Complexity grade (A-F)",
+            "default": "A"
+          },
+          "maintainability_grade": {
+            "type": "string",
+            "title": "Maintainability Grade",
+            "description": "Maintainability grade (A-F)",
+            "default": "A"
+          },
+          "is_hot_zone": {
+            "type": "boolean",
+            "title": "Is Hot Zone",
+            "description": "High complexity + high coupling",
+            "default": false
+          },
+          "hot_zone_severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "warning",
+              "info",
+              "ok"
+            ],
+            "title": "Hot Zone Severity",
+            "description": "Hot zone severity level",
+            "default": "ok"
+          },
+          "hot_zone_score": {
+            "type": "number",
+            "title": "Hot Zone Score",
+            "description": "Hot zone score (0-100)",
+            "default": 0
+          },
+          "hot_zone_reason": {
+            "type": "string",
+            "title": "Hot Zone Reason",
+            "description": "Reason for hot zone classification",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "afferent_coupling",
+          "efferent_coupling",
+          "instability"
+        ],
+        "title": "NodeMetrics",
+        "description": "Metrics for a single node."
+      },
+      "NodeType": {
+        "type": "string",
+        "enum": [
+          "module",
+          "package",
+          "class",
+          "interface",
+          "function",
+          "method",
+          "variable",
+          "struct",
+          "trait",
+          "enum",
+          "type_alias",
+          "component",
+          "hook",
+          "service",
+          "library"
+        ],
+        "title": "NodeType"
+      },
+      "PackageSuggestion": {
+        "properties": {
+          "cluster_id": {
+            "type": "integer",
+            "title": "Cluster Id"
+          },
+          "suggested_package_name": {
+            "type": "string",
+            "title": "Suggested Package Name"
+          },
+          "modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Modules"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "cohesion": {
+            "type": "number",
+            "title": "Cohesion"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "suggested_package_name",
+          "modules",
+          "size",
+          "cohesion",
+          "reason"
+        ],
+        "title": "PackageSuggestion",
+        "description": "Package reorganization suggestion."
+      },
+      "PerformanceAnalysisResult": {
+        "properties": {
+          "profiler_type": {
+            "type": "string",
+            "enum": [
+              "cprofile",
+              "pyspy",
+              "scalene",
+              "unknown"
+            ],
+            "title": "Profiler Type",
+            "description": "Profiling tool used"
+          },
+          "total_execution_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Total Execution Time",
+            "description": "Total program runtime (seconds)"
+          },
+          "total_samples": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Samples",
+            "description": "Number of samples (for sampling profilers)"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "Analysis timestamp (ISO format)"
+          },
+          "module_performance": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModulePerformance"
+            },
+            "type": "object",
+            "title": "Module Performance",
+            "description": "Module path -> performance metrics"
+          },
+          "bottlenecks": {
+            "items": {
+              "$ref": "#/components/schemas/PerformanceBottleneck"
+            },
+            "type": "array",
+            "title": "Bottlenecks",
+            "description": "Detected bottlenecks (priority-sorted)"
+          },
+          "total_modules_profiled": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Modules Profiled",
+            "description": "Number of modules with data"
+          },
+          "critical_bottlenecks": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Critical Bottlenecks",
+            "description": "Count of critical bottlenecks"
+          },
+          "high_bottlenecks": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "High Bottlenecks",
+            "description": "Count of high-priority bottlenecks"
+          },
+          "weights_used": {
+            "$ref": "#/components/schemas/PriorityWeights",
+            "description": "Weights used for priority scoring"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profiler_type",
+          "total_execution_time",
+          "timestamp",
+          "total_modules_profiled",
+          "critical_bottlenecks",
+          "high_bottlenecks"
+        ],
+        "title": "PerformanceAnalysisResult",
+        "description": "Complete performance analysis result.\n\nOutput from analyzing profiling data and combining it with dependency graph."
+      },
+      "PerformanceBottleneck": {
+        "properties": {
+          "module_path": {
+            "type": "string",
+            "title": "Module Path",
+            "description": "Module path"
+          },
+          "bottleneck_type": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "memory",
+              "io",
+              "combined"
+            ],
+            "title": "Bottleneck Type",
+            "description": "Type of performance bottleneck"
+          },
+          "execution_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Execution Time",
+            "description": "Total execution time (seconds)"
+          },
+          "time_percentage": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Time Percentage",
+            "description": "% of total time"
+          },
+          "memory_usage_mb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Usage Mb",
+            "description": "Memory usage (MB)"
+          },
+          "call_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Call Count",
+            "description": "Number of function calls"
+          },
+          "coupling_score": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Coupling Score",
+            "description": "Total coupling (afferent + efferent)"
+          },
+          "complexity_score": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Complexity Score",
+            "description": "Cyclomatic complexity"
+          },
+          "is_circular": {
+            "type": "boolean",
+            "title": "Is Circular",
+            "description": "Part of circular dependency",
+            "default": false
+          },
+          "is_hot_zone": {
+            "type": "boolean",
+            "title": "Is Hot Zone",
+            "description": "High complexity + coupling",
+            "default": false
+          },
+          "priority_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Priority Score",
+            "description": "Optimization priority score (0-100, higher = more urgent)"
+          },
+          "priority_rank": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Priority Rank",
+            "description": "Rank among all bottlenecks"
+          },
+          "estimated_impact": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Estimated Impact",
+            "description": "Estimated impact of optimizing this bottleneck"
+          },
+          "optimization_difficulty": {
+            "type": "string",
+            "enum": [
+              "easy",
+              "medium",
+              "hard",
+              "very_hard"
+            ],
+            "title": "Optimization Difficulty",
+            "description": "Estimated difficulty of optimization"
+          },
+          "recommendation": {
+            "type": "string",
+            "title": "Recommendation",
+            "description": "High-level optimization recommendation"
+          },
+          "affected_modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Modules",
+            "description": "Modules that depend on this (high coupling impact)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module_path",
+          "bottleneck_type",
+          "execution_time",
+          "time_percentage",
+          "call_count",
+          "coupling_score",
+          "complexity_score",
+          "priority_score",
+          "priority_rank",
+          "estimated_impact",
+          "optimization_difficulty",
+          "recommendation"
+        ],
+        "title": "PerformanceBottleneck",
+        "description": "Detected performance bottleneck with priority scoring.\n\nCombines performance metrics with architectural metrics (coupling, complexity)\nto identify high-priority optimization targets."
+      },
+      "Position3D": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "z": {
+            "type": "number",
+            "title": "Z"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y",
+          "z"
+        ],
+        "title": "Position3D",
+        "description": "3D position coordinates."
+      },
+      "PriorityWeights": {
+        "properties": {
+          "execution_time": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Execution Time",
+            "description": "Weight for execution time (default: 0.40)",
+            "default": 0.4
+          },
+          "coupling": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Coupling",
+            "description": "Weight for coupling metrics (default: 0.30)",
+            "default": 0.3
+          },
+          "complexity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Complexity",
+            "description": "Weight for code complexity (default: 0.15)",
+            "default": 0.15
+          },
+          "memory_usage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Memory Usage",
+            "description": "Weight for memory usage (default: 0.10)",
+            "default": 0.1
+          },
+          "call_frequency": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Call Frequency",
+            "description": "Weight for call frequency (default: 0.05)",
+            "default": 0.05
+          }
+        },
+        "type": "object",
+        "title": "PriorityWeights",
+        "description": "Configurable weights for priority scoring algorithm.\n\nTotal should sum to 1.0 for normalized scoring.\nDefault weights based on research and best practices."
+      },
+      "RefactoringSuggestion": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "title": "Module",
+            "description": "Module that needs refactoring"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "description": "Suggestion severity"
+          },
+          "pattern": {
+            "type": "string",
+            "title": "Pattern",
+            "description": "Anti-pattern or code smell name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Brief description of the issue"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RefactoringSuggestionMetrics",
+            "description": "Relevant metrics for this suggestion"
+          },
+          "recommendation": {
+            "type": "string",
+            "title": "Recommendation",
+            "description": "High-level refactoring recommendation"
+          },
+          "details": {
+            "type": "string",
+            "title": "Details",
+            "description": "Detailed explanation with concrete steps"
+          },
+          "suggested_refactoring": {
+            "type": "string",
+            "title": "Suggested Refactoring",
+            "description": "Specific refactoring pattern to apply"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "severity",
+          "pattern",
+          "description",
+          "metrics",
+          "recommendation",
+          "details",
+          "suggested_refactoring"
+        ],
+        "title": "RefactoringSuggestion",
+        "description": "Automated refactoring suggestion based on code smells and anti-patterns."
+      },
+      "RefactoringSuggestionMetrics": {
+        "properties": {
+          "efferent_coupling": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Efferent Coupling",
+            "description": "Outgoing dependencies count"
+          },
+          "afferent_coupling": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Afferent Coupling",
+            "description": "Incoming dependencies count"
+          },
+          "total_coupling": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Coupling",
+            "description": "Sum of afferent and efferent coupling"
+          },
+          "target_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Module",
+            "description": "Module that this one heavily depends on"
+          },
+          "dependency_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependency Ratio",
+            "description": "Ratio of dependencies to target module"
+          },
+          "dependency_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependency Count",
+            "description": "Number of dependencies to target module"
+          },
+          "total_dependencies": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Dependencies",
+            "description": "Total number of dependencies"
+          },
+          "coupled_module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coupled Module",
+            "description": "Module with bidirectional dependency"
+          },
+          "forward_imports": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward Imports",
+            "description": "Imports from this module to coupled module"
+          },
+          "backward_imports": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backward Imports",
+            "description": "Imports from coupled module to this module"
+          },
+          "instability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instability",
+            "description": "Instability metric (0=stable, 1=unstable)"
+          },
+          "abstractness_needed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abstractness Needed",
+            "description": "Required abstractness level for stability"
+          },
+          "cycle_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycle Length",
+            "description": "Number of modules in the cycle"
+          },
+          "modules_in_cycle": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modules In Cycle",
+            "description": "List of modules forming the cycle"
+          },
+          "module_instability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Instability",
+            "description": "Instability of the current module"
+          },
+          "worst_dependency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst Dependency",
+            "description": "Most unstable dependency"
+          },
+          "worst_dependency_instability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst Dependency Instability",
+            "description": "Instability of the worst dependency"
+          },
+          "violation_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Violation Count",
+            "description": "Number of stability violations"
+          }
+        },
+        "type": "object",
+        "title": "RefactoringSuggestionMetrics",
+        "description": "Typed metrics for refactoring suggestions.\n\nDifferent anti-patterns populate different fields:\n- God Object: efferent_coupling, afferent_coupling, total_coupling\n- Feature Envy: target_module, dependency_ratio, dependency_count, total_dependencies\n- Inappropriate Intimacy: coupled_module, forward_imports, backward_imports\n- Dead Code: afferent_coupling, efferent_coupling\n- Hub Module: afferent_coupling, efferent_coupling, instability, abstractness_needed\n- Circular Dependency: cycle_length, modules_in_cycle\n- Unstable Dependency: module_instability, worst_dependency, worst_dependency_instability, violation_count"
+      },
+      "RefactoringSummary": {
+        "properties": {
+          "total_suggestions": {
+            "type": "integer",
+            "title": "Total Suggestions"
+          },
+          "by_severity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Severity",
+            "description": "Count by severity level"
+          },
+          "by_pattern": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Pattern",
+            "description": "Count by anti-pattern type"
+          },
+          "modules_analyzed": {
+            "type": "integer",
+            "title": "Modules Analyzed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_suggestions",
+          "by_severity",
+          "by_pattern",
+          "modules_analyzed"
+        ],
+        "title": "RefactoringSummary",
+        "description": "Summary statistics for refactoring analysis."
+      },
+      "SaveResultResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the save was successful"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Status message"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "description": "Path to the saved file"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "file_path"
+        ],
+        "title": "SaveResultResponse",
+        "description": "Response from saving fitness validation result."
+      },
+      "SelectedNodeInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "module": {
+            "type": "string",
+            "title": "Module"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "module"
+        ],
+        "title": "SelectedNodeInfo",
+        "description": "Information about the selected node."
+      },
+      "TemporalAnalysisRequest": {
+        "properties": {
+          "repository_url": {
+            "type": "string",
+            "pattern": "^https?://(?:www\\.)?github\\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+/?$",
+            "title": "Repository Url",
+            "description": "GitHub repository URL"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "sample_strategy": {
+            "type": "string",
+            "enum": [
+              "all",
+              "daily",
+              "weekly",
+              "monthly"
+            ],
+            "title": "Sample Strategy",
+            "default": "all"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repository_url"
+        ],
+        "title": "TemporalAnalysisRequest",
+        "description": "Request model for temporal analysis."
+      },
+      "TemporalAnalysisResponse": {
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "title": "Analysis Id",
+            "description": "Unique identifier for this analysis"
+          },
+          "repository": {
+            "type": "string",
+            "title": "Repository",
+            "description": "Repository URL"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date",
+            "description": "Analysis start date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date",
+            "description": "Analysis end date"
+          },
+          "total_commits": {
+            "type": "integer",
+            "title": "Total Commits",
+            "description": "Total commits in range"
+          },
+          "analyzed_commits": {
+            "type": "integer",
+            "title": "Analyzed Commits",
+            "description": "Number of commits analyzed"
+          },
+          "sample_strategy": {
+            "type": "string",
+            "title": "Sample Strategy",
+            "description": "Sampling strategy used"
+          },
+          "snapshots": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Snapshots",
+            "description": "Snapshot data for each analyzed commit"
+          },
+          "churn_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Churn Data",
+            "description": "Code churn data"
+          },
+          "circular_deps_timeline": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Circular Deps Timeline",
+            "description": "Timeline of circular dependency events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "repository",
+          "total_commits",
+          "analyzed_commits",
+          "sample_strategy",
+          "snapshots",
+          "churn_data",
+          "circular_deps_timeline"
+        ],
+        "title": "TemporalAnalysisResponse",
+        "description": "Response from temporal analysis."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
