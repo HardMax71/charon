@@ -1,0 +1,14 @@
+/* Hide info/title header */
+.swagger-ui .info {
+  display: none;
+}
+
+/* Hide filter bar */
+.swagger-ui .filter-container {
+  display: none;
+}
+
+/* Collapse models section by default */
+.swagger-ui section.models {
+  display: none;
+}

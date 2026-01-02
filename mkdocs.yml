@@ -9,18 +9,20 @@ repo_url: https://github.com/HardMax71/charon
 theme:
   name: material
   palette:
-    - scheme: slate
-      primary: deep purple
-      accent: amber
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-    - scheme: default
-      primary: deep purple
-      accent: amber
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.instant
     - navigation.tracking
@@ -28,22 +30,39 @@ theme:
     - content.code.copy
     - search.highlight
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
-  - Architecture: ARCHITECTURE.md
-  - Fitness Functions: FITNESS_FUNCTIONS.md
-  - Multi-Language Support: MULTI_LANGUAGE_SUPPORT.md
-  - Package Release: PACKAGE_RELEASE_HELP.md
-  - Proposals: PROPOSALS.md
+  - Architecture: architecture.md
+  - API Reference: api_reference.md
+  - Fitness Functions:
+      - Overview: fitness_functions/index.md
+      - Rule Types: fitness_functions/rule_types.md
+      - Usage & Configuration: fitness_functions/usage.md
+      - CI/CD Integration: fitness_functions/cicd.md
+      - Best Practices: fitness_functions/best_practices.md
+  - Multi-Language Support:
+      - Overview: multi_language/index.md
+      - Architecture: multi_language/architecture.md
+      - Languages: multi_language/languages.md
+      - Graph Model: multi_language/graph_model.md
 
 plugins:
   - search
+  - kroki
+  - swagger-ui-tag:
+      extra_css:
+        - stylesheets/swagger-ui.css
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
   - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
   - admonition
   - pymdownx.details
   - tables

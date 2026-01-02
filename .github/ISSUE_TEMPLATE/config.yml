@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://github.com/HardMax71/charon/discussions/new?category=q-a
+    about: Ask questions in Discussions instead of opening an issue
+  - name: Documentation
+    url: https://hardmax71.github.io/charon
+    about: Check the docs first, your answer might be there

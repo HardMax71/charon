@@ -1,0 +1,60 @@
+name: Bug Report
+description: Something broke or doesn't work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect vs what actually happened?
+      placeholder: "Expected X, got Y instead"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we trigger this bug?
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Where does the bug occur?
+      options:
+        - Frontend (UI, visualization)
+        - Backend (API, analysis)
+        - Docker setup
+        - Don't know
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Environment
+      description: Browser, OS, Docker version, etc. Whatever seems relevant.
+      placeholder: "Chrome 120, macOS, Docker 24.0.7"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Console errors, stack traces, screenshots — anything that helps.
+      render: shell
+    validations:
+      required: false
