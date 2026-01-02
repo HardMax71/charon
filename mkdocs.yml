@@ -1,0 +1,56 @@
+site_name: Charon
+site_url: https://hardmax71.github.io/charon
+site_description: 3D Python Code Dependency Visualizer
+site_author: HardMax71
+
+repo_name: HardMax71/charon
+repo_url: https://github.com/HardMax71/charon
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - content.code.copy
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Architecture: ARCHITECTURE.md
+  - Fitness Functions: FITNESS_FUNCTIONS.md
+  - Multi-Language Support: MULTI_LANGUAGE_SUPPORT.md
+  - Package Release: PACKAGE_RELEASE_HELP.md
+  - Proposals: PROPOSALS.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/HardMax71/charon
