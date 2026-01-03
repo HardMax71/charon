@@ -90,5 +90,7 @@ class DiffService:
         yield await tracker.emit_step(4)
         diff_result = DiffService.compare_graphs(graph1, graph2)
 
+        yield await tracker.emit_step(5)
+
         yield await tracker.emit_step(6)
         yield await tracker.emit_result(diff_result.model_dump())

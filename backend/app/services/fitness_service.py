@@ -324,6 +324,10 @@ class FitnessService:
             if depth > max_depth:
                 return path
             if depth == max_depth:
+                # At max depth - if any valid successor exists, that would exceed depth
+                for successor in self.nx_graph.successors(current):
+                    if successor not in path:
+                        return path + [successor]
                 continue
 
             for successor in self.nx_graph.successors(current):

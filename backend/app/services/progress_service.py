@@ -82,5 +82,4 @@ class ProgressTracker:
         Returns:
             SSE formatted string
         """
-        payload = error.model_dump(exclude_none=True)
-        return f"data: {json.dumps({'type': 'error', 'error': payload})}\n\n"
+        return f"data: {json.dumps({'type': 'error', 'message': error.detail})}\n\n"

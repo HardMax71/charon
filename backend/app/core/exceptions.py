@@ -13,7 +13,7 @@ class DomainError(Exception):
         *,
         status_code: int | None = None,
         error_type: str | None = None,
-        details: ErrorDetails = None,
+        details: ErrorDetails | None = None,
     ):
         self.message = message
         self.details = details

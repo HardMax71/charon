@@ -270,7 +270,6 @@ class AnalysisOrchestratorService:
         yield await tracker.emit_result(result)
 
     @staticmethod
-    @staticmethod
     def build_networkx_graph(graph: DependencyGraph) -> nx.DiGraph:
         """Rebuild NetworkX graph from Pydantic model."""
         nx_graph = nx.DiGraph()

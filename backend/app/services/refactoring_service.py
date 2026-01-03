@@ -157,7 +157,7 @@ class RefactoringService:
                             ),
                             details=(
                                 f"This module uses '{module}' extensively. Consider:\n"
-                                "1. Move Method - Relocate methods that primarily use '{module}' data\n"
+                                f"1. Move Method - Relocate methods that primarily use '{module}' data\n"
                                 "2. Extract Class - Create a new class/module that bridges both\n"
                                 "3. Introduce Parameter Object - Encapsulate frequently passed data\n"
                                 f"Dependency ratio: {ratio * 100:.1f}% ({count} out of {total_deps} imports)"

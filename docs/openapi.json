@@ -1,3 +1,4 @@
+2026-01-03 19:26:33,849 - root - INFO - Logging configured with level: INFO
 {
   "openapi": "3.1.0",
   "info": {
@@ -3911,52 +3912,6 @@
         "title": "Edge",
         "description": "Graph edge representing a dependency."
       },
-      "ErrorDetails": {
-        "properties": {
-          "type": {
-            "type": "string",
-            "title": "Type"
-          },
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Loc"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Msg"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Ctx"
-          },
-          "url": {
-            "type": "string",
-            "title": "Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "type",
-          "loc",
-          "msg",
-          "input"
-        ],
-        "title": "ErrorDetails"
-      },
       "ErrorResponse": {
         "properties": {
           "error": {
@@ -3974,13 +3929,22 @@
           "details": {
             "anyOf": [
               {
-                "type": "string"
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "items": {},
+                "type": "array"
               },
               {
                 "items": {
-                  "$ref": "#/components/schemas/ErrorDetails"
+                  "additionalProperties": true,
+                  "type": "object"
                 },
                 "type": "array"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
