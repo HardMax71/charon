@@ -14,22 +14,14 @@ from app.core.models import (
     Position3D,
     ClusteringResult,
     GlobalMetrics,
-    DependencyGraph,
     SourceFilesResult,
-    SourceFilesPayload,
     Language,
     NodeType,
 )
-from app.services import (
-    analyze_files,
-    build_graph,
-    MetricsCalculator,
-    ClusteringService,
-    RefactoringService,
-    GitHubService,
-    ProgressTracker,
-    apply_layout,
-)
+from app.services.analysis import analyze_files, MetricsCalculator
+from app.services.fitness import RefactoringService
+from app.services.graph import build_graph, ClusteringService, apply_layout
+from app.services.infrastructure import GitHubService, ProgressTracker
 # get_color_for_node no longer used - colors now based on status in frontend
 
 logger = get_logger(__name__)
@@ -66,8 +58,6 @@ class AnalysisOrchestratorService:
                         f"Failed to fetch {result.failed_count}/{result.total_files} files"
                     )
 
-                SourceFilesPayload(files=result.files)
-
                 logger.info(
                     "Fetched %d/%d files from GitHub repo: %s",
                     len(result.files),
@@ -83,7 +73,6 @@ class AnalysisOrchestratorService:
 
             case LocalAnalyzeRequest(files=files):
                 logger.info("Using %d local files for analysis", len(files))
-                SourceFilesPayload(files=files)
                 return SourceFilesResult(
                     success=True, files=files, project_name="local_project"
                 )
@@ -268,24 +257,3 @@ class AnalysisOrchestratorService:
 
         yield await tracker.emit_step(6)
         yield await tracker.emit_result(result)
-
-    @staticmethod
-    def build_networkx_graph(graph: DependencyGraph) -> nx.DiGraph:
-        """Rebuild NetworkX graph from Pydantic model."""
-        nx_graph = nx.DiGraph()
-
-        for node in graph.nodes:
-            nx_graph.add_node(
-                node.id,
-                type=node.type,
-                module=node.module,
-                label=node.label,
-                metrics=node.metrics.model_dump() if node.metrics else {},
-            )
-
-        for edge in graph.edges:
-            nx_graph.add_edge(
-                edge.source, edge.target, imports=edge.imports, weight=edge.weight
-            )
-
-        return nx_graph

@@ -12,6 +12,7 @@ from app.services.infrastructure import (
 from app.services.graph import (
     apply_layout,
     build_graph,
+    build_networkx_graph,
     circular_layout_3d,
     ClusteringService,
     force_directed_layout_3d,
@@ -63,6 +64,7 @@ __all__ = [
     "analyze_files_multi_language",
     "apply_layout",
     "build_graph",
+    "build_networkx_graph",
     "circular_layout_3d",
     "ClusteringService",
     "ComplexityService",

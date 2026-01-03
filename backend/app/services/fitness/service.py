@@ -9,7 +9,7 @@ from app.core.models import (
     FitnessViolation,
     GlobalMetrics,
 )
-from app.services.orchestration.analysis import AnalysisOrchestratorService
+from app.services.graph import build_networkx_graph
 
 
 class FitnessService:
@@ -18,8 +18,7 @@ class FitnessService:
     def __init__(self, graph: DependencyGraph, global_metrics: GlobalMetrics):
         self.graph = graph
         self.global_metrics = global_metrics
-        # Reuse shared graph builder
-        self.nx_graph = AnalysisOrchestratorService.build_networkx_graph(graph)
+        self.nx_graph = build_networkx_graph(graph)
 
     def validate_rules(
         self,

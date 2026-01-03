@@ -1,7 +1,7 @@
 import networkx as nx
 
 from app.core import get_logger
-from app.core.models import DependencyAnalysis
+from app.core.models import DependencyAnalysis, DependencyGraph
 
 logger = get_logger(__name__)
 
@@ -81,3 +81,24 @@ def build_graph(data: DependencyAnalysis) -> nx.DiGraph:
     )
 
     return graph
+
+
+def build_networkx_graph(graph: DependencyGraph) -> nx.DiGraph:
+    """Rebuild NetworkX graph from Pydantic DependencyGraph model."""
+    nx_graph = nx.DiGraph()
+
+    for node in graph.nodes:
+        nx_graph.add_node(
+            node.id,
+            type=node.type,
+            module=node.module,
+            label=node.label,
+            metrics=node.metrics.model_dump() if node.metrics else {},
+        )
+
+    for edge in graph.edges:
+        nx_graph.add_edge(
+            edge.source, edge.target, imports=edge.imports, weight=edge.weight
+        )
+
+    return nx_graph

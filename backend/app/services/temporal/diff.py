@@ -2,7 +2,9 @@ from collections.abc import AsyncGenerator
 import networkx as nx
 
 from app.core.models import DiffEdge, DiffEdgeChange, DiffRequest, DiffResult, FileInput
-from app.services import GitHubService, analyze_files, build_graph, ProgressTracker
+from app.services.analysis import analyze_files
+from app.services.graph import build_graph
+from app.services.infrastructure import GitHubService, ProgressTracker
 
 
 class DiffService:
@@ -91,6 +93,4 @@ class DiffService:
         diff_result = DiffService.compare_graphs(graph1, graph2)
 
         yield await tracker.emit_step(5)
-
-        yield await tracker.emit_step(6)
         yield await tracker.emit_result(diff_result.model_dump())

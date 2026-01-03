@@ -1,6 +1,6 @@
 from app.api.routes import ERROR_RESPONSES
 from app.core.models import ExportDiagramRequest
-from app.services import DiagramExporter, AnalysisOrchestratorService
+from app.services import DiagramExporter, build_networkx_graph
 from fastapi import APIRouter
 from fastapi.responses import Response
 
@@ -20,7 +20,7 @@ async def export_diagram(request: ExportDiagramRequest) -> Response:
     Returns:
         Diagram source code or XML
     """
-    graph = AnalysisOrchestratorService.build_networkx_graph(request.graph_data)
+    graph = build_networkx_graph(request.graph_data)
     exporter = DiagramExporter(graph)
 
     # Generate diagram based on format

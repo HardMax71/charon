@@ -2,7 +2,7 @@ import io
 
 from app.api.routes import ERROR_RESPONSES
 from app.core.models import ExportDocumentationRequest
-from app.services import DocumentationService, AnalysisOrchestratorService
+from app.services import DocumentationService, build_networkx_graph
 from fastapi import APIRouter
 from fastapi.responses import Response
 from weasyprint import HTML
@@ -21,7 +21,7 @@ async def export_documentation(request: ExportDocumentationRequest) -> Response:
     Returns:
         Documentation file in requested format
     """
-    graph = AnalysisOrchestratorService.build_networkx_graph(request.graph)
+    graph = build_networkx_graph(request.graph)
 
     doc_service = DocumentationService(
         graph=graph,

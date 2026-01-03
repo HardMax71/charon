@@ -13,7 +13,7 @@ from app.core.models import (
     GlobalMetrics,
     SaveResultResponse,
 )
-from app.services import FitnessService
+from app.services.fitness import FitnessService
 
 
 class FitnessOrchestratorService:

@@ -18,6 +18,7 @@ from app.services import (
     HealthScoreService,
     AnalysisOrchestratorService,
     ProgressTracker,
+    build_networkx_graph,
 )
 from app.middleware.error_handler import stream_with_error_handling
 
@@ -72,6 +73,6 @@ async def analyze_impact(request: ImpactAnalysisRequest) -> ImpactAnalysisRespon
 async def calculate_health_score(
     graph: DependencyGraph, global_metrics: GlobalMetrics
 ) -> HealthScoreResponse:
-    nx_graph = AnalysisOrchestratorService.build_networkx_graph(graph)
+    nx_graph = build_networkx_graph(graph)
     health_service = HealthScoreService(nx_graph, global_metrics)
     return health_service.calculate_health_score()

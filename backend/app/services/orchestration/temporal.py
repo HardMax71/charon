@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 
 from app.core.exceptions import NotFoundError
 from app.core.models import TemporalAnalysisRequest, TemporalAnalysisResponse
-from app.services import TemporalAnalysisService
+from app.services.temporal import TemporalAnalysisService
 
 
 class TemporalOrchestratorService:
