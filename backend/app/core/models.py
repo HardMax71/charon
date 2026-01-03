@@ -1,6 +1,11 @@
 from enum import Enum
+from pathlib import Path
 from typing import Annotated, Literal
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from starlette.datastructures import UploadFile
+
+from app.core.config import settings
 
 
 # Validated project name type - prevents path traversal attacks
@@ -350,6 +355,29 @@ class FileInput(BaseModel):
     content: str
 
 
+class SourceFilesPayload(BaseModel):
+    """Validated list of source files for analysis."""
+
+    files: list[FileInput] = Field(description="List of files to analyze")
+
+    @field_validator("files")
+    @classmethod
+    def validate_files(cls, files: list[FileInput]) -> list[FileInput]:
+        max_files = settings.max_files_count
+        if len(files) > max_files:
+            raise ValueError(f"Too many files ({len(files)} > {max_files})")
+
+        max_bytes = settings.max_upload_size_mb * 1024 * 1024
+        total_bytes = sum(len(file.content.encode("utf-8")) for file in files)
+        if total_bytes > max_bytes:
+            raise ValueError(
+                "Total source size exceeds limit "
+                f"({total_bytes} bytes > {max_bytes} bytes)"
+            )
+
+        return files
+
+
 class SourceFilesResult(BaseModel):
     """Result from fetching source files."""
 
@@ -382,11 +410,10 @@ class GitHubAnalyzeRequest(BaseModel):
     )
 
 
-class LocalAnalyzeRequest(BaseModel):
+class LocalAnalyzeRequest(SourceFilesPayload):
     """Request to analyze local code files."""
 
     source: Literal["local"]
-    files: list[FileInput] = Field(description="List of files to analyze")
 
 
 class ImportAnalyzeRequest(BaseModel):
@@ -448,14 +475,30 @@ class DiffRequest(BaseModel):
     ref_type: Literal["commit", "branch", "tag"] = "commit"
 
 
+class DiffEdge(BaseModel):
+    """Edge added/removed in a diff."""
+
+    source: str
+    target: str
+
+
+class DiffEdgeChange(BaseModel):
+    """Edge with changed imports between versions."""
+
+    source: str
+    target: str
+    added_imports: list[str]
+    removed_imports: list[str]
+
+
 class DiffResult(BaseModel):
     """Dependency diff result."""
 
     added_nodes: list[str]
     removed_nodes: list[str]
-    added_edges: list[dict]
-    removed_edges: list[dict]
-    changed_edges: list[dict]
+    added_edges: list[DiffEdge]
+    removed_edges: list[DiffEdge]
+    changed_edges: list[DiffEdgeChange]
 
 
 class ImpactAnalysisRequest(BaseModel):
@@ -650,33 +693,106 @@ class SaveResultResponse(BaseModel):
     file_path: str = Field(description="Path to the saved file")
 
 
+class TemporalGraphNode(BaseModel):
+    """Node snapshot for temporal graph visualization."""
+
+    id: str
+    type: Literal["internal", "third_party"]
+    label: str
+    module: str
+    position: Position3D
+    metrics: NodeMetrics
+
+
+class TemporalGraphEdge(BaseModel):
+    """Edge snapshot for temporal graph visualization."""
+
+    source: str
+    target: str
+    imports: list[str]
+    weight: int
+
+
+class TemporalGraphSnapshot(BaseModel):
+    """Graph snapshot for a single commit."""
+
+    nodes: list[TemporalGraphNode]
+    edges: list[TemporalGraphEdge]
+
+
+class TemporalDependencyChange(BaseModel):
+    """Dependency changes for a single node between snapshots."""
+
+    node: str
+    added: list[str]
+    removed: list[str]
+
+
+class TemporalSnapshotChanges(BaseModel):
+    """Changes detected between two snapshots."""
+
+    added_nodes: list[str]
+    removed_nodes: list[str]
+    modified_dependencies: list[TemporalDependencyChange]
+    node_count_delta: int
+    edge_count_delta: int
+    circular_count_delta: int
+
+
+class TemporalSnapshotMetrics(BaseModel):
+    """Aggregated metrics for a snapshot."""
+
+    average_coupling: float
+    max_coupling: float
+    total_complexity: float
+    avg_afferent_coupling: float
+    avg_efferent_coupling: float
+
+
 class TemporalSnapshotData(BaseModel):
     """Snapshot data for a single commit in temporal analysis."""
 
-    commit_hash: str
-    timestamp: str
+    commit_sha: str
+    commit_date: str
+    commit_message: str
     author: str
-    message: str
-    files_analyzed: int
-    dependencies_count: int
-    circular_dependencies: int
-    avg_coupling: float
-    metrics: dict = Field(default_factory=dict)
+    node_count: int
+    edge_count: int
+    dependencies: dict[str, list[str]]
+    circular_nodes: list[str]
+    circular_count: int
+    global_metrics: TemporalSnapshotMetrics
+    changes: TemporalSnapshotChanges | None = None
+    graph_snapshot: TemporalGraphSnapshot
 
 
-class ChurnData(BaseModel):
-    """Code churn data for files."""
+class ChurnHeatmapEntry(BaseModel):
+    """Heatmap entry describing churn for a single snapshot."""
 
-    file_path: str
+    date: str
+    commit_sha: str
     churn_count: int
+    nodes_changed: list[str]
 
 
-class CircularDependencyEvent(BaseModel):
+class ChurnHeatmapData(BaseModel):
+    """Code churn data for temporal analysis."""
+
+    total_changes: int
+    average_churn_per_snapshot: float
+    node_churn: dict[str, int]
+    top_churning_nodes: list[tuple[str, int]]
+    churn_heatmap: list[ChurnHeatmapEntry] = Field(default_factory=list)
+
+
+class CircularDependencyTimelineEvent(BaseModel):
     """Event tracking when circular dependencies were introduced."""
 
-    commit_hash: str
-    timestamp: str
-    cycle: list[str]
+    commit_sha: str
+    date: str
+    commit_message: str
+    new_circular_nodes: list[str]
+    total_circular: int
 
 
 class TemporalAnalysisResponse(BaseModel):
@@ -689,9 +805,11 @@ class TemporalAnalysisResponse(BaseModel):
     total_commits: int = Field(description="Total commits in range")
     analyzed_commits: int = Field(description="Number of commits analyzed")
     sample_strategy: str = Field(description="Sampling strategy used")
-    snapshots: list[dict] = Field(description="Snapshot data for each analyzed commit")
-    churn_data: dict = Field(description="Code churn data")
-    circular_deps_timeline: list[dict] = Field(
+    snapshots: list[TemporalSnapshotData] = Field(
+        description="Snapshot data for each analyzed commit"
+    )
+    churn_data: ChurnHeatmapData = Field(description="Code churn data")
+    circular_deps_timeline: list[CircularDependencyTimelineEvent] = Field(
         description="Timeline of circular dependency events"
     )
 
@@ -739,3 +857,444 @@ class GitHubDevicePollRequest(BaseModel):
 class GitHubDevicePollResponse(BaseModel):
     status: Literal["pending", "success", "expired", "error"]
     error: str | None = None
+
+
+# ============================================================================
+# Error Response Models
+# ============================================================================
+
+
+ErrorDetails = dict[str, object] | list[object] | list[dict[str, object]] | str | None
+
+
+class ErrorResponse(BaseModel):
+    """Standardized error response payload."""
+
+    error: str
+    detail: str
+    status_code: int
+    details: ErrorDetails = None
+    path: str | None = None
+
+
+# ============================================================================
+# Parsing Models
+# ============================================================================
+
+
+class ImportInfo(BaseModel):
+    """Information about a single import statement."""
+
+    module: str = Field(description="The module being imported from")
+    names: list[str] = Field(description="The names being imported")
+    level: int = Field(ge=0, description="Relative import level (0 for absolute)")
+    lineno: int = Field(ge=1, description="Line number in source")
+
+    model_config = ConfigDict(frozen=True)  # Immutable like NamedTuple
+
+
+class ParseResult(BaseModel):
+    """Result from parsing a Python file."""
+
+    imports: list[ImportInfo] = Field(
+        default_factory=list, description="Extracted imports"
+    )
+    errors: list[str] = Field(default_factory=list, description="Parse errors")
+
+    @property
+    def is_valid(self) -> bool:
+        """Check if parsing was successful (no errors)."""
+        return len(self.errors) == 0
+
+    @property
+    def import_count(self) -> int:
+        """Get number of imports found."""
+        return len(self.imports)
+
+
+class FunctionComplexity(BaseModel):
+    """Complexity metrics for a single function or method."""
+
+    name: str = Field(description="Function/method name")
+    complexity: int = Field(ge=0, description="Cyclomatic complexity")
+    rank: str = Field(description="Complexity rank (A-F)")
+    lineno: int = Field(ge=1, description="Line number")
+    col_offset: int = Field(ge=0, description="Column offset")
+
+
+class ComplexityMetrics(BaseModel):
+    """Code complexity metrics for a file."""
+
+    cyclomatic_complexity: float = Field(
+        ge=0, description="Average cyclomatic complexity"
+    )
+    max_complexity: int = Field(ge=0, description="Highest complexity in file")
+    maintainability_index: float = Field(ge=0, le=100, description="MI score (0-100)")
+    lines_of_code: int = Field(ge=0, description="Total lines of code")
+    logical_lines: int = Field(ge=0, description="Logical lines of code")
+    source_lines: int = Field(ge=0, description="Source lines of code")
+    comments: int = Field(ge=0, description="Comment lines")
+    complexity_grade: str = Field(description="Overall complexity grade (A-F)")
+    maintainability_grade: str = Field(description="Maintainability grade (A-F)")
+    functions: list[FunctionComplexity] = Field(
+        default_factory=list, description="Function-level metrics"
+    )
+    function_count: int = Field(ge=0, description="Number of functions/methods")
+    error: str | None = Field(
+        default=None, description="Error message if analysis failed"
+    )
+
+
+class ModuleMetadata(BaseModel):
+    """Metadata for a single module (language, service, etc.)."""
+
+    language: str = Field(description="Programming language")
+    file_path: str = Field(description="Original file path")
+    service: str | None = Field(
+        default=None, description="Detected service/package name"
+    )
+    node_kind: str = Field(
+        default="module", description="Node type (module, component, hook, etc.)"
+    )
+
+
+class DependencyAnalysis(BaseModel):
+    """Complete dependency analysis result."""
+
+    modules: dict[str, str] = Field(
+        default_factory=dict, description="Module path -> file content"
+    )
+    imports: dict[str, list[ImportInfo]] = Field(
+        default_factory=dict, description="Module path -> list of imports"
+    )
+    dependencies: dict[str, set[str]] = Field(
+        default_factory=dict, description="From module -> set of to modules"
+    )
+    import_details: dict[tuple[str, str], list[str]] = Field(
+        default_factory=dict, description="(from, to) -> list of imported names"
+    )
+    complexity: dict[str, ComplexityMetrics] = Field(
+        default_factory=dict, description="Module path -> complexity metrics"
+    )
+    errors: list[str] = Field(
+        default_factory=list, description="All errors encountered during analysis"
+    )
+    module_metadata: dict[str, ModuleMetadata] = Field(
+        default_factory=dict,
+        description="Module path -> metadata (language, service, etc.)",
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True  # Allow set in dependencies field
+    )
+
+    @property
+    def module_count(self) -> int:
+        """Get number of modules analyzed."""
+        return len(self.modules)
+
+    @property
+    def has_errors(self) -> bool:
+        """Check if analysis encountered errors."""
+        return len(self.errors) > 0
+
+    @property
+    def total_imports(self) -> int:
+        """Get total number of imports across all modules."""
+        return sum(len(imports) for imports in self.imports.values())
+
+
+ImportType = Literal["internal", "third_party", "stdlib"]
+
+
+# ============================================================================
+# Performance Profiling Models
+# ============================================================================
+
+
+class FunctionProfile(BaseModel):
+    """Performance profile for a single function."""
+
+    function_name: str = Field(description="Function name (e.g., 'calculate_metrics')")
+    module: str = Field(
+        description="Module path (e.g., 'app.services.metrics_service')"
+    )
+    filename: str = Field(description="Source file path")
+    lineno: int = Field(ge=1, description="Line number where function is defined")
+
+    # Time metrics (in seconds)
+    total_time: float = Field(ge=0, description="Total time including subcalls")
+    self_time: float = Field(ge=0, description="Time excluding subcalls")
+    cumulative_time: float = Field(ge=0, description="Cumulative time across all calls")
+    avg_time_per_call: float = Field(ge=0, description="Average time per call")
+    time_percentage: float = Field(
+        ge=0, le=100, description="% of total execution time"
+    )
+
+    # Call metrics
+    call_count: int = Field(ge=0, description="Number of times called")
+    primitive_calls: int = Field(ge=0, description="Non-recursive calls")
+
+    # Memory metrics (optional, from tools like scalene or memory_profiler)
+    memory_usage_mb: float | None = Field(
+        default=None, description="Memory usage in MB"
+    )
+    memory_peak_mb: float | None = Field(
+        default=None, description="Peak memory usage in MB"
+    )
+
+
+class ModulePerformance(BaseModel):
+    """Aggregated performance metrics for a module."""
+
+    module_path: str = Field(
+        description="Module path (e.g., 'app/services/metrics_service.py')"
+    )
+
+    # Aggregated time metrics
+    total_execution_time: float = Field(
+        ge=0, description="Total time spent in this module (seconds)"
+    )
+    self_execution_time: float = Field(
+        ge=0, description="Time excluding subcalls (seconds)"
+    )
+    time_percentage: float = Field(
+        ge=0, le=100, description="% of total program execution time"
+    )
+
+    # Call metrics
+    total_calls: int = Field(ge=0, description="Total function calls in this module")
+    unique_functions: int = Field(ge=0, description="Number of unique functions")
+
+    # Memory metrics
+    total_memory_mb: float | None = Field(
+        default=None, description="Total memory usage (MB)"
+    )
+
+    # Function details
+    functions: list[FunctionProfile] = Field(
+        default_factory=list, description="Individual function profiles"
+    )
+
+    # Bottleneck classification
+    is_cpu_bottleneck: bool = Field(
+        default=False, description="Identified as CPU bottleneck"
+    )
+    is_memory_bottleneck: bool = Field(
+        default=False, description="Identified as memory bottleneck"
+    )
+    is_io_bottleneck: bool = Field(
+        default=False, description="Identified as I/O bottleneck"
+    )
+    performance_severity: Literal["critical", "high", "medium", "low", "normal"] = (
+        Field(default="normal", description="Performance issue severity")
+    )
+
+
+class PriorityWeights(BaseModel):
+    """Configurable weights for priority scoring algorithm."""
+
+    execution_time: float = Field(
+        default=0.40,
+        ge=0,
+        le=1,
+        description="Weight for execution time (default: 0.40)",
+    )
+    coupling: float = Field(
+        default=0.30,
+        ge=0,
+        le=1,
+        description="Weight for coupling metrics (default: 0.30)",
+    )
+    complexity: float = Field(
+        default=0.15,
+        ge=0,
+        le=1,
+        description="Weight for code complexity (default: 0.15)",
+    )
+    memory_usage: float = Field(
+        default=0.10, ge=0, le=1, description="Weight for memory usage (default: 0.10)"
+    )
+    call_frequency: float = Field(
+        default=0.05,
+        ge=0,
+        le=1,
+        description="Weight for call frequency (default: 0.05)",
+    )
+
+    @property
+    def total_weight(self) -> float:
+        """Calculate total weight (should be 1.0)."""
+        return (
+            self.execution_time
+            + self.coupling
+            + self.complexity
+            + self.memory_usage
+            + self.call_frequency
+        )
+
+
+class PerformanceBottleneck(BaseModel):
+    """Detected performance bottleneck with priority scoring."""
+
+    module_path: str = Field(description="Module path")
+
+    # Bottleneck classification
+    bottleneck_type: Literal["cpu", "memory", "io", "combined"] = Field(
+        description="Type of performance bottleneck"
+    )
+
+    # Performance metrics
+    execution_time: float = Field(ge=0, description="Total execution time (seconds)")
+    time_percentage: float = Field(ge=0, le=100, description="% of total time")
+    memory_usage_mb: float | None = Field(default=None, description="Memory usage (MB)")
+    call_count: int = Field(ge=0, description="Number of function calls")
+
+    # Architectural metrics (from dependency graph)
+    coupling_score: float = Field(
+        ge=0, description="Total coupling (afferent + efferent)"
+    )
+    complexity_score: float = Field(ge=0, description="Cyclomatic complexity")
+    is_circular: bool = Field(default=False, description="Part of circular dependency")
+    is_hot_zone: bool = Field(default=False, description="High complexity + coupling")
+
+    # Priority scoring
+    priority_score: float = Field(
+        ge=0,
+        le=100,
+        description="Optimization priority score (0-100, higher = more urgent)",
+    )
+    priority_rank: int = Field(ge=1, description="Rank among all bottlenecks")
+
+    # Impact estimation
+    estimated_impact: Literal["critical", "high", "medium", "low"] = Field(
+        description="Estimated impact of optimizing this bottleneck"
+    )
+    optimization_difficulty: Literal["easy", "medium", "hard", "very_hard"] = Field(
+        description="Estimated difficulty of optimization"
+    )
+
+    # Recommendations
+    recommendation: str = Field(description="High-level optimization recommendation")
+    affected_modules: list[str] = Field(
+        default_factory=list,
+        description="Modules that depend on this (high coupling impact)",
+    )
+
+
+ProfilerType = Literal["cprofile", "pyspy", "scalene", "unknown"]
+
+
+class PerformanceAnalysisResult(BaseModel):
+    """Complete performance analysis result."""
+
+    # Metadata
+    profiler_type: ProfilerType = Field(description="Profiling tool used")
+    total_execution_time: float = Field(
+        ge=0, description="Total program runtime (seconds)"
+    )
+    total_samples: int | None = Field(
+        default=None, description="Number of samples (for sampling profilers)"
+    )
+    timestamp: str = Field(description="Analysis timestamp (ISO format)")
+
+    # Performance data
+    module_performance: dict[str, ModulePerformance] = Field(
+        default_factory=dict, description="Module path -> performance metrics"
+    )
+
+    # Bottleneck analysis
+    bottlenecks: list[PerformanceBottleneck] = Field(
+        default_factory=list, description="Detected bottlenecks (priority-sorted)"
+    )
+
+    # Statistics
+    total_modules_profiled: int = Field(ge=0, description="Number of modules with data")
+    critical_bottlenecks: int = Field(ge=0, description="Count of critical bottlenecks")
+    high_bottlenecks: int = Field(
+        ge=0, description="Count of high-priority bottlenecks"
+    )
+
+    # Configuration
+    weights_used: PriorityWeights = Field(
+        default_factory=PriorityWeights, description="Weights used for priority scoring"
+    )
+
+    @property
+    def has_bottlenecks(self) -> bool:
+        """Check if any bottlenecks were detected."""
+        return len(self.bottlenecks) > 0
+
+    @property
+    def top_bottleneck(self) -> PerformanceBottleneck | None:
+        """Get highest priority bottleneck."""
+        return self.bottlenecks[0] if self.bottlenecks else None
+
+
+class AnalyzePerformanceRequest(BaseModel):
+    """Request model for performance analysis."""
+
+    graph: DependencyGraph
+    weights: PriorityWeights | None = None
+
+
+def _validate_json_size(payload: str, label: str) -> None:
+    max_size = settings.max_upload_size_mb * 1024 * 1024
+    if len(payload) > max_size:
+        raise ValueError(
+            f"{label} exceeds maximum size ({settings.max_upload_size_mb}MB)"
+        )
+
+
+class PerformanceAnalyzeForm(BaseModel):
+    """Form payload for performance analysis endpoints."""
+
+    graph: DependencyGraph = Field(alias="graph_json")
+    weights: PriorityWeights | None = Field(default=None, alias="weights_json")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    @field_validator("graph", mode="before")
+    @classmethod
+    def validate_graph(cls, value: DependencyGraph | str) -> DependencyGraph:
+        if isinstance(value, str):
+            _validate_json_size(value, "Graph JSON")
+            try:
+                return DependencyGraph.model_validate_json(value)
+            except ValidationError as exc:
+                raise ValueError("Invalid graph JSON") from exc
+        return value
+
+    @field_validator("weights", mode="before")
+    @classmethod
+    def validate_weights(
+        cls, value: PriorityWeights | str | None
+    ) -> PriorityWeights | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            _validate_json_size(value, "Weights JSON")
+            try:
+                return PriorityWeights.model_validate_json(value)
+            except ValidationError as exc:
+                raise ValueError("Invalid weights JSON") from exc
+        return value
+
+
+class PerformanceProfileUpload(BaseModel):
+    """Validated profiling file upload."""
+
+    file: UploadFile
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @field_validator("file")
+    @classmethod
+    def validate_file(cls, value: UploadFile) -> UploadFile:
+        suffix = Path(value.filename or "").suffix.lower()
+        if suffix not in (".prof", ".json"):
+            raise ValueError(
+                f"Unsupported format: {value.filename}. Supported: .prof (cProfile), "
+                ".json (py-spy)"
+            )
+        return value

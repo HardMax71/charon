@@ -1,19 +1,24 @@
 from collections import defaultdict
 from pathlib import Path
 
-from app.core import get_logger, NON_PYTHON_EXTENSIONS
-from app.core.models import FileInput
-from app.core.parsing_models import DependencyAnalysis
-from app.services.complexity_service import ComplexityService
-from app.services.multi_language_analyzer import analyze_files_multi_language
-from app.utils.ast_parser import parse_file, extract_module_path
+from app.core import get_logger
+from app.core.models import FileInput, Language
+from app.core.models import DependencyAnalysis, ModuleMetadata
+from app.services.analysis.complexity import ComplexityService
+from app.services.analysis.multi_language import analyze_files_multi_language
+from app.services.parsers import ParserRegistry
+from app.utils.ast_parser import parse_file, filepath_to_module
 from app.utils.import_resolver import ImportResolver
 
 logger = get_logger(__name__)
 
 
 def _has_multi_language_files(files: list[FileInput]) -> bool:
-    return any(Path(f.path).suffix.lower() in NON_PYTHON_EXTENSIONS for f in files)
+    for file in files:
+        parser = ParserRegistry.get_parser_for_file(Path(file.path))
+        if parser and parser.language != Language.PYTHON:
+            return True
+    return False
 
 
 async def analyze_files(
@@ -45,12 +50,13 @@ async def analyze_files(
 
     module_map: dict[str, str] = {}
     modules: dict[str, str] = {}
+    module_metadata: dict[str, ModuleMetadata] = {}
 
     for file in files:
         if not file.path.endswith(".py"):
             continue
 
-        module_path = extract_module_path(file.path, "")
+        module_path = filepath_to_module(file.path)
         if not module_path:
             module_path = (
                 file.path.replace("/", ".").replace("\\", ".").replace(".py", "")
@@ -58,6 +64,12 @@ async def analyze_files(
 
         module_map[file.path] = module_path
         modules[module_path] = file.content
+        module_metadata[module_path] = ModuleMetadata(
+            language="python",
+            file_path=file.path,
+            service=None,
+            node_kind="module",
+        )
 
     logger.debug("Found %d Python modules", len(modules))
 
@@ -118,4 +130,5 @@ async def analyze_files(
         import_details=import_details,
         complexity=complexity,
         errors=errors,
+        module_metadata=module_metadata,
     )

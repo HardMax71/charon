@@ -107,9 +107,6 @@ class JavaScriptParser(TreeSitterParser, LanguageParser):
 
 ## Go
 
-!!! note "Planned"
-    Go parser is not yet implemented. The following documents the planned implementation.
-
 **Import Patterns:**
 
 ```go
@@ -137,11 +134,11 @@ Key rules:
 - Package path = module path + subdirectory within module
 - Minimal Version Selection (MVS): always use the minimum version that satisfies all requirements
 
-**Planned Implementation:**
+**Implementation:**
 
 ```python
 @ParserRegistry.register
-class GoParser(TreeSitterParser, LanguageParser):
+class GoParser(TreeSitterParser):
     language = Language.GO
     language_name = "go"
     file_extensions = (".go",)
@@ -155,14 +152,37 @@ class GoParser(TreeSitterParser, LanguageParser):
         (import_spec
           path: (interpreted_string_literal) @path)))
     """
+
+    CLASS_QUERY = """
+    (type_declaration
+      (type_spec
+        name: (type_identifier) @name
+        type: (struct_type)))
+    (type_declaration
+      (type_spec
+        name: (type_identifier) @name
+        type: (interface_type)))
+    """
+
+    FUNCTION_QUERY = """
+    (function_declaration
+      name: (identifier) @name)
+    (method_declaration
+      name: (field_identifier) @name)
+    """
 ```
+
+**Import Resolver:**
+
+The `GoImportResolver` parses `go.mod` to determine:
+
+- Module name for the project
+- Standard library detection (imports without dots like `fmt`, `net/http`)
+- Internal vs external package classification
 
 ---
 
 ## Java
-
-!!! note "Planned"
-    Java parser is not yet implemented. The following documents the planned implementation.
 
 **Import Patterns:**
 
@@ -183,38 +203,49 @@ Per [Gradle](https://docs.gradle.org/current/userguide/declaring_dependencies.ht
     - Gradle: `~/.gradle/caches/` + coordinates
 3. **Source roots**: `src/main/java/`, `src/test/java/`
 
-**Planned Implementation:**
+**Implementation:**
 
 ```python
 @ParserRegistry.register
-class JavaParser(TreeSitterParser, LanguageParser):
+class JavaParser(TreeSitterParser):
     language = Language.JAVA
     language_name = "java"
     file_extensions = (".java",)
 
     IMPORT_QUERY = """
-    (import_declaration
-      (scoped_identifier) @import)
-    (import_declaration
-      (identifier) @import)
+    (import_declaration) @import
     """
 
     CLASS_QUERY = """
     (class_declaration
-      name: (identifier) @class_name)
+      name: (identifier) @name)
     (interface_declaration
-      name: (identifier) @interface_name)
+      name: (identifier) @name)
     (enum_declaration
-      name: (identifier) @enum_name)
+      name: (identifier) @name)
+    (record_declaration
+      name: (identifier) @name)
+    """
+
+    FUNCTION_QUERY = """
+    (method_declaration
+      name: (identifier) @name)
+    (constructor_declaration
+      name: (identifier) @name)
     """
 ```
+
+**Import Resolver:**
+
+The `JavaImportResolver` classifies imports as:
+
+- **Standard library**: Packages starting with `java.`, `javax.`, `jdk.`, `sun.`, `com.sun.`
+- **External**: All other packages (from Maven/Gradle dependencies)
+- Detects project type via `pom.xml`, `build.gradle`, or `build.gradle.kts`
 
 ---
 
 ## Rust
-
-!!! note "Planned"
-    Rust parser is not yet implemented. The following documents the planned implementation.
 
 **Import Patterns:**
 
@@ -223,7 +254,7 @@ use std::collections::HashMap;
 use crate::module::Type;
 use super::parent_module;
 use self::submodule;
-extern crate some_crate;
+mod submodule;  // Module declaration
 ```
 
 **Resolution Algorithm:**
@@ -231,7 +262,7 @@ extern crate some_crate;
 Per [Cargo documentation](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html):
 
 1. **Crate prefixes**:
-    - `std::` - Standard library
+    - `std::`, `core::`, `alloc::` - Standard library
     - `crate::` - Current crate root
     - `super::` - Parent module
     - `self::` - Current module
@@ -242,23 +273,43 @@ Per [Cargo documentation](https://doc.rust-lang.org/cargo/reference/specifying-d
     - Git: `name = { git = "url" }`
     - Path: `name = { path = "path" }`
 
-**Planned Implementation:**
+**Implementation:**
 
 ```python
 @ParserRegistry.register
-class RustParser(TreeSitterParser, LanguageParser):
+class RustParser(TreeSitterParser):
     language = Language.RUST
     language_name = "rust"
     file_extensions = (".rs",)
 
     IMPORT_QUERY = """
-    (use_declaration
-      argument: (scoped_identifier) @use_path)
-    (use_declaration
-      argument: (use_wildcard) @use_path)
-    (use_declaration
-      argument: (use_list) @use_path)
-    (extern_crate_declaration
-      name: (identifier) @crate_name)
+    (use_declaration) @use
+    (mod_item
+      name: (identifier) @mod_name)
+    """
+
+    CLASS_QUERY = """
+    (struct_item
+      name: (type_identifier) @name)
+    (enum_item
+      name: (type_identifier) @name)
+    (trait_item
+      name: (type_identifier) @name)
+    (impl_item
+      type: (type_identifier) @name)
+    """
+
+    FUNCTION_QUERY = """
+    (function_item
+      name: (identifier) @name)
     """
 ```
+
+**Import Resolver:**
+
+The `RustImportResolver` parses `Cargo.toml` to determine:
+
+- **Crate name**: Extracted from `[package]` section using robust regex parsing
+- **Standard library**: Imports starting with `std::`, `core::`, `alloc::`, `proc_macro::`, `test::`
+- **Internal**: Imports using `crate::`, `super::`, `self::` prefixes
+- **External**: All other crate imports

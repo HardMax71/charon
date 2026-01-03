@@ -34,7 +34,7 @@ from app.core.models import (
     GlobalMetrics,
     AnalysisResult,
 )
-from app.services.fitness_service import FitnessService
+from app.services.fitness.service import FitnessService
 
 logger = get_logger(__name__)
 

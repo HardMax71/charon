@@ -47,13 +47,13 @@ Rel(api_diff, graph, "")
 
 The system is a standard client-server setup. The React frontend handles 3D rendering and user interaction, communicating with the FastAPI backend over HTTP. For long-running analysis jobs, the backend streams progress updates via Server-Sent Events (SSE).
 
-The backend is split into two layers: the API layer exposes three endpoints (`/analyze`, `/export`, `/diff`), while the services layer does the actual work: parsing Python files with the `ast` module, building dependency graphs with NetworkX, calculating coupling metrics, and computing 3D layouts.
+The backend is split into two layers: the API layer exposes analysis, export, diff, documentation, fitness, temporal, performance, impact analysis, and auth endpoints, while the services layer does the actual work: parsing source files, building dependency graphs with NetworkX, calculating coupling metrics, and computing 3D layouts.
 
 ## Backend Architecture
 
 ### Core Components
 
-The [**AST Parser**](https://github.com/HardMax71/charon/blob/main/backend/app/utils/ast_parser.py) reads Python source files and extracts import statements using Python's built-in [`ast`](https://docs.python.org/3/library/ast.html) module. It handles both absolute and relative imports, and gracefully skips files with syntax errors.
+The [**AST Parser**](https://github.com/HardMax71/charon/blob/main/backend/app/utils/ast_parser.py) reads Python source files and extracts import statements using Python's built-in [`ast`](https://docs.python.org/3/library/ast.html) module. It handles both absolute and relative imports, and gracefully skips files with syntax errors. Multi-language analysis uses tree-sitter based parsers for Python/JavaScript/TypeScript.
 
 The [**Import Resolver**](https://github.com/HardMax71/charon/blob/main/backend/app/utils/import_resolver.py) takes raw import strings and classifies them. It figures out whether an import is part of the project (internal), comes from pip packages (third-party), or belongs to Python's standard library (ignored). Relative imports like `from ..utils import foo` get resolved to their absolute paths.
 
@@ -61,9 +61,9 @@ The [**Graph Builder**](https://github.com/HardMax71/charon/blob/main/backend/ap
 
 The [**Metrics Calculator**](https://github.com/HardMax71/charon/blob/main/backend/app/services/metrics_service.py) walks the graph and computes coupling metrics. Afferent coupling (Ca) counts incoming dependencies, efferent coupling (Ce) counts outgoing ones. Instability is the ratio Ce/(Ca+Ce). It also detects circular dependencies using cycle detection algorithms and flags nodes in the top 20% of coupling as "high coupling".
 
-The [**Layout Engine**](https://github.com/HardMax71/charon/blob/main/backend/app/services/layout_service.py) assigns 3D coordinates to each node. Three algorithms are available: hierarchical (layers based on dependency depth), force-directed (spring physics simulation), and circular (nodes arranged in a ring).
+The [**Layout Engine**](https://github.com/HardMax71/charon/blob/main/backend/app/services/layout_service.py) assigns 3D coordinates to each node. Three algorithms are available: hierarchical (spring layout with third-party nodes separated), force-directed (spring physics simulation), and circular (nodes arranged in a ring).
 
-The [**GitHub Service**](https://github.com/HardMax71/charon/blob/main/backend/app/services/github_service.py) fetches repositories from GitHub. It uses the [GitHub API](https://docs.github.com/en/rest) to get the file tree, then downloads raw file content. Rate limiting is handled automatically.
+The [**GitHub Service**](https://github.com/HardMax71/charon/blob/main/backend/app/services/github_service.py) fetches repositories from GitHub. It uses the [GitHub API](https://docs.github.com/en/rest) to get the file tree, then downloads raw file content. Rate limit errors are surfaced to the client; use a token for higher limits.
 
 ### API Endpoints
 

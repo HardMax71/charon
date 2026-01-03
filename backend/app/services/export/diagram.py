@@ -1,4 +1,5 @@
 import networkx as nx
+from xml.sax.saxutils import escape as xml_escape
 
 
 class DiagramExporter:
@@ -110,6 +111,7 @@ class DiagramExporter:
                     modules[module] = []
                 modules[module].append(node_id)
 
+        container_ids: list[str] = []
         # Create containers
         for module, nodes in modules.items():
             container_desc = f"{len(nodes)} modules"
@@ -117,6 +119,7 @@ class DiagramExporter:
             lines.append(
                 f'  Container({safe_module}, "{module}", "Python", "{container_desc}")'
             )
+            container_ids.append(safe_module)
 
         lines.append("}")
         lines.append("")
@@ -135,7 +138,13 @@ class DiagramExporter:
         lines.append("")
 
         # Add relationships
-        lines.append('Rel(user, core, "Uses")')
+        default_container = None
+        if "core" in container_ids:
+            default_container = "core"
+        elif container_ids:
+            default_container = container_ids[0]
+        if default_container:
+            lines.append(f'Rel(user, {default_container}, "Uses")')
 
         # Add inter-module dependencies
         module_deps = set()
@@ -304,6 +313,7 @@ class DiagramExporter:
         for idx, node_id in enumerate(node_list):
             node_data = self.graph.nodes[node_id]
             label = node_data.get("label", node_id)
+            safe_label = xml_escape(label, {'"': "&quot;"})
             node_type = node_data.get("type", "internal")
             x, y = node_positions[node_id]
 
@@ -313,7 +323,7 @@ class DiagramExporter:
 
             cell_id = f"node_{idx}"
             xml_lines.append(
-                f'        <mxCell id="{cell_id}" value="{label}" '
+                f'        <mxCell id="{cell_id}" value="{safe_label}" '
                 f'style="rounded=1;whiteSpace=wrap;html=1;fillColor={fill_color};strokeColor={stroke_color};" '
                 f'vertex="1" parent="1">'
             )

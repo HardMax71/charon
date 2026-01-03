@@ -1,4 +1,5 @@
 import re
+import html
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -378,6 +379,7 @@ Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
     def _process_inline_markdown(self, text: str) -> str:
         """Process inline markdown (bold, code, etc.)."""
+        text = html.escape(text, quote=False)
 
         # Status badges
         text = re.sub(r"\[OK\]", r'<span class="badge badge-ok">OK</span>', text)

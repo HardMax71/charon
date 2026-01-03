@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
-from app.core.models import DependencyGraph
-from app.core.parsing_models import (
+from app.core.models import (
+    DependencyGraph,
     ModulePerformance,
     PerformanceAnalysisResult,
     PerformanceBottleneck,

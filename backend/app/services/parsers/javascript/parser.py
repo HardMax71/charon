@@ -4,7 +4,12 @@ from tree_sitter import Query
 
 from app.core import JAVASCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS
 from app.core.models import Language, NodeType
-from app.services.parsers.base import ImportResolution, ParsedImport, ParsedNode
+from app.services.parsers.base import (
+    ImportResolution,
+    ParsedImport,
+    ParsedNode,
+    ProjectContext,
+)
 from app.services.parsers.javascript.import_resolver import JavaScriptImportResolver
 from app.services.parsers.registry import ParserRegistry
 from app.services.parsers.tree_sitter_base import TreeSitterParser
@@ -60,6 +65,7 @@ class BaseJavaScriptParser(TreeSitterParser):
         super().__init__()
         self._resolver: JavaScriptImportResolver | None = None
         self._export_query = None
+        self._project_context: ProjectContext | None = None
         if self.EXPORT_QUERY:
             self._export_query = Query(self.ts_language, self.EXPORT_QUERY)
 
@@ -140,8 +146,16 @@ class BaseJavaScriptParser(TreeSitterParser):
         project_root: Path,
     ) -> ImportResolution:
         if not self._resolver or self._resolver.project_root != project_root:
-            self._resolver = JavaScriptImportResolver(project_root)
+            self._resolver = JavaScriptImportResolver(
+                project_root,
+                context=self._project_context,
+            )
         return self._resolver.resolve(import_stmt, from_file)
+
+    def set_project_context(self, context: ProjectContext) -> None:
+        self._project_context = context
+        if self._resolver:
+            self._resolver.set_context(context)
 
     def _process_import_captures(self, captures: list, source: bytes) -> list[dict]:
         results = []

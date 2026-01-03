@@ -46,7 +46,7 @@ Release tags work too (e.g., `v0.0.8`).
 
 ## What You Get
 
-Charon parses Python code and builds a dependency graph. You can feed it code three ways: GitHub URL, drag-and-drop a folder (10MB limit), or import a previous analysis.
+Charon parses Python and JavaScript/TypeScript code and builds a dependency graph. You can feed it code three ways: GitHub URL, drag-and-drop a folder (10MB total size limit), or import a previous analysis.
 
 The visualization is fully interactive. Drag to rotate, scroll to zoom, click nodes for metrics, click edges for import details. Three layout modes: hierarchical, force-directed, and circular. Files in the same module get similar colors.
 
@@ -63,19 +63,19 @@ Beyond the pretty graph:
 
 ## Under the Hood
 
-The backend uses Python's [ast](https://docs.python.org/3/library/ast.html) module to parse source files without executing them. It finds imports, resolves relative paths, classifies dependencies as internal or third-party, then builds a [NetworkX](https://networkx.org/) graph. From there: cycle detection, clustering, metrics.
+The backend uses Python's [ast](https://docs.python.org/3/library/ast.html) module for Python-only analysis and tree-sitter parsers for multi-language analysis. It finds imports, resolves relative paths, classifies dependencies as internal or third-party, then builds a [NetworkX](https://networkx.org/) graph. From there: cycle detection, clustering, metrics.
 
-3D positioning uses a hierarchical layout. Third-party stuff at the bottom, your code on top, arranged to minimize edge crossings.
+3D positioning uses a spring layout with third-party libraries separated below the internal graph.
 
 Frontend is [React](https://react.dev/) with [Three.js](https://threejs.org/) (via [React Three Fiber](https://r3f.docs.pmnd.rs/)) for rendering. State lives in [Zustand](https://zustand-demo.pmnd.rs/). Styling is [Tailwind](https://tailwindcss.com/). Backend communication is REST plus [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) for progress updates.
 
-Everything is stateless. Nothing persists between requests. Simple, but it means you should export results if you want to keep them.
+Analysis requests are stateless, but GitHub auth sessions are stored in memory and fitness results can be saved on demand. Export results if you want to keep them.
 
 ## Limitations
 
 - **GitHub rate limit**: 60 requests/hour without auth. Clone locally or set up a token if you're hitting it.
-- **Upload cap**: 10MB max for drag-and-drop. Use GitHub URL for bigger projects.
-- **Python only**: other languages in your repo won't show up.
+- **Upload cap**: 10MB total source size limit.
+- **Language support**: JavaScript/TypeScript supported; Go/Java/Rust are not yet supported.
 - **No stdlib**: standard library imports are filtered out (they're not your architecture).
 - **Syntax errors**: broken files get skipped with a warning.
 

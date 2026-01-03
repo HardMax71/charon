@@ -52,15 +52,33 @@ class PythonParser(TreeSitterParser):
         module_id = self._path_to_module_id(path)
         nodes = []
 
-        parsed_imports = [
-            ParsedImport(
-                module=imp["module"],
-                names=imp.get("names", []),
-                is_relative=imp.get("is_relative", False),
-                level=imp.get("level", 0),
+        parsed_imports: list[ParsedImport] = []
+        for imp in imports:
+            module = imp["module"]
+            names = imp.get("names", [])
+            is_relative = imp.get("is_relative", False)
+            level = imp.get("level", 0)
+
+            if is_relative and not module and names:
+                for name in names:
+                    parsed_imports.append(
+                        ParsedImport(
+                            module=name,
+                            names=[name],
+                            is_relative=True,
+                            level=level,
+                        )
+                    )
+                continue
+
+            parsed_imports.append(
+                ParsedImport(
+                    module=module,
+                    names=names,
+                    is_relative=is_relative,
+                    level=level,
+                )
             )
-            for imp in imports
-        ]
 
         nodes.append(
             ParsedNode(

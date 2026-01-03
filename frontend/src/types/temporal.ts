@@ -1,18 +1,69 @@
+import type { NodeMetrics, Position3D } from './graph';
+
+export interface TemporalGraphSnapshotNode {
+  id: string;
+  type: 'internal' | 'third_party';
+  label: string;
+  module: string;
+  position: Position3D;
+  metrics: NodeMetrics;
+}
+
+export interface TemporalGraphSnapshotEdge {
+  source: string;
+  target: string;
+  imports: string[];
+  weight: number;
+}
+
+export interface TemporalGraphSnapshot {
+  nodes: TemporalGraphSnapshotNode[];
+  edges: TemporalGraphSnapshotEdge[];
+}
+
+export interface TemporalDependencyChange {
+  node: string;
+  added: string[];
+  removed: string[];
+}
+
+export interface TemporalSnapshotChanges {
+  added_nodes: string[];
+  removed_nodes: string[];
+  modified_dependencies: TemporalDependencyChange[];
+  node_count_delta: number;
+  edge_count_delta: number;
+  circular_count_delta: number;
+}
+
+export interface TemporalSnapshotMetrics {
+  average_coupling: number;
+  max_coupling: number;
+  total_complexity: number;
+  avg_afferent_coupling: number;
+  avg_efferent_coupling: number;
+}
+
 export interface TemporalSnapshotData {
   commit_sha: string;
   commit_date: string;
   commit_message: string;
   author: string;
-  files_analyzed: number;
-  dependencies_count: number;
-  circular_dependencies: number;
-  avg_coupling: number;
-  metrics: Record<string, number | string>;
+  node_count: number;
+  edge_count: number;
+  dependencies: Record<string, string[]>;
+  circular_nodes: string[];
+  circular_count: number;
+  global_metrics: TemporalSnapshotMetrics;
+  changes?: TemporalSnapshotChanges | null;
+  graph_snapshot: TemporalGraphSnapshot;
 }
 
 export interface ChurnData {
-  file_path: string;
+  date: string;
+  commit_sha: string;
   churn_count: number;
+  nodes_changed: string[];
 }
 
 export interface CircularDependencyTimelineEvent {
@@ -20,6 +71,7 @@ export interface CircularDependencyTimelineEvent {
   date: string;
   commit_message: string;
   new_circular_nodes: string[];
+  total_circular: number;
 }
 
 export interface ChurnHeatmapData {
@@ -27,6 +79,7 @@ export interface ChurnHeatmapData {
   total_changes: number;
   average_churn_per_snapshot: number;
   top_churning_nodes: Array<[string, number]>;
+  churn_heatmap?: ChurnData[];
 }
 
 export interface TemporalAnalysisResponse {

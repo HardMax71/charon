@@ -1,0 +1,39 @@
+name: Backend Tests
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        working-directory: backend
+        run: uv sync --frozen
+
+      - name: Run pytest with coverage
+        working-directory: backend
+        env:
+          GITHUB_CLIENT_ID: ""
+          GITHUB_CLIENT_SECRET: ""
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: backend/coverage.xml
+          fail_ci_if_error: false
+          verbose: true

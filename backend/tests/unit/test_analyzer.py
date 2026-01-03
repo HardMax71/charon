@@ -28,6 +28,7 @@ async def test_relative_imports():
 
     result = await analyze_files(files, "test_project")
     assert len(result.errors) == 0
+    assert "package.module_b" in result.dependencies["package.module_a"]
 
 
 @pytest.mark.asyncio

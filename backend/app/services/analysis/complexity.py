@@ -1,11 +1,24 @@
+from dataclasses import dataclass
+from typing import Literal
+
 from radon.complexity import cc_visit, cc_rank
 from radon.metrics import mi_visit
 from radon.raw import analyze
 
 from app.core import get_logger
-from app.core.parsing_models import ComplexityMetrics, FunctionComplexity
+from app.core.models import ComplexityMetrics, FunctionComplexity
 
 logger = get_logger(__name__)
+
+
+@dataclass(frozen=True)
+class HotZoneScore:
+    """Hot zone score details for a module."""
+
+    is_hot_zone: bool
+    severity: Literal["critical", "warning", "info", "ok"]
+    score: float
+    reason: str
 
 
 class ComplexityService:
@@ -126,7 +139,7 @@ class ComplexityService:
         coupling: int,
         complexity_threshold: float = 10.0,
         coupling_threshold: int = 5,
-    ) -> dict:
+    ) -> HotZoneScore:
         """
         Calculate hot zone score based on complexity and coupling.
 
@@ -140,11 +153,7 @@ class ComplexityService:
             coupling_threshold: Threshold for high coupling
 
         Returns:
-            Dict with:
-                - is_hot_zone: bool
-                - severity: 'critical' | 'warning' | 'info' | 'ok'
-                - score: Combined risk score (0-100)
-                - reason: Explanation string
+            HotZoneScore with risk details.
         """
         # Normalize metrics to 0-1 scale
         complexity_normalized = min(complexity / 20, 1.0)  # Cap at 20
@@ -174,9 +183,9 @@ class ComplexityService:
             severity = "ok"
             reason = "Healthy complexity and coupling levels"
 
-        return {
-            "is_hot_zone": is_hot_zone,
-            "severity": severity,
-            "score": round(score, 2),
-            "reason": reason,
-        }
+        return HotZoneScore(
+            is_hot_zone=is_hot_zone,
+            severity=severity,
+            score=round(score, 2),
+            reason=reason,
+        )

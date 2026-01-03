@@ -2,7 +2,7 @@ import sys
 from functools import lru_cache
 
 from app.core import get_logger
-from app.core.parsing_models import ImportInfo, ImportType
+from app.core.models import ImportInfo, ImportType
 
 logger = get_logger(__name__)
 

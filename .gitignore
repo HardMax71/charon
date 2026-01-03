@@ -71,3 +71,6 @@ frontend/.vite/
 
 # Docker
 .dockerignore
+
+# Separate stuff
+.cache
