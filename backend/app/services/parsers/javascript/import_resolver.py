@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from app.core import JAVASCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS
-from app.services.parsers.base import ImportResolution, ParsedImport
+from app.services.parsers.base import ImportResolution, ParsedImport, ProjectContext
 
 JS_TS_EXTENSIONS = JAVASCRIPT_EXTENSIONS | TYPESCRIPT_EXTENSIONS
 
@@ -55,10 +55,20 @@ NODE_BUILTINS = frozenset(
 
 
 class JavaScriptImportResolver:
-    def __init__(self, project_root: Path):
+    def __init__(
+        self,
+        project_root: Path,
+        context: ProjectContext | None = None,
+    ):
         self.project_root = project_root
-        self._package_json = self._load_package_json()
-        self._tsconfig = self._load_tsconfig()
+        self._package_json = {}
+        self._tsconfig = {}
+        self._project_files: set[str] | None = None
+        if context is not None:
+            self.set_context(context)
+        else:
+            self._package_json = self._load_package_json()
+            self._tsconfig = self._load_tsconfig()
 
     def _load_package_json(self) -> dict:
         package_path = self.project_root / "package.json"
@@ -116,7 +126,7 @@ class JavaScriptImportResolver:
                 candidate = base / (import_path + ext)
             else:
                 candidate = base / import_path
-            if candidate.exists() and candidate.is_file():
+            if self._candidate_exists(candidate):
                 return ImportResolution(
                     resolved_path=str(candidate.resolve()),
                     is_internal=True,
@@ -126,7 +136,7 @@ class JavaScriptImportResolver:
 
         for ext in index_extensions:
             candidate = base / (import_path + ext)
-            if candidate.exists():
+            if self._candidate_exists(candidate):
                 return ImportResolution(
                     resolved_path=str(candidate.resolve()),
                     is_internal=True,
@@ -221,7 +231,7 @@ class JavaScriptImportResolver:
 
                     for ext in ("",) + tuple(JS_TS_EXTENSIONS):
                         candidate = full_path.with_suffix(ext) if ext else full_path
-                        if candidate.exists():
+                        if self._candidate_exists(candidate):
                             return ImportResolution(
                                 resolved_path=str(candidate.resolve()),
                                 is_internal=True,
@@ -230,3 +240,21 @@ class JavaScriptImportResolver:
                             )
 
         return None
+
+    def set_context(self, context: ProjectContext) -> None:
+        self.project_root = context.project_root
+        self._project_files = context.project_files
+        self._package_json = context.package_json or {}
+        self._tsconfig = context.tsconfig or {}
+
+    def _candidate_exists(self, candidate: Path) -> bool:
+        if self._project_files is None:
+            return candidate.exists() and candidate.is_file()
+
+        try:
+            relative = candidate.relative_to(self.project_root)
+        except ValueError:
+            relative = candidate
+
+        normalized = relative.as_posix().lstrip("/")
+        return normalized in self._project_files

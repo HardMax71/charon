@@ -2,7 +2,7 @@ import pstats
 from collections import defaultdict
 from pathlib import Path
 
-from app.core.parsing_models import (
+from app.core.models import (
     FunctionProfile,
     ModulePerformance,
     ProfilerType,

@@ -1,15 +1,14 @@
-import json
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from app.core.config import settings
-from app.core.models import DependencyGraph
-from app.core.parsing_models import (
+from app.api.routes import ERROR_RESPONSES
+from app.core.models import (
+    AnalyzePerformanceRequest,
+    PerformanceAnalyzeForm,
     PerformanceAnalysisResult,
-    PriorityWeights,
+    PerformanceProfileUpload,
 )
 from app.services.profiling import (
     CProfileParser,
@@ -20,20 +19,31 @@ from app.services.profiling import (
 router = APIRouter()
 
 
-class AnalyzePerformanceRequest(BaseModel):
-    """Request model for performance analysis."""
-
-    graph: DependencyGraph
-    weights: PriorityWeights | None = None
-
-
-@router.post("/performance/analyze", response_model=PerformanceAnalysisResult)
-async def analyze_performance(
-    file: UploadFile = File(..., description="Profiling file (.prof or .json)"),
+def build_performance_form(
     graph_json: str = Form(..., description="Dependency graph as JSON string"),
     weights_json: str | None = Form(
         None, description="Optional priority weights as JSON string"
     ),
+) -> PerformanceAnalyzeForm:
+    return PerformanceAnalyzeForm.model_validate(
+        {"graph_json": graph_json, "weights_json": weights_json}
+    )
+
+
+def build_profile_upload(
+    file: UploadFile = File(..., description="Profiling file (.prof or .json)"),
+) -> PerformanceProfileUpload:
+    return PerformanceProfileUpload(file=file)
+
+
+@router.post(
+    "/performance/analyze",
+    response_model=PerformanceAnalysisResult,
+    responses=ERROR_RESPONSES,
+)
+async def analyze_performance(
+    form: PerformanceAnalyzeForm = Depends(build_performance_form),
+    upload: PerformanceProfileUpload = Depends(build_profile_upload),
 ) -> PerformanceAnalysisResult:
     """Analyze performance profiling data in context of dependency graph.
 
@@ -44,27 +54,10 @@ async def analyze_performance(
     Combines performance metrics with architectural metrics (coupling, complexity)
     to calculate priority scores and identify optimization targets.
     """
-    max_size = settings.max_upload_size_mb * 1024 * 1024
-    if len(graph_json) > max_size:
-        raise HTTPException(
-            status_code=413,
-            detail=f"Graph JSON exceeds maximum size ({settings.max_upload_size_mb}MB)",
-        )
-    if weights_json and len(weights_json) > max_size:
-        raise HTTPException(
-            status_code=413,
-            detail=f"Weights JSON exceeds maximum size ({settings.max_upload_size_mb}MB)",
-        )
-
-    graph = DependencyGraph(**json.loads(graph_json))
-    weights = PriorityWeights(**json.loads(weights_json)) if weights_json else None
-
+    graph = form.graph
+    weights = form.weights
+    file = upload.file
     suffix = Path(file.filename or "").suffix.lower()
-    if suffix not in (".prof", ".json"):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported format: {file.filename}. Supported: .prof (cProfile), .json (py-spy)",
-        )
 
     tmp_path: str | None = None
     try:
@@ -76,13 +69,14 @@ async def analyze_performance(
             CProfileParser(tmp_path) if suffix == ".prof" else PySpyParser(tmp_path)
         )
 
+        request = AnalyzePerformanceRequest(graph=graph, weights=weights)
         analyzer = PerformanceAnalyzer(
             module_performance=parser.parse(),
-            dependency_graph=graph,
+            dependency_graph=request.graph,
             profiler_type=parser.get_profiler_type(),
             total_execution_time=parser.get_total_execution_time(),
             total_samples=parser.get_total_samples(),
-            weights=weights,
+            weights=request.weights,
         )
 
         return analyzer.analyze()
@@ -91,7 +85,7 @@ async def analyze_performance(
             Path(tmp_path).unlink(missing_ok=True)
 
 
-@router.get("/performance/health")
+@router.get("/performance/health", responses=ERROR_RESPONSES)
 async def health_check() -> dict:
     """Health check endpoint for performance service.
 

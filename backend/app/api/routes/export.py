@@ -1,3 +1,4 @@
+from app.api.routes import ERROR_RESPONSES
 from app.core.models import ExportRequest
 from app.services import export_to_json, export_to_toml, generate_filename
 from fastapi import APIRouter
@@ -12,7 +13,7 @@ _FORMAT_CONFIG = {
 }
 
 
-@router.post("/export")
+@router.post("/export", responses=ERROR_RESPONSES)
 async def export_analysis(request: ExportRequest) -> Response:
     """
     Export analysis results to JSON or TOML.

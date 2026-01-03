@@ -1,76 +1,92 @@
 # Level 0: Core models (no service dependencies)
-from app.core.parsing_models import DependencyAnalysis
+from app.core.models import DependencyAnalysis
 
-# Level 1: Leaf services (no internal service dependencies)
-from app.services.complexity_service import ComplexityService
-from app.services.github_service import GitHubService
-from app.services.progress_service import ProgressTracker
-from app.services.session_service import SessionService
-from app.services.layout_service import (
-    apply_layout,
-    hierarchical_layout_3d,
-    force_directed_layout_3d,
-    circular_layout_3d,
+# Level 1: Infrastructure services (no internal service dependencies)
+from app.services.infrastructure import (
+    GitHubService,
+    ProgressTracker,
+    SessionService,
 )
-from app.services.export_service import (
+
+# Level 2: Graph services
+from app.services.graph import (
+    apply_layout,
+    build_graph,
+    build_networkx_graph,
+    circular_layout_3d,
+    ClusteringService,
+    force_directed_layout_3d,
+    hierarchical_layout_3d,
+    ImpactAnalysisService,
+)
+
+# Level 3: Analysis services
+from app.services.analysis import (
+    analyze_files,
+    analyze_files_multi_language,
+    ComplexityService,
+    HealthScoreService,
+    MetricsCalculator,
+    MultiLanguageAnalyzer,
+)
+
+# Level 4: Export services
+from app.services.export import (
+    DiagramExporter,
+    DocumentationService,
     export_to_json,
     export_to_toml,
     generate_filename,
 )
 
-# Level 2: Services that may depend on Level 1
-from app.services.analyzer_service import analyze_files
-from app.services.multi_language_analyzer import (
-    MultiLanguageAnalyzer,
-    analyze_files_multi_language,
+# Level 5: Fitness services
+from app.services.fitness import (
+    FitnessService,
+    RefactoringService,
 )
-from app.services.graph_service import build_graph
-from app.services.metrics_service import MetricsCalculator
-from app.services.clustering_service import ClusteringService
-from app.services.impact_service import ImpactAnalysisService
-from app.services.health_score_service import HealthScoreService
-from app.services.refactoring_service import RefactoringService
-from app.services.fitness_service import FitnessService
-from app.services.documentation_service import DocumentationService
-from app.services.diagram_service import DiagramExporter
 
-# Level 3: Services that depend on Level 2
-from app.services.temporal_service import TemporalAnalysisService
+# Level 6: Temporal services
+from app.services.temporal import (
+    DiffService,
+    TemporalAnalysisService,
+)
 
-# Level 4: Orchestrator services (depend on many other services) - MUST BE LAST
-from app.services.analysis_orchestrator_service import AnalysisOrchestratorService
-from app.services.diff_service import DiffService
-from app.services.fitness_orchestrator_service import FitnessOrchestratorService
-from app.services.temporal_orchestrator_service import TemporalOrchestratorService
+# Level 7: Orchestrator services (depend on many other services) - MUST BE LAST
+from app.services.orchestration import (
+    AnalysisOrchestratorService,
+    FitnessOrchestratorService,
+    TemporalOrchestratorService,
+)
 
 __all__ = [
-    "DependencyAnalysis",
+    "AnalysisOrchestratorService",
     "analyze_files",
     "analyze_files_multi_language",
-    "build_graph",
-    "MultiLanguageAnalyzer",
-    "ComplexityService",
-    "MetricsCalculator",
-    "ClusteringService",
-    "ImpactAnalysisService",
-    "HealthScoreService",
-    "RefactoringService",
-    "FitnessService",
-    "SessionService",
-    "AnalysisOrchestratorService",
-    "DiffService",
-    "FitnessOrchestratorService",
-    "TemporalOrchestratorService",
-    "DocumentationService",
-    "DiagramExporter",
-    "GitHubService",
-    "TemporalAnalysisService",
-    "ProgressTracker",
     "apply_layout",
-    "hierarchical_layout_3d",
-    "force_directed_layout_3d",
+    "build_graph",
+    "build_networkx_graph",
     "circular_layout_3d",
+    "ClusteringService",
+    "ComplexityService",
+    "DependencyAnalysis",
+    "DiagramExporter",
+    "DiffService",
+    "DocumentationService",
     "export_to_json",
     "export_to_toml",
+    "FitnessOrchestratorService",
+    "FitnessService",
+    "force_directed_layout_3d",
     "generate_filename",
+    "GitHubService",
+    "HealthScoreService",
+    "hierarchical_layout_3d",
+    "ImpactAnalysisService",
+    "MetricsCalculator",
+    "MultiLanguageAnalyzer",
+    "ProgressTracker",
+    "RefactoringService",
+    "SessionService",
+    "TemporalAnalysisService",
+    "TemporalOrchestratorService",
 ]

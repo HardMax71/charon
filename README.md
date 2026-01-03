@@ -4,12 +4,16 @@
 
   [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
   [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+  [![Backend Tests](https://github.com/HardMax71/charon/actions/workflows/backend-tests.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/backend-tests.yml)
+  [![codecov](https://codecov.io/gh/HardMax71/charon/branch/main/graph/badge.svg)](https://codecov.io/gh/HardMax71/charon)
 <br/>
   [![Docker Publish](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml)
   [![Release](https://github.com/HardMax71/charon/actions/workflows/release.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/release.yml)
   [![Docs](https://github.com/HardMax71/charon/actions/workflows/docs.yml/badge.svg)](https://hardmax71.github.io/charon)
 <br/>
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+  [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 </div>
 
 3D visualization of Python code dependencies. Paste a GitHub URL, see your architecture as an interactive graph. Red nodes are circular dependencies, orange ones are highly coupled.
