@@ -125,10 +125,11 @@ class TestMermaidExport:
         assert "-->" in result
 
     def test_third_party_shape(self, exporter):
-        """Test that third-party nodes have different shape."""
+        """Test that third-party nodes use cylindrical database shape."""
         result = exporter.to_mermaid()
 
-        assert '[("' in result or '("' in result
+        # Third-party nodes render as: id[("label")]
+        assert '[("' in result
 
     def test_empty_graph(self, empty_exporter):
         """Test Mermaid with empty graph."""
