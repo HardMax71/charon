@@ -11,13 +11,17 @@ from app.api.routes import (
 )
 from app.core import setup_logging
 from app.core.config import settings
+from app.core.exceptions import DomainError
 from app.middleware.error_handler import (
+    domain_exception_handler,
+    pydantic_validation_exception_handler,
     validation_exception_handler,
     http_exception_handler,
     unhandled_exception_handler,
 )
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -30,6 +34,8 @@ app = FastAPI(
 )
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(ValidationError, pydantic_validation_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(DomainError, domain_exception_handler)  # type: ignore[arg-type]
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # type: ignore[arg-type]
 app.add_exception_handler(Exception, unhandled_exception_handler)  # type: ignore[arg-type]
 

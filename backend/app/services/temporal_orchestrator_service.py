@@ -1,8 +1,7 @@
 import json
 from collections.abc import AsyncGenerator
 
-from fastapi import HTTPException, status
-
+from app.core.exceptions import NotFoundError
 from app.core.models import TemporalAnalysisRequest, TemporalAnalysisResponse
 from app.services import TemporalAnalysisService
 
@@ -33,14 +32,13 @@ class TemporalOrchestratorService:
         """
         Retrieve cached temporal analysis results.
 
-        Raises HTTPException(404) if analysis not found or expired.
+        Raises NotFoundError if analysis not found or expired.
         """
         result = self.temporal_service.get_cached_analysis(analysis_id)
 
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Temporal analysis '{analysis_id}' not found or expired",
+            raise NotFoundError(
+                f"Temporal analysis '{analysis_id}' not found or expired"
             )
 
-        return TemporalAnalysisResponse(**result)
+        return result

@@ -4,6 +4,7 @@
 
   [![Type Check](https://github.com/HardMax71/charon/actions/workflows/type-check.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/type-check.yml)
   [![Ruff](https://github.com/HardMax71/charon/actions/workflows/ruff.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/ruff.yml)
+  [![Backend Tests](https://github.com/HardMax71/charon/actions/workflows/backend-tests.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/backend-tests.yml)
 <br/>
   [![Docker Publish](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/HardMax71/charon/actions/workflows/docker-publish.yml)
   [![Release](https://github.com/HardMax71/charon/actions/workflows/release.yml/badge.svg)](https://github.com/HardMax71/charon/actions/workflows/release.yml)

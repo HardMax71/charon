@@ -1,3 +1,4 @@
+from app.api.routes import ERROR_RESPONSES
 from app.core.models import (
     FitnessValidationRequest,
     FitnessValidationResult,
@@ -14,7 +15,11 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.post("/fitness/validate", response_model=FitnessValidationResult)
+@router.post(
+    "/fitness/validate",
+    response_model=FitnessValidationResult,
+    responses=ERROR_RESPONSES,
+)
 async def validate_fitness_functions(
     request: FitnessValidationRequest,
 ) -> FitnessValidationResult:
@@ -36,7 +41,11 @@ async def validate_fitness_functions(
     return FitnessOrchestratorService.validate_fitness_functions(request)
 
 
-@router.post("/fitness/validate-from-config", response_model=FitnessValidationResult)
+@router.post(
+    "/fitness/validate-from-config",
+    response_model=FitnessValidationResult,
+    responses=ERROR_RESPONSES,
+)
 async def validate_from_config(
     graph: DependencyGraph,
     global_metrics: GlobalMetrics,
@@ -54,7 +63,11 @@ async def validate_from_config(
     )
 
 
-@router.post("/fitness/save-result", response_model=SaveResultResponse)
+@router.post(
+    "/fitness/save-result",
+    response_model=SaveResultResponse,
+    responses=ERROR_RESPONSES,
+)
 async def save_validation_result(
     project_name: SafeProjectName,
     result: FitnessValidationResult,
@@ -70,7 +83,11 @@ async def save_validation_result(
     return FitnessOrchestratorService.save_validation_result(project_name, result)
 
 
-@router.get("/fitness/trend/{project_name}", response_model=FitnessTrendResponse)
+@router.get(
+    "/fitness/trend/{project_name}",
+    response_model=FitnessTrendResponse,
+    responses=ERROR_RESPONSES,
+)
 async def get_fitness_trend(
     project_name: SafeProjectName,
     rule_id: str | None = None,
@@ -85,7 +102,11 @@ async def get_fitness_trend(
     return FitnessOrchestratorService.get_fitness_trend(project_name, rule_id, limit)
 
 
-@router.get("/fitness/config/example", response_model=FitnessRuleConfig)
+@router.get(
+    "/fitness/config/example",
+    response_model=FitnessRuleConfig,
+    responses=ERROR_RESPONSES,
+)
 async def get_example_config() -> FitnessRuleConfig:
     """Get an example fitness rule configuration.
 

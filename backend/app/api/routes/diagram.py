@@ -1,3 +1,4 @@
+from app.api.routes import ERROR_RESPONSES
 from app.core.models import ExportDiagramRequest
 from app.services import DiagramExporter, AnalysisOrchestratorService
 from fastapi import APIRouter
@@ -6,7 +7,7 @@ from fastapi.responses import Response
 router = APIRouter()
 
 
-@router.post("/export-diagram")
+@router.post("/export-diagram", responses=ERROR_RESPONSES)
 async def export_diagram(request: ExportDiagramRequest) -> Response:
     """
     Export dependency graph to various diagram formats.

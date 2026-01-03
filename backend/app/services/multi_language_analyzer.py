@@ -1,14 +1,10 @@
 from collections import defaultdict
+import json
 from pathlib import Path, PurePosixPath
 
-from app.core import (
-    get_logger,
-    EXTENSION_TO_LANGUAGE,
-    JAVASCRIPT_EXTENSIONS,
-    TYPESCRIPT_EXTENSIONS,
-)
+from app.core import get_logger, JAVASCRIPT_EXTENSIONS, TYPESCRIPT_EXTENSIONS
 from app.core.models import FileInput, Language, NodeType
-from app.core.parsing_models import (
+from app.core.models import (
     ComplexityMetrics,
     DependencyAnalysis,
     ImportInfo,
@@ -16,6 +12,7 @@ from app.core.parsing_models import (
 )
 from app.services.complexity_service import ComplexityService
 from app.services.parsers import ParserRegistry
+from app.services.parsers.base import ProjectContext
 
 logger = get_logger(__name__)
 
@@ -28,6 +25,9 @@ class MultiLanguageAnalyzer:
         self._path_to_module: dict[str, str] = {}
         self._module_to_path: dict[str, str] = {}
         self._detected_services: set[str] = set()
+        self._project_files: set[str] = set()
+        self._package_json: dict | None = None
+        self._tsconfig: dict | None = None
 
     def analyze(
         self,
@@ -59,12 +59,18 @@ class MultiLanguageAnalyzer:
         self._path_to_module.clear()
         self._module_to_path.clear()
         self._detected_services.clear()
+        self._project_files.clear()
 
         # Detect services from all file paths first
         for file in files:
             service = self._detect_service(file.path)
             if service:
                 self._detected_services.add(service)
+
+        self._package_json = self._load_project_config(files, "package.json")
+        self._tsconfig = self._load_project_config(
+            files, "tsconfig.json"
+        ) or self._load_project_config(files, "jsconfig.json")
 
         for language, lang_files in files_by_language.items():
             for file in lang_files:
@@ -93,6 +99,8 @@ class MultiLanguageAnalyzer:
                         dir_path = str(PurePosixPath(normalized_path).parent)
                         self._path_to_module[dir_path] = module_id
 
+        self._project_files = set(self._path_to_module.keys())
+
         # Second pass: parse and analyze
         for language, lang_files in files_by_language.items():
             try:
@@ -108,6 +116,14 @@ class MultiLanguageAnalyzer:
                 all_modules[module_id] = file.content
 
             parser.set_project_modules(project_modules)
+            parser.set_project_context(
+                ProjectContext(
+                    project_root=Path("."),
+                    project_files=self._project_files,
+                    package_json=self._package_json,
+                    tsconfig=self._tsconfig,
+                )
+            )
 
             for file in lang_files:
                 module_id = self._file_to_module_id(file.path, language)
@@ -320,9 +336,10 @@ class MultiLanguageAnalyzer:
         result: dict[Language, list[FileInput]] = defaultdict(list)
 
         for file in files:
-            ext = Path(file.path).suffix.lower()
-            if ext in EXTENSION_TO_LANGUAGE:
-                result[EXTENSION_TO_LANGUAGE[ext]].append(file)
+            parser = ParserRegistry.get_parser_for_file(Path(file.path))
+            if not parser:
+                continue
+            result[parser.language].append(file)
 
         return result
 
@@ -417,6 +434,23 @@ class MultiLanguageAnalyzer:
         # Unknown internal import - treat as third party
         first_part = resolved_path.lstrip("/").split("/")[0]
         return f"third_party.{first_part}"
+
+    def _load_project_config(
+        self, files: list[FileInput], filename: str
+    ) -> dict | None:
+        candidates = [
+            file for file in files if Path(file.path).name.lower() == filename
+        ]
+        if not candidates:
+            return None
+
+        candidates.sort(key=lambda f: len(Path(f.path).parts))
+        for file in candidates:
+            try:
+                return json.loads(file.content)
+            except json.JSONDecodeError:
+                logger.warning("Invalid %s in %s", filename, file.path)
+        return None
 
 
 async def analyze_files_multi_language(

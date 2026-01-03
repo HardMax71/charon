@@ -1,7 +1,6 @@
 import re
 from datetime import datetime, timezone
 
-import networkx as nx
 
 from app.core.models import (
     DependencyGraph,
@@ -287,40 +286,52 @@ class FitnessService:
         if max_depth is None:
             return []
 
-        # Find longest paths in the graph
         internal_nodes = [n.id for n in self.graph.nodes if n.type == "internal"]
 
         for source in internal_nodes:
-            try:
-                # Get longest path from this source
-                lengths = nx.single_source_shortest_path_length(self.nx_graph, source)
-                max_length = max(lengths.values()) if lengths else 0
-
-                if max_length > max_depth:
-                    # Find the actual path
-                    target = max(lengths, key=lengths.get)
-                    path = nx.shortest_path(self.nx_graph, source, target)
-
-                    violations.append(
-                        FitnessViolation(
-                            rule_id=rule.id,
-                            rule_name=rule.name,
-                            severity=rule.severity,
-                            message=f"Dependency chain depth ({max_length}) exceeds maximum ({max_depth})",
-                            details={
-                                "depth": max_length,
-                                "max_depth": max_depth,
-                                "path": path,
-                                "source": source,
-                                "target": target,
-                            },
-                            affected_modules=path,
-                        )
-                    )
-            except (nx.NetworkXError, ValueError):
+            path = self._find_path_exceeding_depth(source, max_depth)
+            if not path:
                 continue
 
+            depth = len(path) - 1
+            violations.append(
+                FitnessViolation(
+                    rule_id=rule.id,
+                    rule_name=rule.name,
+                    severity=rule.severity,
+                    message=f"Dependency chain depth ({depth}) exceeds maximum ({max_depth})",
+                    details={
+                        "depth": depth,
+                        "max_depth": max_depth,
+                        "path": path,
+                        "source": source,
+                        "target": path[-1],
+                    },
+                    affected_modules=path,
+                )
+            )
+
         return violations
+
+    def _find_path_exceeding_depth(
+        self, source: str, max_depth: int
+    ) -> list[str] | None:
+        stack: list[tuple[str, list[str]]] = [(source, [source])]
+
+        while stack:
+            current, path = stack.pop()
+            depth = len(path) - 1
+            if depth > max_depth:
+                return path
+            if depth == max_depth:
+                continue
+
+            for successor in self.nx_graph.successors(current):
+                if successor in path:
+                    continue
+                stack.append((successor, path + [successor]))
+
+        return None
 
     def _evaluate_max_complexity(self, rule: FitnessRule) -> list[FitnessViolation]:
         """Evaluate maximum complexity rule.

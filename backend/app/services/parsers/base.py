@@ -40,6 +40,14 @@ class ParsedNode:
     metadata: dict = field(default_factory=dict)
 
 
+@dataclass(frozen=True, slots=True)
+class ProjectContext:
+    project_root: Path
+    project_files: set[str] | None = None
+    package_json: dict | None = None
+    tsconfig: dict | None = None
+
+
 @runtime_checkable
 class LanguageParser(Protocol):
     language: Language
@@ -59,6 +67,8 @@ class LanguageParser(Protocol):
     def detect_project(self, path: Path) -> bool: ...
 
     def set_project_modules(self, modules: set[str]) -> None: ...
+
+    def set_project_context(self, context: ProjectContext) -> None: ...
 
 
 class BaseParser(ABC):
@@ -87,4 +97,8 @@ class BaseParser(ABC):
 
     def set_project_modules(self, modules: set[str]) -> None:
         """Optional hook for parsers that need project module context."""
+        pass
+
+    def set_project_context(self, context: ProjectContext) -> None:
+        """Optional hook for parsers that need broader project context."""
         pass

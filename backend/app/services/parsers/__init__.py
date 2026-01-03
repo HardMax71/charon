@@ -4,6 +4,7 @@ from app.services.parsers.base import (
     LanguageParser,
     ParsedImport,
     ParsedNode,
+    ProjectContext,
 )
 from app.services.parsers.registry import ParserRegistry
 from app.services.parsers.tree_sitter_base import TreeSitterParser
@@ -23,6 +24,7 @@ __all__ = [
     "LanguageParser",
     "ParsedImport",
     "ParsedNode",
+    "ProjectContext",
     "ParserRegistry",
     "PythonImportResolver",
     "PythonParser",

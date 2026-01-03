@@ -4,6 +4,14 @@ from pathlib import Path
 
 from app.core.config import settings
 
+_LEVELS = {
+    "CRITICAL": logging.CRITICAL,
+    "ERROR": logging.ERROR,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+}
+
 
 def setup_logging(log_level: str | None = None) -> None:
     """
@@ -12,7 +20,8 @@ def setup_logging(log_level: str | None = None) -> None:
     Args:
         log_level: Override log level from settings
     """
-    level = log_level or settings.log_level
+    level_name = (log_level or settings.log_level).upper()
+    level = _LEVELS.get(level_name, logging.INFO)
 
     # Create logs directory if it doesn't exist
     log_dir = Path("logs")
@@ -20,7 +29,7 @@ def setup_logging(log_level: str | None = None) -> None:
 
     # Configure root logger
     logging.basicConfig(
-        level=getattr(logging, level.upper()),
+        level=level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             # Console handler
@@ -37,9 +46,9 @@ def setup_logging(log_level: str | None = None) -> None:
     logging.getLogger("fastapi").setLevel(logging.INFO)
 
     # Application loggers
-    logging.getLogger("app").setLevel(getattr(logging, level.upper()))
+    logging.getLogger("app").setLevel(level)
 
-    logging.info(f"Logging configured with level: {level.upper()}")
+    logging.info("Logging configured with level: %s", level_name)
 
 
 def get_logger(name: str) -> logging.Logger:

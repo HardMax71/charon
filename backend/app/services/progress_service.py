@@ -2,6 +2,8 @@ from collections.abc import AsyncIterator
 import asyncio
 import json
 
+from app.core.models import ErrorResponse
+
 
 class ProgressTracker:
     """Track and emit progress updates via Server-Sent Events."""
@@ -69,3 +71,16 @@ class ProgressTracker:
             SSE formatted string
         """
         return f"data: {json.dumps({'type': 'error', 'message': error})}\n\n"
+
+    async def emit_error_response(self, error: ErrorResponse) -> str:
+        """
+        Emit a structured error response.
+
+        Args:
+            error: ErrorResponse payload
+
+        Returns:
+            SSE formatted string
+        """
+        payload = error.model_dump(exclude_none=True)
+        return f"data: {json.dumps({'type': 'error', 'error': payload})}\n\n"

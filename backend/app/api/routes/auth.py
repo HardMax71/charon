@@ -1,10 +1,16 @@
 import asyncio
 
 import httpx
-from fastapi import APIRouter, Cookie, HTTPException, Response
+from fastapi import APIRouter, Cookie, Response
 from httpx_oauth.clients.github import GitHubOAuth2
 
+from app.api.routes import ERROR_RESPONSES
 from app.core.config import settings
+from app.core.exceptions import (
+    FeatureNotConfiguredError,
+    GitHubError,
+    UnauthorizedError,
+)
 from app.core.models import (
     GitHubAuthConfig,
     GitHubDeviceCodeResponse,
@@ -31,7 +37,7 @@ _github_oauth = (
         client_secret=settings.github_client_secret or "",
         scopes=["repo"],
     )
-    if settings.github_client_id
+    if settings.github_client_id and settings.github_client_secret
     else None
 )
 
@@ -54,7 +60,7 @@ async def _fetch_user_and_repos(token: str) -> tuple[GitHubUser, list[GitHubRepo
             ),
         )
         if user_resp.status_code != 200:
-            raise HTTPException(401, "Invalid token")
+            raise UnauthorizedError("Invalid token")
         user_data = user_resp.json()
         repos_data = repos_resp.json() if repos_resp.status_code == 200 else []
 
@@ -87,7 +93,11 @@ def _set_cookie(response: Response, session_id: str) -> None:
     )
 
 
-@router.get("/auth/github/config", response_model=GitHubAuthConfig)
+@router.get(
+    "/auth/github/config",
+    response_model=GitHubAuthConfig,
+    responses=ERROR_RESPONSES,
+)
 async def get_config() -> GitHubAuthConfig:
     return GitHubAuthConfig(
         client_id=settings.github_client_id,
@@ -95,13 +105,17 @@ async def get_config() -> GitHubAuthConfig:
     )
 
 
-@router.post("/auth/github/callback", response_model=GitHubSessionResponse)
+@router.post(
+    "/auth/github/callback",
+    response_model=GitHubSessionResponse,
+    responses=ERROR_RESPONSES,
+)
 async def oauth_callback(
     request: GitHubTokenExchange,
     response: Response,
 ) -> GitHubSessionResponse:
     if not _github_oauth:
-        raise HTTPException(501, "GitHub OAuth not configured")
+        raise FeatureNotConfiguredError("GitHub OAuth not configured")
 
     token = await _github_oauth.get_access_token(request.code, "")
     user, repos = await _fetch_user_and_repos(token["access_token"])
@@ -110,7 +124,11 @@ async def oauth_callback(
     return GitHubSessionResponse(success=True, user=user, repos=repos)
 
 
-@router.get("/auth/github/session", response_model=GitHubSessionResponse)
+@router.get(
+    "/auth/github/session",
+    response_model=GitHubSessionResponse,
+    responses=ERROR_RESPONSES,
+)
 async def get_session(
     session_id: str | None = Cookie(default=None, alias=settings.session_cookie_name),
 ) -> GitHubSessionResponse:
@@ -122,7 +140,11 @@ async def get_session(
     return GitHubSessionResponse(success=True, user=session.user, repos=session.repos)
 
 
-@router.post("/auth/github/logout", response_model=GitHubSessionResponse)
+@router.post(
+    "/auth/github/logout",
+    response_model=GitHubSessionResponse,
+    responses=ERROR_RESPONSES,
+)
 async def logout(
     response: Response,
     session_id: str | None = Cookie(default=None, alias=settings.session_cookie_name),
@@ -133,10 +155,14 @@ async def logout(
     return GitHubSessionResponse(success=True, message="Logged out")
 
 
-@router.post("/auth/github/device", response_model=GitHubDeviceCodeResponse)
+@router.post(
+    "/auth/github/device",
+    response_model=GitHubDeviceCodeResponse,
+    responses=ERROR_RESPONSES,
+)
 async def start_device_flow() -> GitHubDeviceCodeResponse:
     if not settings.github_client_id:
-        raise HTTPException(501, "GitHub OAuth not configured")
+        raise FeatureNotConfiguredError("GitHub OAuth not configured")
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(
@@ -145,7 +171,7 @@ async def start_device_flow() -> GitHubDeviceCodeResponse:
             headers={"Accept": "application/json"},
         )
         if resp.status_code != 200:
-            raise HTTPException(400, "Failed to start device flow")
+            raise GitHubError("Failed to start device flow")
         data = resp.json()
 
     return GitHubDeviceCodeResponse(
@@ -157,13 +183,17 @@ async def start_device_flow() -> GitHubDeviceCodeResponse:
     )
 
 
-@router.post("/auth/github/device/poll", response_model=GitHubDevicePollResponse)
+@router.post(
+    "/auth/github/device/poll",
+    response_model=GitHubDevicePollResponse,
+    responses=ERROR_RESPONSES,
+)
 async def poll_device_flow(
     request: GitHubDevicePollRequest,
     response: Response,
 ) -> GitHubDevicePollResponse:
     if not settings.github_client_id:
-        raise HTTPException(501, "GitHub OAuth not configured")
+        raise FeatureNotConfiguredError("GitHub OAuth not configured")
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(

@@ -1,41 +1,48 @@
 from collections import deque
 
-from fastapi import HTTPException, status
+from app.core.models import (
+    AffectedNodeDetail,
+    DependencyGraph,
+    DistanceBreakdown,
+    ImpactAnalysisResponse,
+    ImpactMetrics,
+    SelectedNodeInfo,
+)
+from app.core.exceptions import NotFoundError
 
 
 class ImpactAnalysisService:
     """Service for analyzing the impact of changes to a node."""
 
-    def __init__(self, graph_data: dict):
+    def __init__(self, graph: DependencyGraph):
         """Initialize with graph data containing nodes and edges."""
-        self.nodes = {node["id"]: node for node in graph_data.get("nodes", [])}
-        self.edges = graph_data.get("edges", [])
+        self.nodes = {node.id: node for node in graph.nodes}
+        self.edges = graph.edges
 
         # Build adjacency list for dependents (who depends on this node)
         self.dependents: dict[str, list[str]] = {}
         for edge in self.edges:
-            source = edge["source"]
-            target = edge["target"]
+            source = edge.source
+            target = edge.target
             # source depends on target, so target has source as a dependent
             if target not in self.dependents:
                 self.dependents[target] = []
             self.dependents[target].append(source)
 
-    def calculate_impact(self, node_id: str, max_depth: int = 10) -> dict:
+    def calculate_impact(
+        self, node_id: str, max_depth: int = 10
+    ) -> ImpactAnalysisResponse:
         """
         Calculate the impact of changes to a node.
 
         Returns:
-            dict with:
+            ImpactAnalysisResponse with:
                 - affected_nodes: dict mapping node_id -> distance
                 - impact_levels: dict mapping distance -> list of node_ids
                 - metrics: impact statistics
         """
         if node_id not in self.nodes:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Node '{node_id}' not found in graph",
-            )
+            raise NotFoundError(f"Node '{node_id}' not found in graph")
 
         # BFS to find all transitive dependents
         affected_nodes: dict[str, int] = {node_id: 0}  # node_id -> distance
@@ -71,50 +78,47 @@ class ImpactAnalysisService:
         )
 
         # Count by distance
-        distance_breakdown = {}
+        distance_breakdown: dict[int, DistanceBreakdown] = {}
         for distance, nodes in impact_levels.items():
-            distance_breakdown[distance] = {
-                "count": len(nodes),
-                "percentage": (len(nodes) / total_nodes * 100)
-                if total_nodes > 0
-                else 0,
-                "label": self._get_distance_label(distance),
-            }
+            distance_breakdown[distance] = DistanceBreakdown(
+                count=len(nodes),
+                percentage=(len(nodes) / total_nodes * 100) if total_nodes > 0 else 0,
+                label=self._get_distance_label(distance),
+            )
 
-        metrics = {
-            "total_nodes": total_nodes,
-            "total_affected": total_affected,
-            "impact_percentage": round(impact_percentage, 2),
-            "max_depth_reached": max(impact_levels.keys()) if impact_levels else 0,
-            "distance_breakdown": distance_breakdown,
-        }
+        metrics = ImpactMetrics(
+            total_nodes=total_nodes,
+            total_affected=total_affected,
+            impact_percentage=round(impact_percentage, 2),
+            max_depth_reached=max(impact_levels.keys()) if impact_levels else 0,
+            distance_breakdown=distance_breakdown,
+        )
 
         # Add node details for each affected node
         affected_node_details = []
         for nid, distance in affected_nodes.items():
-            node = self.nodes.get(nid, {})
+            node = self.nodes.get(nid)
             affected_node_details.append(
-                {
-                    "id": nid,
-                    "label": node.get("label", nid),
-                    "module": node.get("module", ""),
-                    "type": node.get("type", "internal"),
-                    "distance": distance,
-                    "color": self._get_impact_color(distance),
-                }
+                AffectedNodeDetail(
+                    id=nid,
+                    label=node.label if node else nid,
+                    module=node.module if node else "",
+                    type=node.type if node else "internal",
+                    distance=distance,
+                    color=self._get_impact_color(distance),
+                )
             )
 
-        return {
-            "selected_node": {
-                "id": node_id,
-                "label": self.nodes[node_id].get("label", node_id),
-                "module": self.nodes[node_id].get("module", ""),
-            },
-            "affected_nodes": affected_nodes,
-            "impact_levels": {str(k): v for k, v in impact_levels.items()},
-            "affected_node_details": affected_node_details,
-            "metrics": metrics,
-        }
+        selected = self.nodes[node_id]
+        return ImpactAnalysisResponse(
+            selected_node=SelectedNodeInfo(
+                id=node_id, label=selected.label, module=selected.module
+            ),
+            affected_nodes=affected_nodes,
+            impact_levels={str(k): v for k, v in impact_levels.items()},
+            affected_node_details=affected_node_details,
+            metrics=metrics,
+        )
 
     def _get_distance_label(self, distance: int) -> str:
         """Get a human-readable label for a distance level."""

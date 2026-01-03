@@ -1,7 +1,7 @@
 import networkx as nx
 
 from app.core import get_logger
-from app.core.parsing_models import DependencyAnalysis
+from app.core.models import DependencyAnalysis
 
 logger = get_logger(__name__)
 

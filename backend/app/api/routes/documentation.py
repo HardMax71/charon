@@ -1,5 +1,6 @@
 import io
 
+from app.api.routes import ERROR_RESPONSES
 from app.core.models import ExportDocumentationRequest
 from app.services import DocumentationService, AnalysisOrchestratorService
 from fastapi import APIRouter
@@ -9,7 +10,7 @@ from weasyprint import HTML
 router = APIRouter()
 
 
-@router.post("/export-documentation")
+@router.post("/export-documentation", responses=ERROR_RESPONSES)
 async def export_documentation(request: ExportDocumentationRequest) -> Response:
     """
     Export architectural documentation in specified format.

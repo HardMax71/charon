@@ -141,9 +141,13 @@ class GitHubService:
             session: aiohttp.ClientSession, path: str
         ) -> FileInput | None:
             async with sem:
-                content = await self._fetch_file_content(
-                    session, owner, repo, path, ref, token
-                )
+                try:
+                    content = await self._fetch_file_content(
+                        session, owner, repo, path, ref, token
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to fetch %s: %s", path, exc)
+                    return None
                 return FileInput(path=path, content=content) if content else None
 
         connector = aiohttp.TCPConnector(limit=100, limit_per_host=50)
@@ -153,9 +157,9 @@ class GitHubService:
             connector=connector, headers=headers, timeout=timeout
         ) as session:
             tasks = [fetch_one(session, f["path"]) for f in source_files]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            results = await asyncio.gather(*tasks)
 
-        files = [r for r in results if isinstance(r, FileInput)]
+        files = [r for r in results if r is not None]
         failed_count = total_files - len(files)
 
         if failed_count > 0:
@@ -309,6 +313,10 @@ class GitHubService:
                     )
 
                 data = await response.json()
+                if data.get("truncated"):
+                    raise GitHubError(
+                        "Repository tree is truncated; refine scope or use a smaller repo"
+                    )
                 return data.get("tree", [])
 
     async def _fetch_file_content(

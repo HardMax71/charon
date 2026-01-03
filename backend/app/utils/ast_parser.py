@@ -2,7 +2,7 @@ import ast
 from pathlib import Path
 
 from app.core import get_logger
-from app.core.parsing_models import ImportInfo, ParseResult
+from app.core.models import ImportInfo, ParseResult
 
 logger = get_logger(__name__)
 
@@ -33,30 +33,45 @@ def parse_file(
                 imports=[], errors=[f"AST too deep ({depth} > {max_depth})"]
             )
 
-        # Extract all imports in functional style with list comprehensions
-        imports = [
-            # Handle 'import x' statements
-            ImportInfo(
-                module=alias.name,
-                names=[alias.name.split(".")[0]],
-                level=0,
-                lineno=node.lineno,
-            )
-            for node in ast.walk(tree)
-            if isinstance(node, ast.Import)
-            for alias in node.names
-        ] + [
-            # Handle 'from x import y' statements
-            ImportInfo(
-                module=node.module or _resolve_relative_base(module_path, node.level),
-                names=[a.name for a in node.names],
-                level=node.level,
-                lineno=node.lineno,
-            )
-            for node in ast.walk(tree)
-            if isinstance(node, ast.ImportFrom)
-            and not (node.module is None and node.level == 0)
-        ]
+        imports: list[ImportInfo] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imports.append(
+                        ImportInfo(
+                            module=alias.name,
+                            names=[alias.name.split(".")[0]],
+                            level=0,
+                            lineno=node.lineno,
+                        )
+                    )
+            elif isinstance(node, ast.ImportFrom) and not (
+                node.module is None and node.level == 0
+            ):
+                if node.module is None and node.level > 0:
+                    base_module = _resolve_relative_base(module_path, node.level)
+                    for alias in node.names:
+                        target = _build_relative_import_target(base_module, alias.name)
+                        if not target:
+                            continue
+                        imports.append(
+                            ImportInfo(
+                                module=target,
+                                names=[alias.name],
+                                level=0,
+                                lineno=node.lineno,
+                            )
+                        )
+                else:
+                    imports.append(
+                        ImportInfo(
+                            module=node.module
+                            or _resolve_relative_base(module_path, node.level),
+                            names=[a.name for a in node.names],
+                            level=node.level,
+                            lineno=node.lineno,
+                        )
+                    )
 
         logger.debug("Parsed %s: %d imports", filepath, len(imports))
         return ParseResult(imports=imports, errors=[])
@@ -108,6 +123,14 @@ def _resolve_relative_base(module_path: str, level: int) -> str:
 
     base = parts[:-level]
     return ".".join(base) if base else ""
+
+
+def _build_relative_import_target(base_module: str, name: str) -> str:
+    if name == "*":
+        return base_module
+    if base_module:
+        return f"{base_module}.{name}"
+    return name
 
 
 def extract_module_path(filepath: str, project_root: str) -> str:

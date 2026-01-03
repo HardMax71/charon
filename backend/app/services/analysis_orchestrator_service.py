@@ -2,6 +2,7 @@ from collections.abc import AsyncGenerator
 import networkx as nx
 
 from app.core import get_logger, THIRD_PARTY_COLOR, DEFAULT_NODE_COLOR
+from app.core.exceptions import BadRequestError
 from app.core.models import (
     AnalyzeRequest,
     GitHubAnalyzeRequest,
@@ -12,13 +13,10 @@ from app.core.models import (
     NodeMetrics,
     Position3D,
     ClusteringResult,
-    PackageSuggestion,
-    RefactoringSuggestion,
-    RefactoringSummary,
-    HotZoneFile,
     GlobalMetrics,
     DependencyGraph,
     SourceFilesResult,
+    SourceFilesPayload,
     Language,
     NodeType,
 )
@@ -50,47 +48,42 @@ class AnalysisOrchestratorService:
 
         match request:
             case GitHubAnalyzeRequest(url=url, github_token=token):
-                try:
-                    github_service = GitHubService()
-                    result = await github_service.fetch_repository(url, token=token)
-                    project_name = url.split("/")[-1]
+                github_service = GitHubService()
+                result = await github_service.fetch_repository(url, token=token)
+                project_name = url.split("/")[-1]
 
-                    if not result.files:
-                        logger.warning(
-                            "No supported source files found in repository: %s", url
-                        )
-                        return SourceFilesResult(
-                            success=False,
-                            error_message="No supported source files found in repository",
-                        )
-
-                    warnings = []
-                    if result.failed_count > 0:
-                        warnings.append(
-                            f"Failed to fetch {result.failed_count}/{result.total_files} files"
-                        )
-
-                    logger.info(
-                        "Fetched %d/%d files from GitHub repo: %s",
-                        len(result.files),
-                        result.total_files,
-                        project_name,
+                if not result.files:
+                    logger.warning(
+                        "No supported source files found in repository: %s", url
                     )
-                    return SourceFilesResult(
-                        success=True,
-                        files=result.files,
-                        project_name=project_name,
-                        warnings=warnings,
+                    raise BadRequestError(
+                        "No supported source files found in repository"
                     )
 
-                except Exception as e:
-                    logger.error(
-                        "GitHub fetch error for %s: %s", url, str(e), exc_info=True
+                warnings = []
+                if result.failed_count > 0:
+                    warnings.append(
+                        f"Failed to fetch {result.failed_count}/{result.total_files} files"
                     )
-                    return SourceFilesResult(success=False, error_message=str(e))
+
+                SourceFilesPayload(files=result.files)
+
+                logger.info(
+                    "Fetched %d/%d files from GitHub repo: %s",
+                    len(result.files),
+                    result.total_files,
+                    project_name,
+                )
+                return SourceFilesResult(
+                    success=True,
+                    files=result.files,
+                    project_name=project_name,
+                    warnings=warnings,
+                )
 
             case LocalAnalyzeRequest(files=files):
                 logger.info("Using %d local files for analysis", len(files))
+                SourceFilesPayload(files=files)
                 return SourceFilesResult(
                     success=True, files=files, project_name="local_project"
                 )
@@ -104,9 +97,7 @@ class AnalysisOrchestratorService:
             case _:
                 # This should never happen due to discriminated union validation
                 logger.error("Unexpected request type: %s", type(request))
-                return SourceFilesResult(
-                    success=False, error_message="Invalid request type"
-                )
+                raise BadRequestError("Invalid request type")
 
     @staticmethod
     def build_nodes_and_edges(
@@ -188,42 +179,26 @@ class AnalysisOrchestratorService:
 
     @staticmethod
     def enrich_global_metrics(
-        global_metrics: dict,
+        global_metrics: GlobalMetrics,
         clustering_result: ClusteringResult,
         clustering_service: ClusteringService,
         refactoring_service: RefactoringService,
     ) -> GlobalMetrics:
         """Enrich global metrics with clustering and refactoring data."""
-        cluster_metrics_list = clustering_result.metrics
-        global_metrics["clusters"] = [cm.model_dump() for cm in cluster_metrics_list]
-
-        suggestions = clustering_service.get_cluster_suggestions()
-        package_suggestions = [PackageSuggestion(**sugg) for sugg in suggestions]
-        global_metrics["package_suggestions"] = [
-            ps.model_dump() for ps in package_suggestions
-        ]
-
-        refactoring_suggestions_data = (
+        package_suggestions = clustering_service.get_cluster_suggestions()
+        refactoring_suggestions = (
             refactoring_service.analyze_refactoring_opportunities()
         )
-        refactoring_summary_data = refactoring_service.get_summary_stats()
+        refactoring_summary = refactoring_service.get_summary_stats()
 
-        refactoring_suggestions = [
-            RefactoringSuggestion(**sugg) for sugg in refactoring_suggestions_data
-        ]
-        global_metrics["refactoring_suggestions"] = [
-            rs.model_dump() for rs in refactoring_suggestions
-        ]
-        global_metrics["refactoring_summary"] = RefactoringSummary(
-            **refactoring_summary_data
-        ).model_dump()
-
-        hot_zone_files = [
-            HotZoneFile(**hzf) for hzf in global_metrics.get("hot_zone_files", [])
-        ]
-        global_metrics["hot_zone_files"] = [hzf.model_dump() for hzf in hot_zone_files]
-
-        return GlobalMetrics(**global_metrics)
+        return global_metrics.model_copy(
+            update={
+                "clusters": clustering_result.metrics,
+                "package_suggestions": package_suggestions,
+                "refactoring_suggestions": refactoring_suggestions,
+                "refactoring_summary": refactoring_summary,
+            }
+        )
 
     @staticmethod
     async def perform_analysis(
@@ -243,13 +218,6 @@ class AnalysisOrchestratorService:
                 pass  # Continue with normal analysis flow
 
         source_result = await AnalysisOrchestratorService.fetch_source_files(request)
-        if not source_result.success:
-            error_msg = (
-                source_result.error_message or "Unknown error fetching source files"
-            )
-            logger.error("Failed to fetch source files: %s", error_msg)
-            yield await tracker.emit_error(error_msg)
-            return
 
         files = source_result.files or []
         project_name = source_result.project_name or "project"
@@ -267,16 +235,15 @@ class AnalysisOrchestratorService:
 
         yield await tracker.emit_step(4)
         metrics_calc = MetricsCalculator(graph)
-        global_metrics_dict = metrics_calc.calculate_all()
+        global_metrics = metrics_calc.calculate_all()
 
         clustering_service = ClusteringService(graph)
-        clustering_result_dict = clustering_service.detect_communities(resolution=1.0)
-        clustering_result = ClusteringResult(**clustering_result_dict)
+        clustering_result = clustering_service.detect_communities(resolution=1.0)
 
         refactoring_service = RefactoringService(graph)
 
         global_metrics = AnalysisOrchestratorService.enrich_global_metrics(
-            global_metrics_dict,
+            global_metrics,
             clustering_result,
             clustering_service,
             refactoring_service,
@@ -302,6 +269,7 @@ class AnalysisOrchestratorService:
         yield await tracker.emit_step(6)
         yield await tracker.emit_result(result)
 
+    @staticmethod
     @staticmethod
     def build_networkx_graph(graph: DependencyGraph) -> nx.DiGraph:
         """Rebuild NetworkX graph from Pydantic model."""

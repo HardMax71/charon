@@ -1,5 +1,5 @@
 # Level 0: Core models (no service dependencies)
-from app.core.parsing_models import DependencyAnalysis
+from app.core.models import DependencyAnalysis
 
 # Level 1: Leaf services (no internal service dependencies)
 from app.services.complexity_service import ComplexityService

@@ -2,6 +2,7 @@ import networkx as nx
 import statistics
 
 from app.core.config import settings
+from app.core.models import CircularDependency, GlobalMetrics, HotZoneFile, NodeMetrics
 from app.utils.cycle_detector import detect_cycles, get_nodes_in_cycles
 from app.services.complexity_service import ComplexityService
 
@@ -30,7 +31,7 @@ class MetricsCalculator:
         self.nodes_in_cycles: set[str] = set()
         self.high_coupling_threshold: float = 0
 
-    def calculate_all(self) -> dict:
+    def calculate_all(self) -> GlobalMetrics:
         """Calculate all metrics for the graph."""
         # Detect circular dependencies
         self.cycles = detect_cycles(self.graph)
@@ -40,8 +41,8 @@ class MetricsCalculator:
         coupling_values = []
         for node in self.graph.nodes:
             metrics = self._calculate_node_metrics(node)
-            self.graph.nodes[node]["metrics"] = metrics
-            coupling_values.append(metrics["efferent_coupling"])
+            self.graph.nodes[node]["metrics"] = metrics.model_dump()
+            coupling_values.append(metrics.efferent_coupling)
 
         # Determine high coupling threshold (80th percentile = top 20%)
         if coupling_values:
@@ -61,7 +62,7 @@ class MetricsCalculator:
 
         return self._calculate_global_metrics()
 
-    def _calculate_node_metrics(self, node: str) -> dict:
+    def _calculate_node_metrics(self, node: str) -> NodeMetrics:
         """Calculate metrics for a single node."""
         # Efferent coupling (fan-out): number of outgoing dependencies
         efferent_coupling = self.graph.out_degree(node)
@@ -91,27 +92,27 @@ class MetricsCalculator:
             coupling_threshold=5,
         )
 
-        return {
-            "afferent_coupling": afferent_coupling,
-            "efferent_coupling": efferent_coupling,
-            "instability": round(instability, 3),
-            "is_circular": is_circular,
-            "is_high_coupling": False,  # Set later
+        return NodeMetrics(
+            afferent_coupling=afferent_coupling,
+            efferent_coupling=efferent_coupling,
+            instability=round(instability, 3),
+            is_circular=is_circular,
+            is_high_coupling=False,  # Set later
             # Complexity metrics
-            "cyclomatic_complexity": complexity_data.get("cyclomatic_complexity", 0),
-            "max_complexity": complexity_data.get("max_complexity", 0),
-            "maintainability_index": complexity_data.get("maintainability_index", 0),
-            "lines_of_code": complexity_data.get("lines_of_code", 0),
-            "complexity_grade": complexity_data.get("complexity_grade", "A"),
-            "maintainability_grade": complexity_data.get("maintainability_grade", "A"),
+            cyclomatic_complexity=complexity_data.get("cyclomatic_complexity", 0),
+            max_complexity=complexity_data.get("max_complexity", 0),
+            maintainability_index=complexity_data.get("maintainability_index", 0),
+            lines_of_code=complexity_data.get("lines_of_code", 0),
+            complexity_grade=complexity_data.get("complexity_grade", "A"),
+            maintainability_grade=complexity_data.get("maintainability_grade", "A"),
             # Hot zone detection
-            "is_hot_zone": hot_zone["is_hot_zone"],
-            "hot_zone_severity": hot_zone["severity"],
-            "hot_zone_score": hot_zone["score"],
-            "hot_zone_reason": hot_zone["reason"],
-        }
+            is_hot_zone=hot_zone.is_hot_zone,
+            hot_zone_severity=hot_zone.severity,
+            hot_zone_score=hot_zone.score,
+            hot_zone_reason=hot_zone.reason,
+        )
 
-    def _calculate_global_metrics(self) -> dict:
+    def _calculate_global_metrics(self) -> GlobalMetrics:
         """Calculate global project metrics."""
         internal_nodes = [
             n for n in self.graph.nodes if self.graph.nodes[n].get("type") == "internal"
@@ -148,7 +149,7 @@ class MetricsCalculator:
         ]
 
         # Format circular dependencies
-        circular_deps = [{"cycle": cycle} for cycle in self.cycles]
+        circular_deps = [CircularDependency(cycle=cycle) for cycle in self.cycles]
 
         # Calculate complexity averages
         if internal_nodes:
@@ -170,35 +171,34 @@ class MetricsCalculator:
 
         # Get hot zone files
         hot_zone_files = [
-            {
-                "file": n,
-                "severity": self.graph.nodes[n]["metrics"]["hot_zone_severity"],
-                "score": self.graph.nodes[n]["metrics"]["hot_zone_score"],
-                "reason": self.graph.nodes[n]["metrics"]["hot_zone_reason"],
-                "complexity": self.graph.nodes[n]["metrics"]["cyclomatic_complexity"],
-                "coupling": (
+            HotZoneFile(
+                file=n,
+                severity=self.graph.nodes[n]["metrics"]["hot_zone_severity"],
+                score=self.graph.nodes[n]["metrics"]["hot_zone_score"],
+                reason=self.graph.nodes[n]["metrics"]["hot_zone_reason"],
+                complexity=self.graph.nodes[n]["metrics"]["cyclomatic_complexity"],
+                coupling=(
                     self.graph.nodes[n]["metrics"]["afferent_coupling"]
                     + self.graph.nodes[n]["metrics"]["efferent_coupling"]
                 ),
-            }
+            )
             for n in internal_nodes
             if self.graph.nodes[n]["metrics"]["is_hot_zone"]
         ]
 
         # Sort hot zones by score (highest first)
-        hot_zone_files = sorted(hot_zone_files, key=lambda x: x["score"], reverse=True)
+        hot_zone_files = sorted(hot_zone_files, key=lambda x: x.score, reverse=True)
 
-        return {
-            "total_files": len(internal_nodes) + len(third_party_nodes),
-            "total_internal": len(internal_nodes),
-            "total_third_party": len(third_party_nodes),
-            "avg_afferent_coupling": round(avg_afferent, 2),
-            "avg_efferent_coupling": round(avg_efferent, 2),
-            "circular_dependencies": circular_deps,
-            "high_coupling_files": high_coupling_files,
-            "coupling_threshold": round(self.high_coupling_threshold, 2),
-            # Complexity metrics
-            "avg_complexity": round(avg_complexity, 2),
-            "avg_maintainability": round(avg_maintainability, 2),
-            "hot_zone_files": hot_zone_files,
-        }
+        return GlobalMetrics(
+            total_files=len(internal_nodes) + len(third_party_nodes),
+            total_internal=len(internal_nodes),
+            total_third_party=len(third_party_nodes),
+            avg_afferent_coupling=round(avg_afferent, 2),
+            avg_efferent_coupling=round(avg_efferent, 2),
+            circular_dependencies=circular_deps,
+            high_coupling_files=high_coupling_files,
+            coupling_threshold=round(self.high_coupling_threshold, 2),
+            avg_complexity=round(avg_complexity, 2),
+            avg_maintainability=round(avg_maintainability, 2),
+            hot_zone_files=hot_zone_files,
+        )

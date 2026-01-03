@@ -1,18 +1,30 @@
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any
+import statistics
 
 from cachetools import TTLCache
 
-from app.core import get_logger
+from app.core.models import (
+    ChurnHeatmapData,
+    ChurnHeatmapEntry,
+    CircularDependencyTimelineEvent,
+    NodeMetrics,
+    Position3D,
+    TemporalAnalysisResponse,
+    TemporalDependencyChange,
+    TemporalGraphEdge,
+    TemporalGraphNode,
+    TemporalGraphSnapshot,
+    TemporalSnapshotChanges,
+    TemporalSnapshotData,
+    TemporalSnapshotMetrics,
+)
 from app.services.analyzer_service import analyze_files
 from app.services.github_service import GitHubService
 from app.services.graph_service import build_graph
 from app.services.layout_service import apply_layout
 from app.services.metrics_service import MetricsCalculator
-
-logger = get_logger(__name__)
 
 
 class TemporalAnalysisService:
@@ -21,7 +33,7 @@ class TemporalAnalysisService:
     def __init__(self):
         self.github_service = GitHubService()
         # TTL cache: max 50 analyses, 1 hour TTL
-        self.snapshots_cache: TTLCache[str, dict[str, Any]] = TTLCache(
+        self.snapshots_cache: TTLCache[str, TemporalAnalysisResponse] = TTLCache(
             maxsize=50, ttl=3600
         )
 
@@ -87,8 +99,8 @@ class TemporalAnalysisService:
         }
 
         # Analyze each commit with progress updates
-        snapshots = []
-        previous_snapshot = None
+        snapshots: list[TemporalSnapshotData] = []
+        previous_snapshot: TemporalSnapshotData | None = None
 
         for idx, commit in enumerate(sampled_commits):
             yield {
@@ -126,18 +138,18 @@ class TemporalAnalysisService:
         circular_deps_timeline = self._track_circular_dependencies(snapshots)
 
         # Build final result
-        result = {
-            "analysis_id": analysis_id,
-            "repository": repo_url,
-            "start_date": start_date,
-            "end_date": end_date,
-            "total_commits": len(commits),
-            "analyzed_commits": len(snapshots),
-            "sample_strategy": sample_strategy,
-            "snapshots": snapshots,
-            "churn_data": churn_data,
-            "circular_deps_timeline": circular_deps_timeline,
-        }
+        result = TemporalAnalysisResponse(
+            analysis_id=analysis_id,
+            repository=repo_url,
+            start_date=start_date,
+            end_date=end_date,
+            total_commits=len(commits),
+            analyzed_commits=len(snapshots),
+            sample_strategy=sample_strategy,
+            snapshots=snapshots,
+            churn_data=churn_data,
+            circular_deps_timeline=circular_deps_timeline,
+        )
 
         # Cache results
         self.snapshots_cache[analysis_id] = result
@@ -148,7 +160,7 @@ class TemporalAnalysisService:
             "step": 6,
             "total": 6,
         }
-        yield {"type": "result", "data": result}
+        yield {"type": "result", "data": result.model_dump()}
 
     def _sample_commits(self, commits: list[dict], strategy: str) -> list[dict]:
         """Sample commits based on strategy."""
@@ -186,159 +198,183 @@ class TemporalAnalysisService:
         return sampled
 
     async def _analyze_commit(
-        self, repo_url: str, commit: dict, previous_snapshot: dict | None
-    ) -> dict | None:
+        self,
+        repo_url: str,
+        commit: dict,
+        previous_snapshot: TemporalSnapshotData | None,
+    ) -> TemporalSnapshotData | None:
         """Analyze dependencies at a specific commit."""
-        try:
-            result = await self.github_service.fetch_repository_at_commit(
-                repo_url, commit["sha"]
-            )
+        result = await self.github_service.fetch_repository_at_commit(
+            repo_url, commit["sha"]
+        )
 
-            if not result.files:
-                return None
-
-            project_name = repo_url.split("/")[-1]
-            dependency_data = await analyze_files(result.files, project_name)
-
-            # Build graph
-            graph = build_graph(dependency_data)
-
-            # Calculate metrics
-            metrics_calc = MetricsCalculator(graph)
-            global_metrics = metrics_calc.calculate_all()
-
-            # Apply hierarchical layout
-            graph = apply_layout(graph, "hierarchical")
-
-            # Extract key information
-            node_count = len(graph.nodes)
-            edge_count = len(graph.edges)
-
-            # Get dependency list (for churn calculation)
-            dependencies = {}
-            for source, target in graph.edges:
-                if source not in dependencies:
-                    dependencies[source] = []
-                dependencies[source].append(target)
-
-            # Find circular dependencies
-            circular_nodes = [
-                node_id
-                for node_id in graph.nodes
-                if graph.nodes[node_id].get("metrics", {}).get("is_circular", False)
-            ]
-
-            # Calculate changes from previous snapshot
-            changes = None
-            if previous_snapshot:
-                changes = self._calculate_changes(
-                    previous_snapshot,
-                    dependencies,
-                    node_count,
-                    edge_count,
-                    len(circular_nodes),
-                )
-
-            return {
-                "commit_sha": commit["sha"],
-                "commit_message": commit["message"],
-                "commit_date": commit["date"],
-                "author": commit["author"],
-                "node_count": node_count,
-                "edge_count": edge_count,
-                "dependencies": dependencies,
-                "circular_nodes": circular_nodes,
-                "circular_count": len(circular_nodes),
-                "global_metrics": {
-                    "average_coupling": global_metrics.get("average_coupling", 0),
-                    "max_coupling": global_metrics.get("max_coupling", 0),
-                    "total_complexity": global_metrics.get("total_complexity", 0),
-                },
-                "changes": changes,
-                # Store graph data for visualization
-                "graph_snapshot": {
-                    "nodes": [
-                        {
-                            "id": node_id,
-                            "type": graph.nodes[node_id].get("type", "internal"),
-                            "label": graph.nodes[node_id].get("label", node_id),
-                            "module": graph.nodes[node_id].get("module", ""),
-                            "position": graph.nodes[node_id].get(
-                                "position", {"x": 0, "y": 0, "z": 0}
-                            ),
-                            "metrics": graph.nodes[node_id].get("metrics", {}),
-                        }
-                        for node_id in graph.nodes
-                    ],
-                    "edges": [
-                        {
-                            "source": s,
-                            "target": t,
-                            "imports": graph.edges[s, t].get("imports", []),
-                            "weight": graph.edges[s, t].get("weight", 1),
-                        }
-                        for s, t in graph.edges
-                    ],
-                },
-            }
-
-        except Exception as e:
-            logger.error(
-                "Error analyzing commit %s: %s", commit["sha"], str(e), exc_info=True
-            )
+        if not result.files:
             return None
+
+        project_name = repo_url.split("/")[-1]
+        dependency_data = await analyze_files(result.files, project_name)
+
+        # Build graph
+        graph = build_graph(dependency_data)
+
+        # Calculate metrics
+        metrics_calc = MetricsCalculator(graph)
+        global_metrics = metrics_calc.calculate_all()
+
+        # Apply hierarchical layout
+        graph = apply_layout(graph, "hierarchical")
+
+        # Extract key information
+        node_count = len(graph.nodes)
+        edge_count = len(graph.edges)
+
+        # Get dependency list (for churn calculation)
+        dependencies = {}
+        for source, target in graph.edges:
+            if source not in dependencies:
+                dependencies[source] = []
+            dependencies[source].append(target)
+
+        # Find circular dependencies
+        circular_nodes = [
+            node_id
+            for node_id in graph.nodes
+            if graph.nodes[node_id].get("metrics", {}).get("is_circular", False)
+        ]
+
+        # Calculate changes from previous snapshot
+        changes: TemporalSnapshotChanges | None = None
+        if previous_snapshot:
+            changes = self._calculate_changes(
+                previous_snapshot,
+                dependencies,
+                node_count,
+                edge_count,
+                len(circular_nodes),
+            )
+
+        coupling_values = [
+            graph.nodes[node_id].get("metrics", {}).get("afferent_coupling", 0)
+            + graph.nodes[node_id].get("metrics", {}).get("efferent_coupling", 0)
+            for node_id in graph.nodes
+            if graph.nodes[node_id].get("type") == "internal"
+        ]
+        avg_coupling = statistics.mean(coupling_values) if coupling_values else 0.0
+        max_coupling = max(coupling_values) if coupling_values else 0
+        total_complexity = sum(
+            graph.nodes[node_id].get("metrics", {}).get("cyclomatic_complexity", 0)
+            for node_id in graph.nodes
+            if graph.nodes[node_id].get("type") == "internal"
+        )
+
+        graph_snapshot = TemporalGraphSnapshot(
+            nodes=[
+                TemporalGraphNode(
+                    id=node_id,
+                    type=graph.nodes[node_id].get("type", "internal"),
+                    label=graph.nodes[node_id].get("label", node_id),
+                    module=graph.nodes[node_id].get("module", ""),
+                    position=Position3D.model_validate(
+                        graph.nodes[node_id].get("position", {"x": 0, "y": 0, "z": 0})
+                    ),
+                    metrics=NodeMetrics(
+                        **(
+                            {
+                                "afferent_coupling": 0,
+                                "efferent_coupling": 0,
+                                "instability": 0.0,
+                            }
+                            | graph.nodes[node_id].get("metrics", {})
+                        )
+                    ),
+                )
+                for node_id in graph.nodes
+            ],
+            edges=[
+                TemporalGraphEdge(
+                    source=s,
+                    target=t,
+                    imports=graph.edges[s, t].get("imports", []),
+                    weight=graph.edges[s, t].get("weight", 1),
+                )
+                for s, t in graph.edges
+            ],
+        )
+
+        return TemporalSnapshotData(
+            commit_sha=commit["sha"],
+            commit_message=commit["message"],
+            commit_date=commit["date"],
+            author=commit["author"],
+            node_count=node_count,
+            edge_count=edge_count,
+            dependencies=dependencies,
+            circular_nodes=circular_nodes,
+            circular_count=len(circular_nodes),
+            global_metrics=TemporalSnapshotMetrics(
+                average_coupling=round(avg_coupling, 2),
+                max_coupling=max_coupling,
+                total_complexity=round(total_complexity, 2),
+                avg_afferent_coupling=global_metrics.avg_afferent_coupling,
+                avg_efferent_coupling=global_metrics.avg_efferent_coupling,
+            ),
+            changes=changes,
+            graph_snapshot=graph_snapshot,
+        )
 
     def _calculate_changes(
         self,
-        previous_snapshot: dict,
-        current_dependencies: dict,
+        previous_snapshot: TemporalSnapshotData,
+        current_dependencies: dict[str, list[str]],
         current_nodes: int,
         current_edges: int,
         current_circular_count: int,
-    ) -> dict:
+    ) -> TemporalSnapshotChanges:
         """Calculate changes between snapshots."""
-        prev_deps = previous_snapshot.get("dependencies", {})
+        prev_deps = previous_snapshot.dependencies
 
         # Calculate added/removed/modified dependencies
         added_nodes = set(current_dependencies.keys()) - set(prev_deps.keys())
         removed_nodes = set(prev_deps.keys()) - set(current_dependencies.keys())
 
-        modified_deps = []
+        modified_deps: list[TemporalDependencyChange] = []
         for node_id in set(current_dependencies.keys()) & set(prev_deps.keys()):
             current = set(current_dependencies[node_id])
             previous = set(prev_deps.get(node_id, []))
             if current != previous:
                 modified_deps.append(
-                    {
-                        "node": node_id,
-                        "added": list(current - previous),
-                        "removed": list(previous - current),
-                    }
+                    TemporalDependencyChange(
+                        node=node_id,
+                        added=list(current - previous),
+                        removed=list(previous - current),
+                    )
                 )
 
-        return {
-            "added_nodes": list(added_nodes),
-            "removed_nodes": list(removed_nodes),
-            "modified_dependencies": modified_deps,
-            "node_count_delta": current_nodes - previous_snapshot["node_count"],
-            "edge_count_delta": current_edges - previous_snapshot["edge_count"],
-            "circular_count_delta": current_circular_count
-            - previous_snapshot["circular_count"],
-        }
+        return TemporalSnapshotChanges(
+            added_nodes=list(added_nodes),
+            removed_nodes=list(removed_nodes),
+            modified_dependencies=modified_deps,
+            node_count_delta=current_nodes - previous_snapshot.node_count,
+            edge_count_delta=current_edges - previous_snapshot.edge_count,
+            circular_count_delta=current_circular_count
+            - previous_snapshot.circular_count,
+        )
 
-    def _calculate_churn(self, snapshots: list[dict]) -> dict:
+    def _calculate_churn(
+        self, snapshots: list[TemporalSnapshotData]
+    ) -> ChurnHeatmapData:
         """Calculate dependency churn metrics."""
         # Track how often each node's dependencies changed
         node_churn = defaultdict(int)
         total_changes = 0
 
         for snapshot in snapshots:
-            if snapshot.get("changes"):
-                changes = snapshot["changes"]
-                total_changes += len(changes.get("modified_dependencies", []))
+            if snapshot.changes:
+                changes = snapshot.changes
+                total_changes += len(changes.modified_dependencies)
 
-                for mod in changes.get("modified_dependencies", []):
-                    node_churn[mod["node"]] += 1
+                for mod in changes.modified_dependencies:
+                    node_churn[mod.node] += 1
 
         # Sort by churn frequency
         churn_ranking = sorted(node_churn.items(), key=lambda x: x[1], reverse=True)
@@ -349,64 +385,66 @@ class TemporalAnalysisService:
         else:
             avg_churn = 0
 
-        return {
-            "total_changes": total_changes,
-            "average_churn_per_snapshot": round(avg_churn, 2),
-            "node_churn": dict(node_churn),
-            "top_churning_nodes": churn_ranking[:20],  # Top 20
-            "churn_heatmap": self._generate_churn_heatmap(snapshots, node_churn),
-        }
+        return ChurnHeatmapData(
+            total_changes=total_changes,
+            average_churn_per_snapshot=round(avg_churn, 2),
+            node_churn=dict(node_churn),
+            top_churning_nodes=churn_ranking[:20],
+            churn_heatmap=self._generate_churn_heatmap(snapshots),
+        )
 
     def _generate_churn_heatmap(
-        self, snapshots: list[dict], node_churn: dict[str, int]
-    ) -> list[dict]:
+        self, snapshots: list[TemporalSnapshotData]
+    ) -> list[ChurnHeatmapEntry]:
         """Generate heatmap data for visualization."""
         heatmap_data = []
 
         for snapshot in snapshots:
-            date = snapshot["commit_date"]
+            date = snapshot.commit_date
             snapshot_churn = {}
 
-            if snapshot.get("changes"):
-                for mod in snapshot["changes"].get("modified_dependencies", []):
-                    node = mod["node"]
+            if snapshot.changes:
+                for mod in snapshot.changes.modified_dependencies:
+                    node = mod.node
                     snapshot_churn[node] = snapshot_churn.get(node, 0) + 1
 
             heatmap_data.append(
-                {
-                    "date": date,
-                    "commit_sha": snapshot["commit_sha"],
-                    "churn_count": sum(snapshot_churn.values()),
-                    "nodes_changed": list(snapshot_churn.keys()),
-                }
+                ChurnHeatmapEntry(
+                    date=date,
+                    commit_sha=snapshot.commit_sha,
+                    churn_count=sum(snapshot_churn.values()),
+                    nodes_changed=list(snapshot_churn.keys()),
+                )
             )
 
         return heatmap_data
 
-    def _track_circular_dependencies(self, snapshots: list[dict]) -> list[dict]:
+    def _track_circular_dependencies(
+        self, snapshots: list[TemporalSnapshotData]
+    ) -> list[CircularDependencyTimelineEvent]:
         """Track when circular dependencies were introduced."""
         timeline = []
         seen_circular = set()
 
         for snapshot in snapshots:
-            circular_nodes = set(snapshot.get("circular_nodes", []))
+            circular_nodes = set(snapshot.circular_nodes)
             new_circular = circular_nodes - seen_circular
 
             if new_circular:
                 timeline.append(
-                    {
-                        "date": snapshot["commit_date"],
-                        "commit_sha": snapshot["commit_sha"],
-                        "commit_message": snapshot["commit_message"],
-                        "new_circular_nodes": list(new_circular),
-                        "total_circular": len(circular_nodes),
-                    }
+                    CircularDependencyTimelineEvent(
+                        date=snapshot.commit_date,
+                        commit_sha=snapshot.commit_sha,
+                        commit_message=snapshot.commit_message,
+                        new_circular_nodes=list(new_circular),
+                        total_circular=len(circular_nodes),
+                    )
                 )
 
             seen_circular.update(circular_nodes)
 
         return timeline
 
-    def get_cached_analysis(self, analysis_id: str) -> dict | None:
+    def get_cached_analysis(self, analysis_id: str) -> TemporalAnalysisResponse | None:
         """Retrieve cached analysis results."""
         return self.snapshots_cache.get(analysis_id)
