@@ -1,5 +1,8 @@
-import pytest
+import xml.etree.ElementTree as ET
+
 import networkx as nx
+import pytest
+
 from app.services.export.diagram import DiagramExporter
 
 
@@ -280,6 +283,9 @@ class TestSpecialCharacters:
 
         result = DiagramExporter(graph).to_drawio_xml()
 
-        # Should not have unescaped special chars
-        assert "&lt;" in result or "<test" not in result
-        assert "&amp;" in result or "& " not in result
+        # Verify XML is well-formed (would raise if special chars not escaped)
+        ET.fromstring(result)
+
+        # Verify unescaped dangerous chars are NOT present in raw string
+        assert "<test" not in result
+        assert '& "' not in result

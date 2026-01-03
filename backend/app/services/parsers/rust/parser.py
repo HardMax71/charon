@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tree_sitter import Query
+
 from app.core import RUST_EXTENSIONS
 from app.core.models import Language, NodeType
 from app.services.parsers.base import (
@@ -23,8 +25,13 @@ class RustParser(TreeSitterParser):
     language_name = "rust"
     file_extensions = tuple(RUST_EXTENSIONS)
 
-    IMPORT_QUERY = """
+    # Use declarations (actual imports)
+    USE_QUERY = """
     (use_declaration) @use
+    """
+
+    # Module declarations (file references, not imports)
+    MODULE_DECL_QUERY = """
     (mod_item
       name: (identifier) @mod_name)
     """
@@ -49,9 +56,32 @@ class RustParser(TreeSitterParser):
         super().__init__()
         self._resolver: RustImportResolver | None = None
         self._project_context: ProjectContext | None = None
+        # Compile separate queries for use declarations and module declarations
+        self._use_query: Query | None = None
+        self._module_decl_query: Query | None = None
+        if self.USE_QUERY:
+            self._use_query = Query(self.ts_language, self.USE_QUERY)
+        if self.MODULE_DECL_QUERY:
+            self._module_decl_query = Query(self.ts_language, self.MODULE_DECL_QUERY)
 
     def detect_project(self, path: Path) -> bool:
         return (path / "Cargo.toml").exists()
+
+    def extract_imports(self, tree, source: bytes) -> list[dict]:
+        """Extract both use declarations and module declarations."""
+        results = []
+
+        # Extract use declarations (actual imports)
+        if self._use_query:
+            use_captures = self._run_query(self._use_query, tree.root_node)
+            results.extend(self._process_use_captures(use_captures, source))
+
+        # Extract module declarations (file references)
+        if self._module_decl_query:
+            mod_captures = self._run_query(self._module_decl_query, tree.root_node)
+            results.extend(self._process_module_decl_captures(mod_captures, source))
+
+        return results
 
     def parse_file(self, path: Path, content: str | None = None) -> list[ParsedNode]:
         source = content.encode("utf-8") if content else path.read_bytes()
@@ -145,8 +175,13 @@ class RustParser(TreeSitterParser):
             self._resolver.set_context(context)
 
     def _process_import_captures(self, captures: list, source: bytes) -> list[dict]:
+        """Not used - see _process_use_captures and _process_module_decl_captures."""
+        return []
+
+    def _process_use_captures(self, captures: list, source: bytes) -> list[dict]:
+        """Process use declaration captures."""
         results = []
-        seen = set()
+        seen: set[str] = set()
 
         for node, capture_name in captures:
             if capture_name == "use":
@@ -162,12 +197,23 @@ class RustParser(TreeSitterParser):
                             "is_relative": is_relative,
                         }
                     )
-            elif capture_name == "mod_name":
+
+        return results
+
+    def _process_module_decl_captures(
+        self, captures: list, source: bytes
+    ) -> list[dict]:
+        """Process module declaration captures (mod foo;)."""
+        results = []
+        seen: set[str] = set()
+
+        for node, capture_name in captures:
+            if capture_name == "mod_name":
                 mod_name = self.get_node_text(node, source)
-                # Check if it's a mod declaration (not a mod block)
                 parent = node.parent
                 if parent and parent.type == "mod_item":
-                    # Check if it has a body (mod block) or not (mod declaration)
+                    # Only include mod declarations without body (mod foo;)
+                    # Exclude mod blocks (mod foo { ... })
                     has_body = any(
                         c.type == "declaration_list" for c in parent.children
                     )
