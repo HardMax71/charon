@@ -4,10 +4,10 @@ from pathlib import Path
 from app.core import get_logger
 from app.core.models import FileInput, Language
 from app.core.models import DependencyAnalysis, ModuleMetadata
-from app.services.complexity_service import ComplexityService
-from app.services.multi_language_analyzer import analyze_files_multi_language
+from app.services.analysis.complexity import ComplexityService
+from app.services.analysis.multi_language import analyze_files_multi_language
 from app.services.parsers import ParserRegistry
-from app.utils.ast_parser import parse_file, extract_module_path
+from app.utils.ast_parser import parse_file, filepath_to_module
 from app.utils.import_resolver import ImportResolver
 
 logger = get_logger(__name__)
@@ -56,7 +56,7 @@ async def analyze_files(
         if not file.path.endswith(".py"):
             continue
 
-        module_path = extract_module_path(file.path, "")
+        module_path = filepath_to_module(file.path)
         if not module_path:
             module_path = (
                 file.path.replace("/", ".").replace("\\", ".").replace(".py", "")

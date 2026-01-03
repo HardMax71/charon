@@ -9,7 +9,7 @@ from app.core.models import (
     FitnessViolation,
     GlobalMetrics,
 )
-from app.services.analysis_orchestrator_service import AnalysisOrchestratorService
+from app.services.orchestration.analysis import AnalysisOrchestratorService
 
 
 class FitnessService:

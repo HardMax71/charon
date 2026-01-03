@@ -20,11 +20,11 @@ from app.core.models import (
     TemporalSnapshotData,
     TemporalSnapshotMetrics,
 )
-from app.services.analyzer_service import analyze_files
-from app.services.github_service import GitHubService
-from app.services.graph_service import build_graph
-from app.services.layout_service import apply_layout
-from app.services.metrics_service import MetricsCalculator
+from app.services.analysis.analyzer import analyze_files
+from app.services.analysis.metrics import MetricsCalculator
+from app.services.graph.layout import apply_layout
+from app.services.graph.service import build_graph
+from app.services.infrastructure.github import GitHubService
 
 
 class TemporalAnalysisService:

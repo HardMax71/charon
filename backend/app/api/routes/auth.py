@@ -21,7 +21,7 @@ from app.core.models import (
     GitHubTokenExchange,
     GitHubUser,
 )
-from app.services.session_service import SessionService
+from app.services.infrastructure.session import SessionService
 
 router = APIRouter()
 _sessions = SessionService()

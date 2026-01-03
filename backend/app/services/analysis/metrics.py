@@ -4,7 +4,7 @@ import statistics
 from app.core.config import settings
 from app.core.models import CircularDependency, GlobalMetrics, HotZoneFile, NodeMetrics
 from app.utils.cycle_detector import detect_cycles, get_nodes_in_cycles
-from app.services.complexity_service import ComplexityService
+from app.services.analysis.complexity import ComplexityService
 
 
 def percentile(values: list[float], percent: float) -> float:

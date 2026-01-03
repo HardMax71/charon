@@ -10,7 +10,7 @@ from app.core.models import (
     ImportInfo,
     ModuleMetadata,
 )
-from app.services.complexity_service import ComplexityService
+from app.services.analysis.complexity import ComplexityService
 from app.services.parsers import ParserRegistry
 from app.services.parsers.base import ProjectContext
 
