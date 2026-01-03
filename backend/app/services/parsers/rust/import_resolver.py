@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from app.services.parsers.base import ImportResolution, ParsedImport, ProjectContext
+
+# Regex to match: name = "value" or name = 'value' (with optional whitespace)
+_TOML_NAME_PATTERN = re.compile(r'^name\s*=\s*["\']([^"\']+)["\']')
 
 # Rust standard library crates
 RUST_STDLIB = frozenset(
@@ -32,19 +36,28 @@ class RustImportResolver:
     def _load_cargo_toml(self) -> None:
         """Load crate name from Cargo.toml."""
         cargo_toml = self.project_root / "Cargo.toml"
-        if cargo_toml.exists():
-            content = cargo_toml.read_text()
-            in_package = False
-            for line in content.splitlines():
-                if line.strip() == "[package]":
-                    in_package = True
-                elif line.startswith("[") and in_package:
-                    break
-                elif in_package and line.startswith("name"):
-                    # Parse name = "crate_name"
-                    parts = line.split("=", 1)
-                    if len(parts) == 2:
-                        self.crate_name = parts[1].strip().strip('"').strip("'")
+        if not cargo_toml.exists():
+            return
+
+        try:
+            content = cargo_toml.read_text(encoding="utf-8")
+        except OSError:
+            return
+
+        in_package = False
+        for line in content.splitlines():
+            stripped = line.strip()
+            # Skip comments
+            if stripped.startswith("#"):
+                continue
+            if stripped == "[package]":
+                in_package = True
+            elif stripped.startswith("[") and in_package:
+                break
+            elif in_package:
+                match = _TOML_NAME_PATTERN.match(stripped)
+                if match:
+                    self.crate_name = match.group(1)
                     break
 
     def set_context(self, context: ProjectContext) -> None:
