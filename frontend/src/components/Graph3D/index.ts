@@ -20,8 +20,11 @@ export { useNodeDrag } from './hooks/useNodeDrag';
 // Canvas components (for advanced customization)
 export { GraphCanvas } from './canvas/GraphCanvas';
 export { SceneSetup } from './canvas/SceneSetup';
-export { NodeGroup } from './canvas/NodeMesh';
-export { EdgeGroup } from './canvas/EdgeMesh';
+export { InstancedNodes } from './canvas/InstancedNodes';
+export { StatusRings } from './canvas/StatusRings';
+export { BatchedEdges } from './canvas/BatchedEdges';
+export { SelectionOverlay } from './canvas/SelectionOverlay';
+export { NodeInteractionLayer } from './canvas/NodeInteractionLayer';
 export { ClusterBoxes } from './canvas/ClusterBoxes';
 
 export { LayoutSelector } from './LayoutSelector';

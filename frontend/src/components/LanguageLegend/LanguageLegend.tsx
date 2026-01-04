@@ -1,11 +1,10 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useGraphStore } from '@/stores/graphStore';
-import { useUIStore, StatusFilter } from '@/stores/uiStore';
-import { Layers, ChevronDown, ChevronUp, Circle, Flame, RefreshCw, Link2, X } from 'lucide-react';
+import { useUIStore } from '@/stores/uiStore';
+import { Layers, ChevronDown, ChevronUp, X } from 'lucide-react';
 import {
   LANGUAGE_COLORS,
   LANGUAGE_LABELS,
-  LANGUAGE_EXTENSIONS,
   STATUS_COLORS,
   THIRD_PARTY_COLOR,
 } from '@/utils/constants';
@@ -14,13 +13,12 @@ import { Language } from '@/types/graph';
 interface LanguageLegendItemProps {
   color: string;
   label: string;
-  extension: string;
   count: number;
   isActive: boolean;
   onClick: () => void;
 }
 
-const LanguageLegendItem = ({ color, label, extension, count, isActive, onClick }: LanguageLegendItemProps) => (
+const LanguageLegendItem = ({ color, label, count, isActive, onClick }: LanguageLegendItemProps) => (
   <button
     onClick={onClick}
     className={`flex items-center gap-2 w-full px-2 py-1.5 rounded transition-all cursor-pointer ${
@@ -29,23 +27,10 @@ const LanguageLegendItem = ({ color, label, extension, count, isActive, onClick 
         : 'hover:bg-slate-50'
     }`}
   >
-    {/* Node representation: gray fill with colored outline */}
-    <div className="relative flex-shrink-0">
-      <div
-        className="w-4 h-4 rounded-full border-2"
-        style={{
-          backgroundColor: STATUS_COLORS.default,
-          borderColor: color,
-        }}
-      />
-    </div>
-    {/* Extension badge */}
-    <span
-      className="text-xs font-bold font-mono px-1 py-0.5 rounded text-white flex-shrink-0"
+    <div
+      className="w-3 h-3 rounded-full flex-shrink-0 border border-black/10"
       style={{ backgroundColor: color }}
-    >
-      {extension}
-    </span>
+    />
     <span className="text-xs text-slate-700 flex-grow text-left">{label}</span>
     <span className="text-xs text-slate-600 font-mono">{count}</span>
   </button>
@@ -54,20 +39,21 @@ const LanguageLegendItem = ({ color, label, extension, count, isActive, onClick 
 interface StatusLegendItemProps {
   color: string;
   label: string;
-  icon?: React.ReactNode;
   isActive?: boolean;
   onClick?: () => void;
   clickable?: boolean;
 }
 
-const StatusLegendItem = ({ color, label, icon, isActive, onClick, clickable = true }: StatusLegendItemProps) => {
+const StatusLegendItem = ({ color, label, isActive, onClick, clickable = true }: StatusLegendItemProps) => {
   const content = (
     <>
+      {/* Ring indicator to match 3D visualization */}
       <div
-        className="w-3 h-3 rounded-full flex-shrink-0 border border-black/10"
-        style={{ backgroundColor: color }}
-      />
-      {icon && <span className="text-slate-600">{icon}</span>}
+        className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center"
+        style={{ border: `2.5px solid ${color}` }}
+      >
+        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+      </div>
       <span className="text-xs text-slate-600">{label}</span>
     </>
   );
@@ -240,7 +226,6 @@ export const LanguageLegend = () => {
                     key={lang}
                     color={LANGUAGE_COLORS[lang as Language] || '#F97316'}
                     label={LANGUAGE_LABELS[lang as Language] || lang}
-                    extension={LANGUAGE_EXTENSIONS[lang as Language] || lang}
                     count={count}
                     isActive={graphFilters.languages.includes(lang as Language)}
                     onClick={() => toggleLanguageFilter(lang as Language)}
@@ -250,23 +235,17 @@ export const LanguageLegend = () => {
             </div>
           )}
 
-          {/* Status Colors Section */}
+          {/* Status Rings Section - only show if there are problematic nodes */}
+          {(stats.byStatus.hotZone > 0 || stats.byStatus.circular > 0 || stats.byStatus.highCoupling > 0) && (
           <div>
             <div className="section-label px-2 mb-1">
-              Status
+              Status Rings
             </div>
             <div className="space-y-0.5">
-              <StatusLegendItem
-                color={STATUS_COLORS.default}
-                label="Normal"
-                icon={<Circle className="w-2.5 h-2.5" />}
-                clickable={false}
-              />
               {stats.byStatus.hotZone > 0 && (
                 <StatusLegendItem
                   color={STATUS_COLORS.hot_critical}
                   label={`Hot Zone (${stats.byStatus.hotZone})`}
-                  icon={<Flame className="w-2.5 h-2.5" />}
                   isActive={graphFilters.statuses.includes('hotZone')}
                   onClick={() => toggleStatusFilter('hotZone')}
                 />
@@ -275,7 +254,6 @@ export const LanguageLegend = () => {
                 <StatusLegendItem
                   color={STATUS_COLORS.circular}
                   label={`Circular (${stats.byStatus.circular})`}
-                  icon={<RefreshCw className="w-2.5 h-2.5" />}
                   isActive={graphFilters.statuses.includes('circular')}
                   onClick={() => toggleStatusFilter('circular')}
                 />
@@ -284,13 +262,13 @@ export const LanguageLegend = () => {
                 <StatusLegendItem
                   color={STATUS_COLORS.high_coupling}
                   label={`High Coupling (${stats.byStatus.highCoupling})`}
-                  icon={<Link2 className="w-2.5 h-2.5" />}
                   isActive={graphFilters.statuses.includes('highCoupling')}
                   onClick={() => toggleStatusFilter('highCoupling')}
                 />
               )}
             </div>
           </div>
+          )}
 
           {/* Services Section */}
           {activeServices.length > 0 && (

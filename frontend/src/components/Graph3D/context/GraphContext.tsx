@@ -10,7 +10,7 @@ import {
   MutableRefObject,
 } from 'react';
 import { Vector3 } from 'three';
-import { DependencyGraph, Node, Edge } from '@/types/graph';
+import { DependencyGraph } from '@/types/graph';
 import { GlobalMetrics } from '@/types/metrics';
 import { useGraphStore } from '@/stores/graphStore';
 

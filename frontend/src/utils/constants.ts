@@ -35,27 +35,28 @@ export const LANGUAGE_EXTENSIONS: Record<Language, string> = {
 /**
  * Status colors for node fill (semantic meaning)
  * These colors indicate the state/health of a node
+ * Using brighter, more saturated colors for better visibility in 3D
  */
 export const STATUS_COLORS = {
-  default: '#64748b',      // Slate-500 - neutral
-  hot_critical: '#ef4444', // Red - critical issues
-  hot_warning: '#f59e0b',  // Amber - warnings
-  circular: '#f97316',     // Orange - circular deps
-  high_coupling: '#eab308', // Yellow - high coupling
-  added: '#10b981',        // Green - added nodes
-  removed: '#ef4444',      // Red - removed nodes (with transparency)
-  third_party: '#9ca3af',  // Gray-400 - external deps
+  default: '#94a3b8',      // Slate-400 - brighter neutral
+  hot_critical: '#f87171', // Red-400 - brighter critical
+  hot_warning: '#fbbf24',  // Amber-400 - brighter warnings
+  circular: '#fb923c',     // Orange-400 - brighter circular deps
+  high_coupling: '#facc15', // Yellow-400 - brighter high coupling
+  added: '#34d399',        // Emerald-400 - brighter added nodes
+  removed: '#f87171',      // Red-400 - brighter removed nodes
+  third_party: '#d1d5db',  // Gray-300 - brighter external deps
 } as const;
 
 /**
  * Default node color (neutral gray)
  */
-export const DEFAULT_NODE_COLOR = '#64748b';
+export const DEFAULT_NODE_COLOR = '#94a3b8';
 
 /**
  * Third party dependency color
  */
-export const THIRD_PARTY_COLOR = '#6B7280';
+export const THIRD_PARTY_COLOR = '#d1d5db';
 
 /**
  * Get language color with fallback
