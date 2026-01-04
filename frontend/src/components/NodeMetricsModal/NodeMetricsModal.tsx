@@ -83,14 +83,14 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
                 </h3>
                 {langLabel && langExt && (
                   <span
-                    className="px-1.5 py-0.5 rounded text-[9px] font-bold font-mono text-white flex-shrink-0"
+                    className="px-1.5 py-0.5 rounded text-xs font-bold font-mono text-white flex-shrink-0"
                     style={{ backgroundColor: langColor }}
                   >
                     {langExt}
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-mono text-slate-600 truncate leading-tight mt-0.5" title={id}>
+              <p className="text-xs font-mono text-slate-600 truncate leading-tight mt-0.5" title={id}>
                 {kindLabel} • {type === 'third_party' ? 'Third Party' : module}
               </p>
             </div>
@@ -126,7 +126,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
                     <FileText className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-0.5" />
                     <span className="text-slate-600 flex-shrink-0">Path:</span>
                     <span
-                      className="font-mono text-[10px] text-slate-600 break-all leading-relaxed"
+                      className="font-mono text-xs text-slate-600 break-all leading-relaxed"
                       title={file_path}
                     >
                       {file_path}
@@ -155,9 +155,9 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 
             {/* Instability Bar */}
             <div className="mt-3 space-y-1.5">
-              <div className="flex justify-between items-end text-[10px] uppercase font-bold text-slate-600 tracking-wider">
-                <span>Instability</span>
-                <span className="font-mono text-slate-900">{metrics.instability.toFixed(2)}</span>
+              <div className="flex justify-between items-end">
+                <span className="section-label">Instability</span>
+                <span className="data-value">{metrics.instability.toFixed(2)}</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-100">
                 <div
@@ -232,7 +232,7 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
           <div className="p-3 bg-slate-50 border-t border-slate-200">
             <button
               onClick={() => setShowImpactModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-teal-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm hover:shadow-md group btn"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-teal-600 text-white section-labelr rounded-lg transition-all shadow-sm hover:shadow-md group btn"
             >
               <Network className="w-4 h-4 group-hover:scale-110 transition-transform" />
               View Impact Graph
@@ -250,15 +250,15 @@ export const NodeMetricsModal = ({ position = 'fixed' }: NodeMetricsModalProps) 
 const SectionHeader = ({ icon: Icon, label }: SectionHeaderProps) => (
   <div className="flex items-center gap-2 mb-2.5 pb-1 border-b border-slate-100">
     <Icon className="w-3.5 h-3.5 text-slate-600" />
-    <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{label}</h5>
+    <h5 className="section-label">{label}</h5>
   </div>
 );
 
 const MetricBox = ({ label, value, desc }: MetricBoxProps) => (
   <div className="bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
-    <div className="text-[9px] text-slate-600 font-bold uppercase mb-1">{label}</div>
-    <div className="text-lg font-black text-slate-800 font-mono leading-none">{value}</div>
-    <div className="text-[9px] text-slate-600 mt-1">{desc}</div>
+    <div className="text-xs text-slate-600 font-bold uppercase mb-1">{label}</div>
+    <div className="text-lg font-bold text-slate-800 font-mono leading-none">{value}</div>
+    <div className="text-xs text-slate-600 mt-1">{desc}</div>
   </div>
 );
 
@@ -286,7 +286,7 @@ const RowMetric = ({ label, value, grade }: RowMetricProps) => {
       <div className="flex items-center gap-2">
         <span className="font-mono font-bold text-slate-900">{value}</span>
         {grade && (
-          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${getGradeColor(grade)}`}>
+          <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${getGradeColor(grade)}`}>
             {grade}
           </span>
         )}
@@ -308,8 +308,8 @@ const AlertBox = ({ type, title, desc }: AlertBoxProps) => {
       <div className="flex items-start gap-2">
         <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${iconColor}`} />
         <div>
-          <div className="text-xs font-bold uppercase tracking-wide mb-0.5">{title}</div>
-          <div className="text-[10px] leading-snug opacity-90">{desc}</div>
+          <div className="section-label mb-0.5">{title}</div>
+          <div className="text-xs leading-snug opacity-90">{desc}</div>
         </div>
       </div>
     </div>

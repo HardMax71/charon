@@ -35,9 +35,9 @@ export const ControlsLegend = () => {
 
       {/* Header Strip */}
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between select-none">
-        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
-          <MousePointer2 className="w-3.5 h-3.5" />
-          <span>Input Mapping</span>
+        <div className="flex items-center gap-2">
+          <MousePointer2 className="w-3.5 h-3.5 panel-title-icon" />
+          <span className="panel-title">Input Mapping</span>
         </div>
         <button
           onClick={() => setControlsLegendExpanded(false)}
@@ -86,8 +86,8 @@ export const ControlsLegend = () => {
 
       {/* Footer Hint */}
       <div className="bg-slate-50 border-t border-slate-100 p-2 text-center">
-        <p className="text-[9px] text-slate-600 font-mono">
-          DOUBLE-CLICK TO RESET CAMERA
+        <p className="caption font-mono">
+          Double-click to reset camera
         </p>
       </div>
     </div>
@@ -98,15 +98,15 @@ export const ControlsLegend = () => {
 const ControlRow = ({ label, action, highlight = false }: { label: string, action: string, highlight?: boolean }) => (
   <div className="flex items-center justify-between group">
     <span className={`
-      font-mono font-bold px-2 py-1 rounded border text-[10px] uppercase tracking-tight min-w-[80px] text-center
-      ${highlight 
-        ? 'bg-teal-50 border-teal-200 text-teal-700' 
+      font-mono font-semibold px-2 py-1 rounded border text-xs min-w-[80px] text-center
+      ${highlight
+        ? 'bg-teal-50 border-teal-200 text-teal-700'
         : 'bg-slate-100 border-slate-200 text-slate-600 group-hover:border-slate-300'
       }
     `}>
       {label}
     </span>
-    <span className="text-slate-600 font-medium text-[11px]">
+    <span className="body-text-small">
       {action}
     </span>
   </div>

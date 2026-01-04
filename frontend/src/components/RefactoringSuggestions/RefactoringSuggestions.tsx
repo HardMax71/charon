@@ -174,7 +174,7 @@ export const RefactoringSuggestions = () => {
                 >
                   <PatternIcon pattern={pattern} className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-amber-600' : 'text-slate-600'}`} />
                   <div className="min-w-0 flex-1">
-                    <div className={`text-[10px] leading-tight truncate ${isActive ? 'text-amber-700' : 'text-slate-600'}`}>{pattern}</div>
+                    <div className={`text-xs leading-tight truncate ${isActive ? 'text-amber-700' : 'text-slate-600'}`}>{pattern}</div>
                     <div className={`text-sm font-semibold tabular-nums ${isActive ? 'text-amber-800' : 'text-slate-700'}`}>{patternCount}</div>
                   </div>
                 </button>
@@ -193,7 +193,7 @@ export const RefactoringSuggestions = () => {
             <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center gap-2">
               <PatternIcon pattern={pattern} className="w-3.5 h-3.5 text-slate-600" />
               <h4 className="text-xs font-medium text-slate-600">{pattern}</h4>
-              <span className="ml-auto text-[10px] text-slate-600">
+              <span className="ml-auto text-xs text-slate-600">
                 {patternSuggestions.length}
               </span>
             </div>
@@ -215,10 +215,10 @@ export const RefactoringSuggestions = () => {
                           suggestion.severity === 'critical' ? 'text-rose-500' :
                           suggestion.severity === 'warning' ? 'text-amber-500' : 'text-blue-500'
                         }`} />
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${getSeverityColor(suggestion.severity)}`}>
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${getSeverityColor(suggestion.severity)}`}>
                           {suggestion.severity}
                         </span>
-                        <span className="text-[11px] text-slate-600 truncate flex-1">{suggestion.module}</span>
+                        <span className="text-xs text-slate-600 truncate flex-1">{suggestion.module}</span>
                         <ChevronDown className={`w-4 h-4 text-slate-600 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                       </div>
 
@@ -226,7 +226,7 @@ export const RefactoringSuggestions = () => {
                       <p className="text-xs text-slate-700 mb-1.5">{suggestion.description}</p>
 
                       {/* Row 3: Recommendation Preview */}
-                      <div className="flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50/50 rounded px-2 py-1">
+                      <div className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50/50 rounded px-2 py-1">
                         <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5 text-amber-500" />
                         <span className="line-clamp-1">{suggestion.recommendation}</span>
                       </div>
@@ -254,9 +254,9 @@ export const RefactoringSuggestions = () => {
                           {/* Metrics - Inline Pills */}
                           {Object.keys(suggestion.metrics).length > 0 && (
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[10px] text-slate-600 uppercase font-medium">Metrics:</span>
+                              <span className="text-xs text-slate-600 uppercase font-medium">Metrics:</span>
                               {Object.entries(suggestion.metrics).map(([key, val]) => (
-                                <span key={key} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-[11px]">
+                                <span key={key} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-xs">
                                   <span className="text-slate-600">{key.split('_')[0]}</span>
                                   <span className="text-slate-700 font-medium tabular-nums">{typeof val === 'number' ? val.toFixed(1) : val}</span>
                                 </span>

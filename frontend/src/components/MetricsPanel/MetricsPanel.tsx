@@ -106,7 +106,7 @@ export const MetricsPanel = () => {
 
         {/* Technical Deco Right */}
         <div className="hidden md:flex items-center gap-3">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-stone-400 uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
             <div className="w-1.5 h-1.5 bg-styx-600 rounded-full animate-pulse shadow-[0_0_5px_rgba(20,184,166,0.5)]" />
             <span>Live Diagnostics</span>
           </div>

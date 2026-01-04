@@ -66,7 +66,7 @@ export const FeaturesSection = () => (
 
     {/* Scroll indicator */}
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600">
-      <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
+      <span className="text-xs uppercase tracking-wide font-medium">Scroll</span>
       <ArrowDown className="w-4 h-4 animate-bounce" />
     </div>
   </section>

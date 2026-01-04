@@ -49,31 +49,31 @@ export const FitnessRuleCard = ({ rule, onToggle, onDelete, onEdit }: FitnessRul
       {/* Status Strip (Left Border) */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${rule.enabled ? config.border : 'bg-slate-300'}`} />
 
-      <div className="p-5 pl-7">
+      <div className="p-4 pl-5">
         {/* Header Section */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0 mr-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 mr-3">
 
             {/* Badges Row */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-1.5 mb-2">
               <span className={`
-                flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider
+                flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs font-medium uppercase
                 ${rule.enabled ? config.badge : 'bg-slate-100 text-slate-600 border-slate-200'}
               `}>
                 <SeverityIcon className="w-3 h-3" />
                 {rule.severity}
               </span>
 
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded border bg-slate-50 border-slate-200 text-slate-600 text-[10px] font-mono uppercase tracking-wide">
-                <Activity className="w-3 h-3 text-slate-600" />
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded border bg-slate-50 border-slate-200 text-slate-500 text-xs font-medium">
+                <Activity className="w-3 h-3" />
                 {ruleTypeLabels[rule.rule_type] || rule.rule_type}
               </span>
             </div>
 
-            <h3 className={`text-sm font-bold truncate ${rule.enabled ? 'text-slate-900' : 'text-slate-600'}`}>
+            <h3 className={`text-sm font-semibold truncate ${rule.enabled ? 'text-slate-900' : 'text-slate-600'}`}>
               {rule.name}
             </h3>
-            <p className="text-sm text-slate-600 mt-1 leading-relaxed line-clamp-2">
+            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
               {rule.description}
             </p>
           </div>
@@ -104,19 +104,15 @@ export const FitnessRuleCard = ({ rule, onToggle, onDelete, onEdit }: FitnessRul
 
         {/* Parameters Grid */}
         {Object.keys(rule.parameters).length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
-              <Settings className="w-3 h-3" />
-              <span>Configuration</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <div className="flex flex-wrap gap-1.5">
               {Object.entries(rule.parameters).map(([key, value]) => (
                 <div
                   key={key}
-                  className="flex items-center bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs group-hover:border-slate-300 transition-colors"
+                  className="flex items-center bg-slate-50 border border-slate-200 rounded px-1.5 py-1 text-xs"
                 >
-                  <span className="text-slate-600 font-medium mr-2">{key.replace(/_/g, ' ')}:</span>
-                  <span className="font-mono font-bold text-slate-700">
+                  <span className="text-slate-500 mr-1.5">{key.replace(/_/g, ' ')}:</span>
+                  <span className="font-mono font-semibold text-slate-700">
                     {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                   </span>
                 </div>

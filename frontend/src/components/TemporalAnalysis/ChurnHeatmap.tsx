@@ -46,18 +46,18 @@ export const ChurnHeatmap = ({ data, currentSnapshot, repositoryUrl }: ChurnHeat
                 <Activity className="w-4 h-4 text-teal-400" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-slate-900 tracking-widest uppercase leading-none">
+                <h2 className="panel-title leading-none">
                   Dependency Churn
                 </h2>
-                <p className="text-[10px] font-mono text-slate-600 mt-1">
-                  HEATMAP VIEW
+                <p className="caption font-mono mt-1">
+                  Heatmap View
                 </p>
               </div>
             </div>
 
             {currentSnapshot && (
               <div className="bg-white rounded border border-slate-200 px-3 py-2 relative z-10">
-                <div className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Current</div>
+                <div className="section-label">Current</div>
                 <a
                   href={buildGitHubCommitUrl(repositoryUrl, currentSnapshot.commit_sha)}
                   target="_blank"
@@ -74,20 +74,20 @@ export const ChurnHeatmap = ({ data, currentSnapshot, repositoryUrl }: ChurnHeat
           {/* Summary Stats */}
           <div className="p-6 grid grid-cols-3 gap-4">
             <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-              <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Total Changes</div>
-              <div className="text-2xl font-black font-mono text-slate-900 tabular-nums">
+              <div className="section-label mb-2">Total Changes</div>
+              <div className="data-value-large tabular-nums">
                 {data.total_changes}
               </div>
             </div>
             <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-              <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Avg. Churn</div>
-              <div className="text-2xl font-black font-mono text-slate-900 tabular-nums">
+              <div className="section-label mb-2">Avg. Churn</div>
+              <div className="data-value-large tabular-nums">
                 {data.average_churn_per_snapshot}
               </div>
             </div>
             <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-              <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Modules</div>
-              <div className="text-2xl font-black font-mono text-slate-900 tabular-nums">
+              <div className="section-label mb-2">Modules</div>
+              <div className="data-value-large tabular-nums">
                 {Object.keys(data.node_churn).length}
               </div>
             </div>
@@ -97,7 +97,7 @@ export const ChurnHeatmap = ({ data, currentSnapshot, repositoryUrl }: ChurnHeat
         {/* Legend */}
         <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Intensity Scale</div>
+            <div className="section-label">Intensity Scale</div>
             <div className="flex items-center gap-4 flex-wrap">
               {['Minimal', 'Low', 'Medium', 'High', 'Critical'].map((label, index) => (
                 <div key={label} className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export const ChurnHeatmap = ({ data, currentSnapshot, repositoryUrl }: ChurnHeat
         {/* Top Churning Nodes */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-100 px-6 py-4">
-            <h3 className="text-sm font-black text-slate-900 tracking-widest uppercase leading-none">
+            <h3 className="text-sm font-semibold text-slate-800 leading-none">
               Top Churning Modules
             </h3>
             <p className="text-sm text-slate-600 mt-1">
@@ -166,7 +166,7 @@ export const ChurnHeatmap = ({ data, currentSnapshot, repositoryUrl }: ChurnHeat
                         {churnCount}
                       </span>
                     </div>
-                    <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right mt-1">
+                    <div className="section-label text-right mt-1">
                       {getChurnLabel(churnCount)}
                     </div>
                   </div>

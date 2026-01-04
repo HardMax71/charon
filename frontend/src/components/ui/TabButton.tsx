@@ -13,15 +13,15 @@ export const TabButton = ({ active, onClick, icon: Icon, label, count }: TabButt
     <button
         onClick={onClick}
         className={`
-      group relative flex items-center gap-2 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-200 select-none btn-ghost
+      group relative flex items-center gap-2 py-4 section-label transition-all duration-200 select-none btn-ghost
       ${active
                 ? 'text-styx-600'
-                : 'text-stone-400'
+                : 'text-slate-500'
             }
     `}
     >
         <Icon
-            className={`w-4 h-4 transition-colors ${active ? 'text-styx-600' : 'text-stone-400 group-hover:text-stone-500'}`}
+            className={`w-4 h-4 transition-colors ${active ? 'text-styx-600' : 'text-slate-500 group-hover:text-stone-500'}`}
             strokeWidth={active ? 2.5 : 2}
         />
 
@@ -30,8 +30,8 @@ export const TabButton = ({ active, onClick, icon: Icon, label, count }: TabButt
         {/* Counter Badge - Perfectly Aligned */}
         {count !== undefined && count > 0 && (
             <span className={`
-        ml-1 font-mono text-[10px] leading-none flex items-center
-        ${active ? 'text-obol-500 font-black' : 'text-stone-400 group-hover:text-stone-500'}
+        ml-1 font-mono text-xs leading-none flex items-center
+        ${active ? 'text-obol-500 font-bold' : 'text-slate-500 group-hover:text-stone-500'}
       `}>
                 [{count}]
             </span>

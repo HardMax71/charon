@@ -43,7 +43,7 @@ export const ImpactAnalysisModal = () => {
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+              <h3 className="text-lg font-bold text-slate-900 uppercase tracking-tight">
                 Blast Radius Analysis
               </h3>
               <p className="text-sm text-slate-600 mt-1 font-medium">
@@ -70,12 +70,12 @@ export const ImpactAnalysisModal = () => {
             <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3 text-slate-600">
                 <Target className="w-4 h-4 text-rose-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Scope</span>
+                <span className="section-label">Scope</span>
               </div>
-              <div className="text-3xl font-black text-slate-900 font-mono leading-none mb-1">
+              <div className="data-value-large leading-none mb-1">
                 {metrics.total_affected}
               </div>
-              <div className="text-[10px] text-slate-600 font-medium uppercase tracking-wide">
+              <div className="data-label">
                 Files Impacted
               </div>
             </div>
@@ -84,12 +84,12 @@ export const ImpactAnalysisModal = () => {
             <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3 text-slate-600">
                 <TrendingUp className="w-4 h-4 text-amber-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Severity</span>
+                <span className="section-label">Severity</span>
               </div>
-              <div className="text-3xl font-black text-slate-900 font-mono leading-none mb-1">
+              <div className="data-value-large leading-none mb-1">
                 {metrics.impact_percentage}%
               </div>
-              <div className="text-[10px] text-slate-600 font-medium uppercase tracking-wide">
+              <div className="data-label">
                 Codebase Coverage
               </div>
             </div>
@@ -98,12 +98,12 @@ export const ImpactAnalysisModal = () => {
             <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3 text-slate-600">
                 <Activity className="w-4 h-4 text-teal-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Depth</span>
+                <span className="section-label">Depth</span>
               </div>
-              <div className="text-3xl font-black text-slate-900 font-mono leading-none mb-1">
+              <div className="data-value-large leading-none mb-1">
                 {metrics.max_depth_reached}
               </div>
-              <div className="text-[10px] text-slate-600 font-medium uppercase tracking-wide">
+              <div className="data-label">
                 Propagation Hops
               </div>
             </div>
@@ -115,7 +115,7 @@ export const ImpactAnalysisModal = () => {
             <div>
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
                 <BarChart3 className="w-4 h-4 text-slate-600" />
-                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">
+                <h4 className="section-label">
                   Propagation Stages
                 </h4>
               </div>
@@ -125,7 +125,7 @@ export const ImpactAnalysisModal = () => {
                   <div key={distance} className="group">
                     <div className="flex justify-between items-end mb-1.5">
                       <span className="text-xs font-bold text-slate-600">{label}</span>
-                      <span className="text-[10px] font-mono text-slate-600">
+                      <span className="text-xs font-mono text-slate-600">
                         <span className="text-slate-900 font-bold">{count}</span> files • {percentage.toFixed(1)}%
                       </span>
                     </div>
@@ -148,11 +148,11 @@ export const ImpactAnalysisModal = () => {
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-slate-600" />
-                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest">
+                  <h4 className="section-label">
                     Affected Modules
                   </h4>
                 </div>
-                <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
                   {affected_node_details.length} ITEMS
                 </span>
               </div>
@@ -176,14 +176,14 @@ export const ImpactAnalysisModal = () => {
                           </span>
                         </div>
                         {node.module && (
-                          <p className="text-[10px] text-slate-600 ml-4 truncate mt-0.5">
+                          <p className="text-xs text-slate-600 ml-4 truncate mt-0.5">
                             {node.module}
                           </p>
                         )}
                       </div>
 
                       <span className={`
-                        text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0
+                        text-xs font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0
                         ${node.distance === 0 
                           ? 'bg-slate-900 text-white border-slate-900' 
                           : 'bg-white text-slate-600 border-slate-200'
@@ -201,7 +201,7 @@ export const ImpactAnalysisModal = () => {
 
         {/* --- FOOTER --- */}
         <div className="bg-slate-50 p-3 border-t border-slate-200 text-center">
-          <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
+          <p className="text-xs font-mono text-slate-600 uppercase tracking-wide">
             End of Analysis Report
           </p>
         </div>

@@ -50,7 +50,7 @@ export const ExportDiagramButton = () => {
         `}
       >
         <Network className="w-4 h-4" />
-        <span className="text-[9px] font-bold uppercase tracking-wider">Diagrams</span>
+        <span className="chip-label">Diagrams</span>
       </button>
 
       {isOpen && (

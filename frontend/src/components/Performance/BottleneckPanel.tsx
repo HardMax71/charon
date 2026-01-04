@@ -146,10 +146,10 @@ const BottleneckCard = ({ bottleneck, rank }: BottleneckCardProps) => {
 
         {/* Impact & Difficulty Badges - Vertically Centered */}
         <div className="hidden sm:flex flex-col gap-1">
-          <span className={`px-2 py-1 text-[10px] font-medium rounded border flex items-center justify-center ${getImpactBadge()}`}>
+          <span className={`px-2 py-1 text-xs font-medium rounded border flex items-center justify-center ${getImpactBadge()}`}>
             {bottleneck.estimated_impact}
           </span>
-          <span className={`px-2 py-1 text-[10px] font-medium rounded border flex items-center justify-center ${getDifficultyBadge()}`}>
+          <span className={`px-2 py-1 text-xs font-medium rounded border flex items-center justify-center ${getDifficultyBadge()}`}>
             {bottleneck.optimization_difficulty.replace('_', ' ')}
           </span>
         </div>
@@ -241,7 +241,7 @@ export const BottleneckPanel = () => {
 
   if (!analysis) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex items-center justify-center py-16 px-6">
         <div className="text-center">
           <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
             <Flame className="w-6 h-6 text-slate-600" />
@@ -277,7 +277,7 @@ export const BottleneckPanel = () => {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] text-slate-600">
+        <div className="flex items-center gap-3 text-xs text-slate-600">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
             <span>Time %</span>

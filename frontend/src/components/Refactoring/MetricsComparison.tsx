@@ -25,10 +25,10 @@ export const MetricsComparison = ({ original, modified }: MetricsComparisonProps
     <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
       <div className="bg-slate-50/80 backdrop-blur border-b border-slate-200 px-3 py-2 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+        <h3 className="section-label">
           Metric
         </h3>
-        <h3 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
+        <h3 className="section-label text-right">
           Impact
         </h3>
       </div>
@@ -75,7 +75,7 @@ const MetricRow = ({ data }: MetricRowProps) => {
 
       {/* Left: Label */}
       <div className="min-w-0 pr-4 flex-1">
-        <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wide truncate" title={label}>
+        <div className="section-label truncate" title={label}>
           {label.replace(/_/g, ' ')}
         </div>
       </div>
@@ -101,7 +101,7 @@ const MetricRow = ({ data }: MetricRowProps) => {
 
         {/* Delta Badge */}
         <div className={`flex flex-col items-end justify-center min-w-[50px] px-1.5 py-0.5 rounded ${deltaBg} ${deltaText}`}>
-          <div className="flex items-center text-[11px] font-bold font-mono leading-none">
+          <div className="flex items-center text-xs font-bold font-mono leading-none">
             {hasChange ? (
               <>
                 {delta > 0 ? '+' : ''}
@@ -114,7 +114,7 @@ const MetricRow = ({ data }: MetricRowProps) => {
 
           {/* Percentage (Only show if significant) */}
           {hasChange && deltaPercent !== undefined && Math.abs(deltaPercent) > 0.1 && (
-            <span className="text-[9px] font-medium opacity-80 leading-tight">
+            <span className="text-xs font-medium opacity-80 leading-tight">
                {delta > 0 ? '+' : ''}{deltaPercent.toFixed(1)}%
             </span>
           )}

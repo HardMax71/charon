@@ -80,9 +80,9 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
 
       {/* Header */}
       <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center justify-between select-none h-9 rounded-t-lg">
-        <div className="flex items-center gap-2 text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
-          <Settings className="w-3 h-3" />
-          <span>View Config</span>
+        <div className="flex items-center gap-2">
+          <Settings className="w-3.5 h-3.5 panel-title-icon" />
+          <span className="panel-title">View Config</span>
         </div>
         <button
           onClick={() => setLayoutSelectorExpanded(false)}
@@ -98,7 +98,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
 
         {/* 1. Layout Selector */}
         <div className="space-y-1.5">
-          <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider block pl-0.5">
+          <label className="section-label block pl-0.5">
             Topology Layout
           </label>
           <div className="relative group">
@@ -120,7 +120,7 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
 
         {/* 2. Module Filter */}
         <div className="space-y-1.5">
-          <label className="text-[9px] font-bold text-slate-600 uppercase tracking-wider block pl-0.5">
+          <label className="section-label block pl-0.5">
             Scope Filter
           </label>
           <div className="relative group">
@@ -154,8 +154,8 @@ export const LayoutSelector = ({ customGraph, customMetrics, className }: Layout
             <div className="flex items-center gap-2">
               <Layers className="w-3.5 h-3.5 text-teal-600" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide">Clusters</span>
-                <span className="text-[9px] text-slate-600 leading-none">{activeMetrics.clusters.length} detected</span>
+                <span className="section-label">Clusters</span>
+                <span className="text-xs text-slate-600 leading-none">{activeMetrics.clusters.length} detected</span>
               </div>
             </div>
 

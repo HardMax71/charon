@@ -16,7 +16,7 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center gap-2">
           <GitCommit className="w-4 h-4 text-slate-600" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Snapshot Data</span>
+          <span className="section-label">Snapshot Data</span>
         </div>
 
         <div className="p-4 space-y-3">
@@ -28,7 +28,7 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
               href={buildGitHubCommitUrl(repositoryUrl, currentSnapshot.commit_sha)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-bold text-teal-600 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-teal-600 hover:underline flex items-center gap-1"
             >
               VIEW DIFF <ExternalLink className="w-3 h-3" />
             </a>
@@ -56,7 +56,7 @@ export const TemporalSidebar = ({ currentSnapshot, timeline, repositoryUrl }: Te
 
     {currentSnapshot && (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
-        <h4 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-3">
+        <h4 className="section-label mb-3">
           State Metrics
         </h4>
         <div className="space-y-2">
