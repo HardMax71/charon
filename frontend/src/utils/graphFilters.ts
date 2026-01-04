@@ -3,7 +3,7 @@ import { GraphFilters } from '@/stores/uiStore';
 
 /**
  * Check if a node matches the current graph filters.
- * Used by both NodeMesh and EdgeMesh to determine visibility.
+ * Used by InstancedNodes and BatchedEdges to determine visibility.
  */
 export const nodeMatchesFilters = (
   node: Node,

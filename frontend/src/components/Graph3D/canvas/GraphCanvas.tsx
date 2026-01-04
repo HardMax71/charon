@@ -2,8 +2,11 @@ import { memo, ReactNode, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGraphContext } from '../context/GraphContext';
 import { SceneSetup } from './SceneSetup';
-import { NodeGroup } from './NodeMesh';
-import { EdgeGroup } from './EdgeMesh';
+import { InstancedNodes } from './InstancedNodes';
+import { StatusRings } from './StatusRings';
+import { BatchedEdges } from './BatchedEdges';
+import { SelectionOverlay } from './SelectionOverlay';
+import { NodeInteractionLayer } from './NodeInteractionLayer';
 import { ClusterBoxes } from './ClusterBoxes';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -30,17 +33,14 @@ export const GraphCanvas = memo(({ children, hideClusterBoxes = false }: GraphCa
   return (
     <Canvas
       className="w-full h-full"
-      shadows
-      dpr={[1, 2]}
+      shadows={false}
+      dpr={[1, 1.5]}
       gl={{
         antialias: true,
-        // Disable problematic pixel storage options that trigger Firefox warnings
-        // These are deprecated for non-DOM-Element uploads
+        powerPreference: 'high-performance',
         premultipliedAlpha: false,
       }}
       onCreated={({ gl }) => {
-        // Disable deprecated pixel store settings to avoid Firefox warnings
-        // gl is Three.js WebGLRenderer, need to access raw WebGL context
         const context = gl.getContext();
         context.pixelStorei(context.UNPACK_FLIP_Y_WEBGL, false);
         context.pixelStorei(context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
@@ -52,14 +52,22 @@ export const GraphCanvas = memo(({ children, hideClusterBoxes = false }: GraphCa
 
         {/* Graph elements */}
         <group position={[0, 0, 0]}>
-          {/* Cluster bounding boxes */}
           {!hideClusterBoxes && <ClusterBoxes />}
 
-          {/* Edges (rendered first, behind nodes) */}
-          <EdgeGroup edges={graph.edges} nodes={graph.nodes} />
+          {/* Batched edges (single draw call) */}
+          <BatchedEdges edges={graph.edges} nodes={graph.nodes} />
 
-          {/* Nodes */}
-          <NodeGroup nodes={graph.nodes} />
+          {/* Instanced nodes (single draw call) */}
+          <InstancedNodes nodes={graph.nodes} />
+
+          {/* Status rings for hot zones, circular deps, high coupling */}
+          <StatusRings nodes={graph.nodes} />
+
+          {/* Selection/highlight overlay (0-2 meshes) */}
+          <SelectionOverlay nodes={graph.nodes} />
+
+          {/* Invisible interaction layer for clicks/hovers */}
+          <NodeInteractionLayer nodes={graph.nodes} />
         </group>
 
         {/* Additional children (custom elements) */}
