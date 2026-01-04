@@ -340,9 +340,9 @@ export const RefactoringPage = () => {
                       onMouseLeave={() => setHighlightedNodeId(null)}
                     >
                       <div className="flex items-start gap-2">
-                        <span className="text-[10px] font-mono text-slate-600 mt-0.5">#{changes.length - idx}</span>
+                        <span className="text-xs font-mono text-slate-600 mt-0.5">#{changes.length - idx}</span>
                         <div className="flex-1 min-w-0">
-                          <div className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase mb-1 ${change.type.includes('remove') ? 'bg-rose-100 text-rose-600' : 'bg-teal-100 text-teal-600'
+                          <div className={`inline-block px-1.5 py-0.5 rounded text-xs font-semibold uppercase mb-1 ${change.type.includes('remove') ? 'bg-rose-100 text-rose-600' : 'bg-teal-100 text-teal-600'
                             }`}>
                             {change.type.replace('_', ' ')}
                           </div>
@@ -380,7 +380,7 @@ export const RefactoringPage = () => {
                   </div>
                   {addedNodeIds.length > 0 && (
                     <div
-                      className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold border border-white shadow-sm"
+                      className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold border border-white shadow-sm"
                       title={`${addedNodeIds.length} node${addedNodeIds.length > 1 ? 's' : ''} added`}
                     >
                       +{addedNodeIds.length}
@@ -388,7 +388,7 @@ export const RefactoringPage = () => {
                   )}
                   {removedNodeIds.length > 0 && (
                     <div
-                      className="absolute -bottom-1 -right-1 bg-rose-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold border border-white shadow-sm"
+                      className="absolute -bottom-1.5 -right-1.5 bg-rose-500 text-white rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold border border-white shadow-sm"
                       title={`${removedNodeIds.length} node${removedNodeIds.length > 1 ? 's' : ''} removed`}
                     >
                       −{removedNodeIds.length}
@@ -405,7 +405,7 @@ export const RefactoringPage = () => {
                   </div>
                   {addedEdgeIds.length > 0 && (
                     <div
-                      className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold border border-white shadow-sm"
+                      className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold border border-white shadow-sm"
                       title={`${addedEdgeIds.length} edge${addedEdgeIds.length > 1 ? 's' : ''} added`}
                     >
                       +{addedEdgeIds.length}
@@ -413,7 +413,7 @@ export const RefactoringPage = () => {
                   )}
                   {removedEdgeIds.length > 0 && (
                     <div
-                      className="absolute -bottom-1 -right-1 bg-rose-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold border border-white shadow-sm"
+                      className="absolute -bottom-1.5 -right-1.5 bg-rose-500 text-white rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold border border-white shadow-sm"
                       title={`${removedEdgeIds.length} edge${removedEdgeIds.length > 1 ? 's' : ''} removed`}
                     >
                       −{removedEdgeIds.length}

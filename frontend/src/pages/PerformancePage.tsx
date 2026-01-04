@@ -91,9 +91,9 @@ export const PerformancePage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Upload & Stats */}
-            <div className="space-y-5">
+            <div className="space-y-5 min-w-0">
               {/* Upload Card */}
               <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
                 <h2 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -115,28 +115,28 @@ export const PerformancePage = () => {
                       <p className="text-2xl font-bold text-slate-900 tabular-nums">
                         {analysis.total_execution_time.toFixed(2)}<span className="text-base font-medium text-slate-600">s</span>
                       </p>
-                      <p className="text-[11px] text-slate-600 mt-1 font-medium">Total Runtime</p>
+                      <p className="text-xs text-slate-600 mt-1 font-medium">Total Runtime</p>
                     </div>
 
                     <div className="text-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                       <p className="text-2xl font-bold text-slate-900 tabular-nums">
                         {analysis.total_modules_profiled}
                       </p>
-                      <p className="text-[11px] text-slate-600 mt-1 font-medium">Modules</p>
+                      <p className="text-xs text-slate-600 mt-1 font-medium">Modules</p>
                     </div>
 
                     <div className="text-center p-3 bg-red-50 rounded-xl border border-red-100">
                       <p className="text-2xl font-bold text-red-600 tabular-nums">
                         {analysis.critical_bottlenecks}
                       </p>
-                      <p className="text-[11px] text-red-600 mt-1 font-medium">Critical</p>
+                      <p className="text-xs text-red-600 mt-1 font-medium">Critical</p>
                     </div>
 
                     <div className="text-center p-3 bg-rose-50 rounded-xl border border-rose-100">
                       <p className="text-2xl font-bold text-rose-600 tabular-nums">
                         {analysis.high_bottlenecks}
                       </p>
-                      <p className="text-[11px] text-rose-600 mt-1 font-medium">High Priority</p>
+                      <p className="text-xs text-rose-600 mt-1 font-medium">High Priority</p>
                     </div>
                   </div>
 
@@ -162,7 +162,7 @@ export const PerformancePage = () => {
             </div>
 
             {/* Right Column: Bottleneck Panel (2 columns width) */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col self-stretch">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-w-0 min-h-[300px] lg:min-h-[400px]">
               <BottleneckPanel />
             </div>
           </div>

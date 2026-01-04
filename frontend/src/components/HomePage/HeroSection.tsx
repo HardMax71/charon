@@ -20,7 +20,7 @@ export const HeroSection = () => (
         {/* Left: Copy */}
         <div className="space-y-8">
           <div className="space-y-5">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-slate-900">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[0.95] text-slate-900">
               See your code.
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">
@@ -35,7 +35,7 @@ export const HeroSection = () => (
 
           {/* Tech stack - minimal inline */}
           <div className="flex items-center gap-2 text-xs text-slate-600 pt-2">
-            <span className="uppercase tracking-wider">Powered by</span>
+            <span className="uppercase tracking-wide">Powered by</span>
             <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">tree-sitter</span>
             <span>+</span>
             <span className="px-2 py-1 bg-slate-100 rounded font-mono font-medium text-slate-600">NetworkX</span>
@@ -53,7 +53,7 @@ export const HeroSection = () => (
 
     {/* Scroll indicator */}
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600">
-      <span className="text-[10px] uppercase tracking-widest font-medium">Scroll</span>
+      <span className="text-xs uppercase tracking-wide font-medium">Scroll</span>
       <ArrowDown className="w-4 h-4 animate-bounce" />
     </div>
   </section>

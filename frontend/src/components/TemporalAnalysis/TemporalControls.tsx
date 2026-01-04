@@ -27,7 +27,7 @@ export const TemporalControls = ({
       <button
         onClick={onPlayPause}
         className={`
-          h-10 px-4 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2
+          h-10 px-4 rounded-lg font-bold text-xs uppercase tracking-wide transition-all flex items-center gap-2
           ${isPlaying
             ? 'bg-slate-900 text-white hover:bg-teal-600 shadow-sm'
             : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'

@@ -54,7 +54,7 @@ export const ExportDocumentationButton = () => {
         `}
       >
         {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-        <span className="text-[9px] font-bold uppercase tracking-wider">Reports</span>
+        <span className="chip-label">Reports</span>
       </button>
 
       {isOpen && (

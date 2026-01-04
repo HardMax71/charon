@@ -41,13 +41,13 @@ const LanguageLegendItem = ({ color, label, extension, count, isActive, onClick 
     </div>
     {/* Extension badge */}
     <span
-      className="text-[9px] font-bold font-mono px-1 py-0.5 rounded text-white flex-shrink-0"
+      className="text-xs font-bold font-mono px-1 py-0.5 rounded text-white flex-shrink-0"
       style={{ backgroundColor: color }}
     >
       {extension}
     </span>
     <span className="text-xs text-slate-700 flex-grow text-left">{label}</span>
-    <span className="text-[10px] text-slate-600 font-mono">{count}</span>
+    <span className="text-xs text-slate-600 font-mono">{count}</span>
   </button>
 );
 
@@ -68,7 +68,7 @@ const StatusLegendItem = ({ color, label, icon, isActive, onClick, clickable = t
         style={{ backgroundColor: color }}
       />
       {icon && <span className="text-slate-600">{icon}</span>}
-      <span className="text-[10px] text-slate-600">{label}</span>
+      <span className="text-xs text-slate-600">{label}</span>
     </>
   );
 
@@ -109,14 +109,14 @@ const ServiceLegendItem = ({ service, count, isActive, onClick }: ServiceLegendI
     <span className="text-xs text-slate-600 flex-grow truncate text-left" title={service}>
       {service}
     </span>
-    <span className="text-[10px] text-slate-600 font-mono">{count}</span>
+    <span className="text-xs text-slate-600 font-mono">{count}</span>
   </button>
 );
 
 export const LanguageLegend = () => {
   const nodes = useGraphStore(state => state.graph?.nodes);
   const selectedNode = useGraphStore(state => state.selectedNode);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Filter state from UI store
   const graphFilters = useUIStore(state => state.graphFilters);
@@ -202,10 +202,8 @@ export const LanguageLegend = () => {
         }`}
       >
         <div className="flex items-center gap-2">
-          <Layers className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-slate-600">
-            Legend
-          </span>
+          <Layers className="w-3.5 h-3.5 panel-title-icon" />
+          <span className="panel-title">Legend</span>
           {filtersActive && (
             <span className="w-2 h-2 rounded-full bg-teal-500" title="Filters active" />
           )}
@@ -223,7 +221,7 @@ export const LanguageLegend = () => {
           {filtersActive && (
             <button
               onClick={clearAllFilters}
-              className="w-full flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded transition-colors"
+              className="w-full flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded transition-colors"
             >
               <X className="w-3 h-3" />
               Clear all filters
@@ -233,7 +231,7 @@ export const LanguageLegend = () => {
           {/* Languages Section */}
           {activeLanguages.length > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
+              <div className="section-label px-2 mb-1">
                 Languages
               </div>
               <div className="space-y-0.5">
@@ -254,7 +252,7 @@ export const LanguageLegend = () => {
 
           {/* Status Colors Section */}
           <div>
-            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
+            <div className="section-label px-2 mb-1">
               Status
             </div>
             <div className="space-y-0.5">
@@ -297,7 +295,7 @@ export const LanguageLegend = () => {
           {/* Services Section */}
           {activeServices.length > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
+              <div className="section-label px-2 mb-1">
                 Services
               </div>
               <div className="space-y-0.5">
@@ -317,7 +315,7 @@ export const LanguageLegend = () => {
           {/* Third Party */}
           {stats.thirdPartyCount > 0 && (
             <div>
-              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider px-2 mb-1">
+              <div className="section-label px-2 mb-1">
                 Dependencies
               </div>
               <button
@@ -333,14 +331,14 @@ export const LanguageLegend = () => {
                   style={{ backgroundColor: THIRD_PARTY_COLOR }}
                 />
                 <span className="text-xs text-slate-600 flex-grow text-left">Third Party</span>
-                <span className="text-[10px] text-slate-600 font-mono">{stats.thirdPartyCount}</span>
+                <span className="text-xs text-slate-600 font-mono">{stats.thirdPartyCount}</span>
               </button>
             </div>
           )}
 
           {/* Summary */}
           <div className="border-t border-slate-100 pt-2 px-2">
-            <div className="text-[10px] text-slate-600 text-center">
+            <div className="caption text-center">
               {nodes.length} total nodes
             </div>
           </div>

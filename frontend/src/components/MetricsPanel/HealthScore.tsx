@@ -50,7 +50,7 @@ export const HealthScore = () => {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-600 space-y-3">
         <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
-        <span className="text-xs font-mono uppercase tracking-widest">Calibrating Metrics...</span>
+        <span className="text-xs font-mono uppercase tracking-wide">Calibrating Metrics...</span>
       </div>
     );
   }
@@ -64,7 +64,7 @@ export const HealthScore = () => {
         </div>
         <button
           onClick={fetchHealthScore}
-          className="px-4 py-2 bg-white border border-rose-200 text-rose-700 rounded text-xs font-bold uppercase tracking-wider hover:bg-rose-50 transition-colors"
+          className="px-4 py-2 bg-white border border-rose-200 text-rose-700 rounded section-labelr hover:bg-rose-50 transition-colors"
         >
           Retry Analysis
         </button>
@@ -160,8 +160,8 @@ export const HealthScore = () => {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-4xl font-black ${colorClass}`}>{healthScore.overall_grade}</span>
-              <span className="text-[10px] font-bold text-slate-600 uppercase mt-1">Grade</span>
+              <span className={`text-4xl font-bold ${colorClass}`}>{healthScore.overall_grade}</span>
+              <span className="text-xs font-bold text-slate-600 uppercase mt-1">Grade</span>
             </div>
           </div>
 
@@ -177,14 +177,14 @@ export const HealthScore = () => {
         <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col">
           <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
             <TrendingUp className="w-4 h-4 text-styx-600" />
-            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-widest">Optimization Plan</h4>
+            <h4 className="section-label">Optimization Plan</h4>
           </div>
 
           {healthScore.recommendations && healthScore.recommendations.length > 0 ? (
             <ul className="space-y-3 flex-1">
               {healthScore.recommendations.map((rec: string, i: number) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-stone-600 group">
-                  <CheckSquare className="w-4 h-4 mt-0.5 text-stone-400 group-hover:text-styx-600 transition-colors" />
+                  <CheckSquare className="w-4 h-4 mt-0.5 text-slate-500 group-hover:text-styx-600 transition-colors" />
                   <span className="leading-relaxed">{rec}</span>
                 </li>
               ))}
@@ -214,23 +214,23 @@ export const HealthScore = () => {
               {/* Tooltip */}
               <div className="relative">
                 <HelpCircle className="w-3.5 h-3.5 text-stone-300 hover:text-styx-600 cursor-help transition-colors" />
-                <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-styx-900 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-stone-700">
+                <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-styx-900 text-white text-xs rounded shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50 pointer-events-none leading-relaxed border border-stone-700">
                   {getComponentDesc(key)}
                 </div>
               </div>
             </div>
 
             {/* Metric Label */}
-            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
+            <div className="section-label mb-1">
               {getComponentLabel(key)}
             </div>
 
             {/* Metric Score */}
             <div className="flex items-baseline justify-between">
-              <div className={`text-2xl font-black font-mono ${getScoreColor(comp.score)}`}>
+              <div className={`text-2xl font-bold font-mono ${getScoreColor(comp.score)}`}>
                 {comp.score.toFixed(0)}
               </div>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getGradeColor(comp.grade)}`}>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded border ${getGradeColor(comp.grade)}`}>
                 {comp.grade}
               </span>
             </div>

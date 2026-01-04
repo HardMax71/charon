@@ -110,7 +110,7 @@ export const DemoGraph = () => {
             </Canvas>
 
             {/* Overlay Badge */}
-            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-widest text-slate-600 shadow-sm flex items-center gap-2">
+            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded text-xs font-mono uppercase tracking-wide text-slate-600 shadow-sm flex items-center gap-2">
                 <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
                 Live Simulation
             </div>

@@ -77,8 +77,8 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
 
   const renderParameterInputs = () => {
     const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all";
-    const labelClass = "block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1";
-    const hintClass = "text-[10px] text-slate-600 mt-1";
+    const labelClass = "block section-label mb-1";
+    const hintClass = "text-xs text-slate-600 mt-1";
 
     switch (formData.rule_type) {
       case 'import_restriction':
@@ -182,7 +182,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
             {/* Main Details */}
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Rule Name</label>
+                <label className="block section-label mb-1">Rule Name</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all"
@@ -193,7 +193,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Description</label>
+                <label className="block section-label mb-1">Description</label>
                 <textarea
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all resize-none h-20"
                   placeholder="Describe the architectural constraint..."
@@ -207,7 +207,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
             {/* Configuration Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Rule Logic</label>
+                <label className="block section-label mb-1">Rule Logic</label>
                 <select
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:outline-none focus:border-teal-500 transition-all cursor-pointer"
                   value={formData.rule_type}
@@ -217,13 +217,13 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-600 mt-1 leading-tight">
+                <p className="text-xs text-slate-600 mt-1 leading-tight">
                   {ruleTypeOptions.find(o => o.value === formData.rule_type)?.description}
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Severity Level</label>
+                <label className="block section-label mb-2">Severity Level</label>
                 <div className="flex gap-2">
                   {(['error', 'warning', 'info'] as Severity[]).map((sev) => (
                     <label key={sev} className={`
@@ -243,7 +243,7 @@ export const FitnessRuleModal = ({ isOpen, onClose, onSave, editingRule }: Fitne
 
             {/* Dynamic Parameters */}
             <div className="pt-4 border-t border-slate-100 bg-slate-50/50 -mx-6 px-6 py-4">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <h3 className="section-label mb-4 flex items-center gap-2">
                 <Settings className="w-3 h-3 text-teal-600" /> Parameter Configuration
               </h3>
               {renderParameterInputs()}

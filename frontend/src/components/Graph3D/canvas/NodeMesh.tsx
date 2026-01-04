@@ -224,12 +224,12 @@ const NodeMeshWithRef = memo(({ node, graphFilters, filtersActive, registerGroup
           <div className="flex flex-col items-center pb-1">
             <div className="bg-white/95 backdrop-blur-md border border-slate-300 shadow-xl px-3 py-1.5 rounded-md flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold font-mono uppercase tracking-wider text-slate-600 leading-none">
+                <span className="section-label font-mono leading-none">
                   {isAdded ? 'ADDED' : isRemoved ? 'REMOVED' : node.type.toUpperCase()}
                 </span>
                 {node.language && (
                   <span
-                    className="text-[8px] font-bold px-1 py-0.5 rounded text-white leading-none"
+                    className="text-xs font-bold px-1 py-0.5 rounded text-white leading-none"
                     style={{ backgroundColor: outlineColor }}
                   >
                     {node.language.toUpperCase()}
@@ -240,14 +240,14 @@ const NodeMeshWithRef = memo(({ node, graphFilters, filtersActive, registerGroup
                 {node.label}
               </span>
               {node.service && (
-                <span className="text-[9px] text-slate-600 font-mono leading-none">
+                <span className="text-xs text-slate-600 font-mono leading-none">
                   {node.service}
                 </span>
               )}
               {node.metrics.cyclomatic_complexity > 10 && (
                 <div className="flex items-center gap-1 mt-0.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  <span className="text-[9px] font-mono text-rose-600 font-bold">
+                  <span className="text-xs font-mono text-rose-600 font-bold">
                     Complexity: {node.metrics.cyclomatic_complexity}
                   </span>
                 </div>
