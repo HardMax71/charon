@@ -42,7 +42,7 @@ class TestLayout:
 
     @pytest.mark.parametrize(
         "layout_name",
-        ["hierarchical", "force", "radial"],
+        ["hierarchical", "force_directed", "circular"],
     )
     def test_apply_layout(self, sample_graph, layout_name):
         result = apply_layout(sample_graph, layout_name)

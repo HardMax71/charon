@@ -310,7 +310,8 @@ def complex_function(x):
 
         result = analyzer.analyze(files, "project")
 
-        assert len(result.errors) >= 0
+        assert "app.broken" in result.complexity
+        assert result.complexity["app.broken"].error is not None
 
     def test_unsupported_file_filtered(self, analyzer):
         files = [

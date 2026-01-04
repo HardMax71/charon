@@ -164,7 +164,7 @@ class TestFitnessOrchestratorService:
         for i in range(5):
             entry = {
                 "passed": i % 2 == 0,
-                "timestamp": f"2024-01-0{i+1}T00:00:00Z",
+                "timestamp": f"2024-01-0{i + 1}T00:00:00Z",
                 "total_rules": 2,
                 "violations": [],
                 "errors": 0 if i % 2 == 0 else 1,
@@ -224,7 +224,7 @@ class TestFitnessOrchestratorService:
         for i in range(20):
             entry = {
                 "passed": True,
-                "timestamp": f"2024-01-{i+1:02d}T00:00:00Z",
+                "timestamp": f"2024-01-{i + 1:02d}T00:00:00Z",
                 "total_rules": 1,
                 "violations": [],
                 "errors": 0,

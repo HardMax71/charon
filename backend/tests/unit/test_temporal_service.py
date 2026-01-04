@@ -333,7 +333,7 @@ class TestTemporalAnalysisService:
                 "sha": f"sha{i}",
                 "message": f"Commit {i}",
                 "author": "User",
-                "date": f"2024-01-{i+1:02d}T00:00:00Z",
+                "date": f"2024-01-{i + 1:02d}T00:00:00Z",
             }
             for i in range(5)
         ]
