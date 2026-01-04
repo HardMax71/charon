@@ -123,11 +123,13 @@ export const StatusRings = memo(({ nodes }: StatusRingsProps) => {
       const pos = nodePositionsRef.current.get(node.id);
       if (!pos) return;
 
+      // Extract current scale from matrix to preserve filter-based scaling
       mesh.getMatrixAt(i, tempMatrix);
+      const scale = tempMatrix.elements[0]; // Uniform scale is in elements[0]
 
       tempObject.position.copy(pos);
       tempObject.rotation.set(Math.PI / 2, 0, 0);
-      tempObject.scale.setScalar(1);
+      tempObject.scale.setScalar(scale);
       tempObject.updateMatrix();
       mesh.setMatrixAt(i, tempObject.matrix);
     });
